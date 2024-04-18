@@ -33,9 +33,10 @@ class PreviewLinkAccessCheck implements AccessInterface {
     if (!$preview_token || !$entity) {
       return $neutral;
     }
+    $account = \Drupal::currentUser();
 
     // If we can't find a valid preview link then ignore this.
-    if (!$this->previewLinkHost->hasPreviewLinks($entity)) {
+    if (!$this->previewLinkHost->hasPreviewLinks($entity) or !($account->isAuthenticated())) {
       return $neutral->setReason('This entity does not have a preview link.');
     }
 
