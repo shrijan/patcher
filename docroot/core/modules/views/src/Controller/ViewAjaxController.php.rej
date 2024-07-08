@@ -1,0 +1,60 @@
+--- modules/views/src/Controller/ViewAjaxController.php
++++ modules/views/src/Controller/ViewAjaxController.php
+@@ -173,19 +182,23 @@
+ 
+         // Create a clone of the request object to avoid mutating the request
+         // object stored in the request stack.
+-        $request_clone = clone $request;
++        //$request_clone = clone $request;
+ 
+         // Add all POST data, because AJAX is sometimes a POST and many things,
+         // such as tablesorts, exposed filters and paging assume GET.
+-        $param_union = $request_clone->request->all() + $request_clone->query->all();
+-        unset($param_union['ajax_page_state']);
+-        $request_clone->query->replace($param_union);
+-
++        //$param_union = $request_clone->request->all() + $request_clone->query->all();
++        //unset($param_union['ajax_page_state']);
++        //$request_clone->query->replace($param_union);
++        $request_all = $request->request->all();
++        unset($request_all['ajax_page_state']);
++        $query_all = $request->query->all();
++        $request->query->replace($request_all + $query_all);
+         // Overwrite the destination.
+         // @see the redirect.destination service.
+-        $origin_destination = $request_clone->getBasePath() . '/' . ltrim($path ?? '/', '/');
+-
+-        $used_query_parameters = $request_clone->query->all();
++        //$origin_destination = $request_clone->getBasePath() . '/' . ltrim($path ?? '/', '/');
++        $origin_destination = $path;
++        $used_query_parameters = $request->query->all();
++        //$used_query_parameters = $request_clone->query->all();
+         $query = UrlHelper::buildQuery($used_query_parameters);
+         if ($query != '') {
+           $origin_destination .= '?' . $query;
+@@ -194,13 +207,23 @@
+ 
+         // Override the display's pager_element with the one actually used.
+         if (isset($pager_element)) {
+-          $response->addCommand(new ScrollTopCommand(".js-view-dom-id-$dom_id"));
++          //$response->addCommand(new ScrollTopCommand(".js-view-dom-id-$dom_id"));
+           $view->displayHandlers->get($display_id)->setOption('pager_element', $pager_element);
+         }
+         // Reuse the same DOM id so it matches that in drupalSettings.
+         $view->dom_id = $dom_id;
+ 
+-        $preview = $view->preview($display_id, $args);
++        //$preview = $view->preview($display_id, $args);
++        $context = new RenderContext();
++        $preview = $this->renderer->executeInRenderContext($context, function () use ($view, $display_id, $args) {
++          return $view->preview($display_id, $args);
++        });
++        if (!$context->isEmpty()) {
++          $bubbleable_metadata = $context->pop();
++          BubbleableMetadata::createFromRenderArray($preview)
++            ->merge($bubbleable_metadata)
++            ->applyTo($preview);
++        }
+         $response->addCommand(new ReplaceCommand(".js-view-dom-id-$dom_id", $preview));
+         $response->addCommand(new PrependCommand(".js-view-dom-id-$dom_id", ['#type' => 'status_messages']));
+ 
