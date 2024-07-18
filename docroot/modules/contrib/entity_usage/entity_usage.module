@@ -100,9 +100,48 @@ function entity_usage_form_alter(&$form, FormStateInterface $form_state, $form_i
     return;
   }
   $usage_data = \Drupal::service('entity_usage.usage')->listSources($entity);
-  if (empty($usage_data)) {
-    return;
+  
+  
+
+  $results = getSourceVidAndSourceType($usage_data);
+  
+  $default_ref = false;
+  $used_in_default = TRUE;
+  foreach ($results as $result) {
+    // Perform actions with each source_vid
+    
+    $entity_revision =\Drupal::entityTypeManager()
+      ->getStorage($result['source_type'])
+      ->loadRevision($result['source_vid']);
+      //dump($entity_revision->isDefaultRevision());
+    if(!empty($result['link']) && is_object($result['link']) && method_exists($result['link'], 'getText')){
+      $link_text =  $result['link']->getText();
+      if (contains($link_text, 'previous revision')) {
+        $used_in_default = false;
+      }else{
+        $used_in_default = true;
+      }
+    }elseif(strpos($result['link'], "Orphaned") !== false){
+      $used_in_default = false;
+    }else{
+      $used_in_default = true;
+    }
+    
+    $storage = \Drupal::entityTypeManager()->getStorage($result['source_type']);
+    //$revision_ids = $storage->load($result['source_vid']);
+    $parent_type = $entity_revision->get('parent_type')->value;
+    $type_storage = $result['source_type'];
+    $source_id = $result['source_vid'];
+    
+    
+    if($entity_revision->isDefaultRevision() && $used_in_default){
+     
+      $default_ref = true;
+      break;
+    }
   }
+
+  //$test = $entity_revision->isDefaultRevision();
   // Check for the edit warning.
   if (method_exists($form_object, 'getOperation')
     && $form_object->getOperation() === 'edit'
@@ -134,21 +173,71 @@ function entity_usage_form_alter(&$form, FormStateInterface $form_state, $form_i
       }
     }
     if ($is_delete_form) {
-      $form['entity_usage_delete_warning'] = [
-        '#theme' => 'status_messages',
-        '#message_list' => [
-          'warning' => [
-            t('There are <a href="@usage_url" target="_blank">recorded usages</a> of this entity.', [
-              '@usage_url' => Url::fromRoute('entity_usage.usage_list', [
-                'entity_type' => $entity->getEntityTypeId(),
-                'entity_id' => $entity->id(),
-              ])->toString(),
-            ])
+      $usage_data = \Drupal::service('entity_usage.usage')->listSources($entity);
+      $entity_type = $form_object->getEntity()->getEntityType();
+      $trash_url = Url::fromRoute('trash.admin_content_trash_entity_type', [
+        'entity_type_id' => $entity_type->id(),
+      ])->toString();
+      //To get rid of 'action cannot be done' message
+      $form['description']['#markup']='';
+      if (!empty($usage_data) && $default_ref) {
+        $form['#attached']['drupalSettings']['mediaFileDelete']['usageDataAvailable'] = TRUE;
+        $form['actions']['submit']['#attributes']['disabled'] = 'disabled';
+        $form['entity_usage_delete_warning'] = [
+          '#theme' => 'status_messages',
+          '#message_list' => [
+            'warning' => [
+              t('There are <a href="@usage_url" target="_blank">recorded usages</a> of this asset on this website. Please use the link provided to remove or unpublish all usages of this asset, then try again.', [
+                '@usage_url' => Url::fromRoute('entity_usage.usage_list', [
+                  'entity_type' => $entity->getEntityTypeId(),
+                  'entity_id' => $entity->id(),
+                ])->toString(),
+              ])
+            ],
           ],
-        ],
-        '#status_headings' => ['warning' => t('Warning message')],
-        '#weight' => -201,
-      ];
+          '#status_headings' => ['warning' => t('Warning message')],
+          '#weight' => -201,
+        ];
+      }else{
+       $form['#attached']['drupalSettings']['mediaFileDelete']['usageDataAvailable'] = FALSE;
+        $form['entity_usage_delete_warning'] = [
+          '#theme' => 'status_messages',
+          '#message_list' => [
+            'warning' => [
+              t('There are no recorded usages of this asset. Once deletion is confirmed, it will be unpublished and moved to Trash. The asset can be purged or restored from the <a href="@trash_url">Trash</a> menu, otherwise it will <a href="@trash_url">automatically be deleted from Trash in 30 days</a>.', [
+                '@usage_url' => Url::fromRoute('entity_usage.usage_list', [
+                  'entity_type' => $entity->getEntityTypeId(),
+                  'entity_id' => $entity->id(),
+                ])->toString(),
+                '@trash_url' => $trash_url,
+              ])
+            ],
+          ],
+          '#status_headings' => ['warning' => t('Warning message')],
+          '#weight' => -201,
+        ];
+      }
     }
   }
+}
+function contains($haystack, $needle) {
+  return strpos($haystack, $needle) !== false;
+}
+// Function to get all source_vid values from the usage_count array
+function getSourceVidAndSourceType($usage_count) {
+  $results = [];
+  if (isset($usage_count['paragraph']) && is_array($usage_count['paragraph'])) {
+    foreach ($usage_count['paragraph'] as $innerArray) {
+      foreach ($innerArray as $data) {
+        if (isset($data['source_vid']) && isset($data['source_type'])) {
+          $results[] = [
+            'source_vid' => $data['source_vid'],
+            'source_type' => $data['source_type'],
+            'link' => $data['link']
+          ];
+        }
+      }
+    }
+  }
+  return $results;
 }
