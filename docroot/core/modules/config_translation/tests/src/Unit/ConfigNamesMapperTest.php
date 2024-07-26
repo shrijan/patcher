@@ -1,6 +1,9 @@
 <?php
 
-declare(strict_types=1);
+/**
+ * @file
+ * Contains \Drupal\Tests\config_translation\Unit\ConfigNamesMapperTest.
+ */
 
 namespace Drupal\Tests\config_translation\Unit;
 

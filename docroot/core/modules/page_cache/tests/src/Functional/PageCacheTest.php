@@ -15,7 +15,6 @@ use Drupal\user\RoleInterface;
  * Enables the page cache and tests it with various HTTP requests.
  *
  * @group page_cache
- * @group #slow
  */
 class PageCacheTest extends BrowserTestBase {
 

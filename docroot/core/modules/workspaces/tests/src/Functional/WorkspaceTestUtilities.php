@@ -78,7 +78,7 @@ trait WorkspaceTestUtilities {
   protected function setupWorkspaceSwitcherBlock() {
     // Add the block to the sidebar.
     $this->placeBlock('workspace_switcher', [
-      'id' => 'workspace_switcher',
+      'id' => 'workspaceswitcher',
       'region' => 'sidebar_first',
       'label' => 'Workspace switcher',
     ]);

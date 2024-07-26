@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Component\Serialization;
 
 use PHPUnit\Framework\TestCase;
@@ -14,7 +12,7 @@ abstract class YamlTestBase extends TestCase {
   /**
    * Some data that should be able to be serialized.
    */
-  public static function providerEncodeDecodeTests() {
+  public function providerEncodeDecodeTests() {
     return [
       [
         'foo' => 'bar',
@@ -44,9 +42,9 @@ abstract class YamlTestBase extends TestCase {
   }
 
   /**
-   * Some data that should be able to be deserialized.
+   * Some data that should be able to be de-serialized.
    */
-  public static function providerDecodeTests() {
+  public function providerDecodeTests() {
     $data = [
       // NULL files.
       ['', NULL],
@@ -74,18 +72,18 @@ jquery.ui.accordion:
     ];
 
     // 1.2 Bool values.
-    foreach (static::providerBoolTest() as $test) {
+    foreach ($this->providerBoolTest() as $test) {
       $data[] = ['bool: ' . $test[0], ['bool' => $test[1]]];
     }
-    $data = array_merge($data, static::providerBoolTest());
+    $data = array_merge($data, $this->providerBoolTest());
 
     return $data;
   }
 
   /**
-   * Tests different boolean serialization and deserialization.
+   * Tests different boolean serialization and de-serialization.
    */
-  public static function providerBoolTest() {
+  public function providerBoolTest() {
     return [
       ['true', TRUE],
       ['TRUE', TRUE],

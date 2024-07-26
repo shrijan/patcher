@@ -2,20 +2,18 @@
 
 namespace Drupal\Tests\system\Functional\UpdateSystem;
 
-use Drupal\FunctionalTests\Update\UpdatePathTestBase;
+use Drupal\FunctionalTests\Update\UpdatePathTestBaseTest;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\user\Entity\User;
 
-// cspell:ignore hola usuario
-
 /**
- * Runs UpdatePathTestBase with a dump filled with content.
+ * Runs UpdatePathTestBaseTest with a dump filled with content.
  *
  * @group #slow
  * @group Update
  */
-class UpdatePathTestBaseFilledTest extends UpdatePathTestBase {
+class UpdatePathTestBaseFilledTest extends UpdatePathTestBaseTest {
 
   /**
    * {@inheritdoc}
@@ -26,9 +24,8 @@ class UpdatePathTestBaseFilledTest extends UpdatePathTestBase {
    * {@inheritdoc}
    */
   protected function setDatabaseDumpFiles() {
-    $this->databaseDumpFiles[] = __DIR__ . '/../../../../tests/fixtures/update/drupal-9.4.0.filled.standard.php.gz';
-    $this->databaseDumpFiles[] = __DIR__ . '/../../../../tests/fixtures/update/drupal-8.update-test-schema-enabled.php';
-    $this->databaseDumpFiles[] = __DIR__ . '/../../../../tests/fixtures/update/drupal-8.update-test-semver-update-n-enabled.php';
+    parent::setDatabaseDumpFiles();
+    $this->databaseDumpFiles[0] = __DIR__ . '/../../../../tests/fixtures/update/drupal-9.4.0.filled.standard.php.gz';
   }
 
   /**
@@ -417,13 +414,6 @@ class UpdatePathTestBaseFilledTest extends UpdatePathTestBase {
    */
   protected function replaceUser1() {
     // Do not replace the user from our dump.
-  }
-
-  /**
-   * Tests that the database was properly loaded.
-   */
-  public function testDatabaseProperlyLoaded() {
-    $this->testDatabaseLoaded();
   }
 
 }

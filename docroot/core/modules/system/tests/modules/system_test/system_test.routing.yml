@@ -1,5 +1,3 @@
-# cspell:ignore ȅchȏ
-
 system_test.page_cache_accept_header:
   path: '/system-test/page-cache/accept-header'
   defaults:

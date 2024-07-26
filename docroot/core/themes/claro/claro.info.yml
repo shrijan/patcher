@@ -47,7 +47,12 @@ libraries-override:
       component:
         misc/vertical-tabs.css: false
 
-  core/internal.jquery_ui:
+  core/drupal.autocomplete:
+    css:
+      theme:
+        assets/vendor/jquery.ui/themes/base/theme.css: false
+
+  core/drupal.tabbingmanager:
     css:
       theme:
         assets/vendor/jquery.ui/themes/base/theme.css: false
@@ -56,6 +61,8 @@ libraries-override:
     css:
       component:
         assets/vendor/jquery.ui/themes/base/dialog.css: false
+      theme:
+        assets/vendor/jquery.ui/themes/base/theme.css: false
 
   user/drupal.user:
     css:
@@ -146,8 +153,6 @@ libraries-extend:
     - claro/media_library.theme
   media_library/widget:
     - claro/media_library.theme
-  image/admin:
-    - claro/image.admin
 
 regions:
   header: Header

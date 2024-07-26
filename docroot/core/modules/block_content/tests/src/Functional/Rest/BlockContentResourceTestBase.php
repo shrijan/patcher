@@ -49,7 +49,7 @@ abstract class BlockContentResourceTestBase extends EntityResourceTestBase {
         break;
 
       case 'DELETE':
-        $this->grantPermissionsToTestedRole(['delete any basic block content']);
+        $this->grantPermissionsToTestedRole(['access block library', 'delete any basic block content']);
         break;
 
       default:
@@ -184,7 +184,7 @@ abstract class BlockContentResourceTestBase extends EntityResourceTestBase {
       ],
       'info' => [
         [
-          'value' => 'Drama llama',
+          'value' => 'Dramallama',
         ],
       ],
     ];
@@ -196,17 +196,17 @@ abstract class BlockContentResourceTestBase extends EntityResourceTestBase {
   protected function getExpectedUnauthorizedAccessMessage($method) {
     if (!$this->resourceConfigStorage->load(static::$resourceConfigId)) {
       return match ($method) {
-        'GET', 'PATCH' => "The 'edit any basic block content' permission is required.",
+        'GET', 'PATCH' => "The following permissions are required: 'access block library' AND 'edit any basic block content'.",
         'POST' => "The following permissions are required: 'create basic block content' AND 'access block library'.",
-        'DELETE' => "The 'delete any basic block content' permission is required.",
+        'DELETE' => "The following permissions are required: 'access block library' AND 'delete any basic block content'.",
         default => parent::getExpectedUnauthorizedAccessMessage($method),
       };
     }
     return match ($method) {
       'GET' => "The 'access block library' permission is required.",
-      'PATCH' => "The 'edit any basic block content' permission is required.",
+      'PATCH' => "The following permissions are required: 'access block library' AND 'edit any basic block content'.",
       'POST' => "The following permissions are required: 'create basic block content' AND 'access block library'.",
-      'DELETE' => "The 'delete any basic block content' permission is required.",
+      'DELETE' => "The following permissions are required: 'access block library' AND 'delete any basic block content'.",
       default => parent::getExpectedUnauthorizedAccessMessage($method),
     };
   }

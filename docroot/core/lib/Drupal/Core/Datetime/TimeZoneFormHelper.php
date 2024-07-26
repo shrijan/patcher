@@ -25,9 +25,9 @@ class TimeZoneFormHelper {
    *   \DateTimeZone::listIdentifiers()
    */
   public static function getOptionsList(bool $blank = FALSE): array {
-    $zone_list = \DateTimeZone::listIdentifiers();
+    $zonelist = \DateTimeZone::listIdentifiers();
     $zones = $blank ? ['' => new TranslatableMarkup('- None selected -')] : [];
-    foreach ($zone_list as $zone) {
+    foreach ($zonelist as $zone) {
       $zones[$zone] = new TranslatableMarkup(str_replace('_', ' ', $zone));
     }
     // Sort the translated time zones alphabetically.

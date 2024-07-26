@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Core\Render;
 
 use Drupal\Core\Security\UntrustedCallbackException;
@@ -17,8 +15,8 @@ class RendererCallbackTest extends RendererTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
-    $this->callableResolver->expects($this->any())
-      ->method('getCallableFromDefinition')
+    $this->controllerResolver->expects($this->any())
+      ->method('getControllerFromDefinition')
       ->willReturnArgument(0);
   }
 

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Core\Field;
 
 use Drupal\Tests\UnitTestCase;
@@ -35,16 +33,16 @@ class FieldFilteredMarkupTest extends UnitTestCase {
     $data = [];
     $data[] = ['', '', FALSE];
     // Certain tags are filtered.
-    $data[] = ['<script>test string</script>', 'test string', TRUE];
+    $data[] = ['<script>teststring</script>', 'teststring', TRUE];
     // Certain tags are not filtered.
-    $data[] = ['<em>test string</em>', '<em>test string</em>', TRUE];
+    $data[] = ['<em>teststring</em>', '<em>teststring</em>', TRUE];
     // HTML will be normalized.
-    $data[] = ['<em>test string', '<em>test string</em>', TRUE];
+    $data[] = ['<em>teststring', '<em>teststring</em>', TRUE];
 
     // Even safe strings will be escaped.
     $safe_string = (new Prophet())->prophesize(MarkupInterface::class);
-    $safe_string->__toString()->willReturn('<script>test string</script>');
-    $data[] = [$safe_string->reveal(), 'test string', TRUE];
+    $safe_string->__toString()->willReturn('<script>teststring</script>');
+    $data[] = [$safe_string->reveal(), 'teststring', TRUE];
 
     return $data;
   }
@@ -52,7 +50,7 @@ class FieldFilteredMarkupTest extends UnitTestCase {
   /**
    * @covers ::displayAllowedTags
    */
-  public function testDisplayAllowedTags() {
+  public function testdisplayAllowedTags() {
     $expected = '<a> <b> <big> <code> <del> <em> <i> <ins> <pre> <q> <small> <span> <strong> <sub> <sup> <tt> <ol> <ul> <li> <p> <br> <img>';
 
     $this->assertSame($expected, FieldFilteredMarkup::displayAllowedTags());

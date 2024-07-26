@@ -82,16 +82,10 @@ class NodeGrantDatabaseStorage implements NodeGrantDatabaseStorageInterface {
     $query->addExpression('1');
     // Only interested for granting in the current operation.
     $query->condition('grant_' . $operation, 1, '>=');
-    // Check for grants for this node and the correct langcode. New translations
-    // do not yet have a langcode and must check the fallback node record.
+    // Check for grants for this node and the correct langcode.
     $nids = $query->andConditionGroup()
-      ->condition('nid', $node->id());
-    if (!$node->isNewTranslation()) {
-      $nids->condition('langcode', $node->language()->getId());
-    }
-    else {
-      $nids->condition('fallback', 1);
-    }
+      ->condition('nid', $node->id())
+      ->condition('langcode', $node->language()->getId());
     // If the node is published, also take the default grant into account. The
     // default is saved with a node ID of 0.
     $status = $node->isPublished();
@@ -167,7 +161,7 @@ class NodeGrantDatabaseStorage implements NodeGrantDatabaseStorageInterface {
     $grants_exist = count($grant_conditions->conditions()) > 0;
 
     $is_multilingual = \Drupal::languageManager()->isMultilingual();
-    foreach ($tables as $table_alias => $tableinfo) {
+    foreach ($tables as $nalias => $tableinfo) {
       $table = $tableinfo['table'];
       if (!($table instanceof SelectInterface) && $table == $base_table) {
         // Set the subquery.
@@ -195,7 +189,7 @@ class NodeGrantDatabaseStorage implements NodeGrantDatabaseStorageInterface {
 
         $field = 'nid';
         // Now handle entities.
-        $subquery->where("[$table_alias].[$field] = [na].[nid]");
+        $subquery->where("[$nalias].[$field] = [na].[nid]");
 
         $query->exists($subquery);
       }

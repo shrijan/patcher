@@ -15,7 +15,6 @@ use Drupal\Core\Render\Element\RenderCallbackInterface;
 use Drupal\Core\Security\TrustedCallbackInterface;
 use Drupal\Core\Security\DoTrustedCallbackTrait;
 use Drupal\Core\Theme\ThemeManagerInterface;
-use Drupal\Core\Utility\CallableResolver;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -32,11 +31,11 @@ class Renderer implements RendererInterface {
   protected $theme;
 
   /**
-   * The callable resolver.
+   * The controller resolver.
    *
-   * @var \Drupal\Core\Utility\CallableResolver
+   * @var \Drupal\Core\Controller\ControllerResolverInterface
    */
-  protected CallableResolver $callableResolver;
+  protected $controllerResolver;
 
   /**
    * The element info.
@@ -100,8 +99,8 @@ class Renderer implements RendererInterface {
   /**
    * Constructs a new Renderer.
    *
-   * @param \Drupal\Core\Utility\CallableResolver|\Drupal\Core\Controller\ControllerResolverInterface $callable_resolver
-   *   The callable resolver.
+   * @param \Drupal\Core\Controller\ControllerResolverInterface $controller_resolver
+   *   The controller resolver.
    * @param \Drupal\Core\Theme\ThemeManagerInterface $theme
    *   The theme manager.
    * @param \Drupal\Core\Render\ElementInfoManagerInterface $element_info
@@ -115,12 +114,8 @@ class Renderer implements RendererInterface {
    * @param array $renderer_config
    *   The renderer configuration array.
    */
-  public function __construct(ControllerResolverInterface|CallableResolver $callable_resolver, ThemeManagerInterface $theme, ElementInfoManagerInterface $element_info, PlaceholderGeneratorInterface $placeholder_generator, RenderCacheInterface $render_cache, RequestStack $request_stack, array $renderer_config) {
-    if ($callable_resolver instanceof ControllerResolverInterface) {
-      @trigger_error('Calling ' . __METHOD__ . '() with an argument of ControllerResolverInterface is deprecated in drupal:10.2.0 and is removed in drupal:11.0.0. Use \Drupal\Core\Utility\CallableResolver instead. See https://www.drupal.org/node/3369969', E_USER_DEPRECATED);
-      $callable_resolver = \Drupal::service('callable_resolver');
-    }
-    $this->callableResolver = $callable_resolver;
+  public function __construct(ControllerResolverInterface $controller_resolver, ThemeManagerInterface $theme, ElementInfoManagerInterface $element_info, PlaceholderGeneratorInterface $placeholder_generator, RenderCacheInterface $render_cache, RequestStack $request_stack, array $renderer_config) {
+    $this->controllerResolver = $controller_resolver;
     $this->theme = $theme;
     $this->elementInfo = $element_info;
     $this->placeholderGenerator = $placeholder_generator;
@@ -167,58 +162,27 @@ class Renderer implements RendererInterface {
   }
 
   /**
-   * Renders a placeholder into markup.
-   *
-   * @param array $placeholder_element
-   *   The placeholder element by reference.
-   *
-   * @return \Drupal\Component\Render\MarkupInterface|string
-   *   The rendered HTML.
+   * {@inheritdoc}
    */
-  protected function doRenderPlaceholder(array &$placeholder_element): MarkupInterface|string {
+  public function renderPlaceholder($placeholder, array $elements) {
+    // Get the render array for the given placeholder
+    $placeholder_elements = $elements['#attached']['placeholders'][$placeholder];
+
     // Prevent the render array from being auto-placeholdered again.
-    $placeholder_element['#create_placeholder'] = FALSE;
+    $placeholder_elements['#create_placeholder'] = FALSE;
 
     // Render the placeholder into markup.
-    $markup = $this->renderPlain($placeholder_element);
-    return $markup;
-  }
+    $markup = $this->renderPlain($placeholder_elements);
 
-  /**
-   * Replaces a placeholder with its markup.
-   *
-   * @param string $placeholder
-   *   The placeholder HTML.
-   * @param \Drupal\Component\Render\MarkupInterface|string $markup
-   *   The markup to replace the placeholder with.
-   * @param array $elements
-   *   The render array that the placeholder is from.
-   * @param array $placeholder_element
-   *   The placeholder element render array.
-   *
-   * @return \Drupal\Component\Render\MarkupInterface|string
-   *   The rendered HTML.
-   */
-  protected function doReplacePlaceholder(string $placeholder, string|MarkupInterface $markup, array $elements, array $placeholder_element): array {
     // Replace the placeholder with its rendered markup, and merge its
     // bubbleable metadata with the main elements'.
     $elements['#markup'] = Markup::create(str_replace($placeholder, $markup, $elements['#markup']));
-    $elements = $this->mergeBubbleableMetadata($elements, $placeholder_element);
+    $elements = $this->mergeBubbleableMetadata($elements, $placeholder_elements);
 
     // Remove the placeholder that we've just rendered.
     unset($elements['#attached']['placeholders'][$placeholder]);
 
     return $elements;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function renderPlaceholder($placeholder, array $elements) {
-    // Get the render array for the given placeholder
-    $placeholder_element = $elements['#attached']['placeholders'][$placeholder];
-    $markup = $this->doRenderPlaceholder($placeholder_element);
-    return $this->doReplacePlaceholder($placeholder, $markup, $elements, $placeholder_element);
   }
 
   /**
@@ -272,7 +236,8 @@ class Renderer implements RendererInterface {
           // Abort, but bubble new cache metadata from the access result.
           $context = $this->getCurrentRenderContext();
           if (!isset($context)) {
-            throw new \LogicException("Render context is empty, because render() was called outside of a renderRoot() or renderPlain() call. Use renderPlain()/renderRoot() or #lazy_builder/#pre_render instead.");
+            trigger_error("Render context is empty, because render() was called outside of a renderRoot() or renderPlain() call. Use renderPlain()/renderRoot() or #lazy_builder/#pre_render instead.", E_USER_WARNING);
+            return '';
           }
           $context->push(new BubbleableMetadata());
           $context->update($elements);
@@ -676,7 +641,7 @@ class Renderer implements RendererInterface {
    *   bubbleable metadata associated with the markup that replaced the
    *   placeholders.
    *
-   * @return bool
+   * @returns bool
    *   Whether placeholders were replaced.
    *
    * @see \Drupal\Core\Render\Renderer::renderPlaceholder()
@@ -701,47 +666,13 @@ class Renderer implements RendererInterface {
 
     // First render all placeholders except 'status messages' placeholders.
     $message_placeholders = [];
-    $fibers = [];
     foreach ($elements['#attached']['placeholders'] as $placeholder => $placeholder_element) {
       if (isset($placeholder_element['#lazy_builder']) && $placeholder_element['#lazy_builder'][0] === 'Drupal\Core\Render\Element\StatusMessages::renderMessages') {
         $message_placeholders[] = $placeholder;
       }
       else {
-        // Get the render array for the given placeholder
-        $fibers[$placeholder] = new \Fiber(function () use ($placeholder_element) {
-          return [$this->doRenderPlaceholder($placeholder_element), $placeholder_element];
-        });
+        $elements = $this->renderPlaceholder($placeholder, $elements);
       }
-    }
-    $iterations = 0;
-    while (count($fibers) > 0) {
-      foreach ($fibers as $placeholder => $fiber) {
-        if (!$fiber->isStarted()) {
-          $fiber->start();
-        }
-        elseif ($fiber->isSuspended()) {
-          $fiber->resume();
-        }
-        // If the Fiber hasn't terminated by this point, move onto the next
-        // placeholder, we'll resume this fiber again when we get back here.
-        if (!$fiber->isTerminated()) {
-          // If we've gone through the placeholders once already, and they're
-          // still not finished, then start to allow code higher up the stack to
-          // get on with something else.
-          if ($iterations) {
-            $fiber = \Fiber::getCurrent();
-            if ($fiber !== NULL) {
-              $fiber->suspend();
-            }
-          }
-          continue;
-        }
-        [$markup, $placeholder_element] = $fiber->getReturn();
-
-        $elements = $this->doReplacePlaceholder($placeholder, $markup, $elements, $placeholder_element);
-        unset($fibers[$placeholder]);
-      }
-      $iterations++;
     }
 
     // Then render 'status messages' placeholders.
@@ -810,11 +741,10 @@ class Renderer implements RendererInterface {
    * @param array $elements
    *   A render array with #markup set.
    *
-   * @return array
-   *   The given array with the escaped markup wrapped in a Markup object.
-   *   If $elements['#markup'] is an instance of
-   *   \Drupal\Component\Render\MarkupInterface, it won't be escaped or filtered
-   *   again.
+   * @return \Drupal\Component\Render\MarkupInterface|string
+   *   The escaped markup wrapped in a Markup object. If $elements['#markup']
+   *   is an instance of \Drupal\Component\Render\MarkupInterface, it won't be
+   *   escaped or filtered again.
    *
    * @see \Drupal\Component\Utility\Html::escape()
    * @see \Drupal\Component\Utility\Xss::filter()
@@ -849,14 +779,22 @@ class Renderer implements RendererInterface {
    * @see \Drupal\Core\Security\TrustedCallbackInterface
    */
   protected function doCallback($callback_type, $callback, array $args) {
-    $callable = $this->callableResolver->getCallableFromDefinition($callback);
+    if (is_string($callback)) {
+      $double_colon = strpos($callback, '::');
+      if ($double_colon === FALSE) {
+        $callback = $this->controllerResolver->getControllerFromDefinition($callback);
+      }
+      elseif ($double_colon > 0) {
+        $callback = explode('::', $callback, 2);
+      }
+    }
     $message = sprintf('Render %s callbacks must be methods of a class that implements \Drupal\Core\Security\TrustedCallbackInterface or be an anonymous function. The callback was %s. See https://www.drupal.org/node/2966725', $callback_type, '%s');
     // Add \Drupal\Core\Render\Element\RenderCallbackInterface as an extra
     // trusted interface so that:
     // - All public methods on Render elements are considered trusted.
     // - Helper classes that contain only callback methods can implement this
     //   instead of TrustedCallbackInterface.
-    return $this->doTrustedCallback($callable, $args, $message, TrustedCallbackInterface::THROW_EXCEPTION, RenderCallbackInterface::class);
+    return $this->doTrustedCallback($callback, $args, $message, TrustedCallbackInterface::THROW_EXCEPTION, RenderCallbackInterface::class);
   }
 
   /**

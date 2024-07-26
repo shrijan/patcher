@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\views\Kernel;
 
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\views\Tests\ViewTestData;
 use Drupal\views\Views;
@@ -64,7 +65,7 @@ class TokenReplaceTest extends ViewsKernelTestBase {
     foreach ($expected as $token => $expected_output) {
       $bubbleable_metadata = new BubbleableMetadata();
       $output = $token_handler->replace($token, ['view' => $view], [], $bubbleable_metadata);
-      $this->assertSame($expected_output, $output, "Token $token replaced correctly.");
+      $this->assertSame($expected_output, $output, new FormattableMarkup('Token %token replaced correctly.', ['%token' => $token]));
       $this->assertEquals($metadata_tests[$token], $bubbleable_metadata);
     }
   }
@@ -84,7 +85,7 @@ class TokenReplaceTest extends ViewsKernelTestBase {
       '[view:label]' => 'Test tokens',
       '[view:description]' => 'Test view to token replacement tests.',
       '[view:id]' => 'test_tokens',
-      '[view:title]' => 'Test token page with mini pager',
+      '[view:title]' => 'Test token page with minipager',
       '[view:url]' => $view->getUrl(NULL, 'page_3')
         ->setAbsolute(TRUE)
         ->toString(),
@@ -155,7 +156,7 @@ class TokenReplaceTest extends ViewsKernelTestBase {
 
     foreach ($expected as $token => $expected_output) {
       $output = $token_handler->replace($token, ['view' => $view]);
-      $this->assertSame($expected_output, $output, "Token $token replaced correctly.");
+      $this->assertSame($expected_output, $output, new FormattableMarkup('Token %token replaced correctly.', ['%token' => $token]));
     }
   }
 
@@ -174,7 +175,7 @@ class TokenReplaceTest extends ViewsKernelTestBase {
 
     foreach ($expected as $token => $expected_output) {
       $output = $token_handler->replace($token, ['view' => $view]);
-      $this->assertSame($expected_output, $output, "Token $token replaced correctly.");
+      $this->assertSame($expected_output, $output, new FormattableMarkup('Token %token replaced correctly.', ['%token' => $token]));
     }
   }
 

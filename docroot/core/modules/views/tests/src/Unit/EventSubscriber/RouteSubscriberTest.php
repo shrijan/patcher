@@ -1,6 +1,9 @@
 <?php
 
-declare(strict_types=1);
+/**
+ * @file
+ * Contains \Drupal\Tests\views\Unit\EventSubscriber\RouteSubscriberTest.
+ */
 
 namespace Drupal\Tests\views\Unit\EventSubscriber;
 

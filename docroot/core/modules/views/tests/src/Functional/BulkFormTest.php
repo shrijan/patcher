@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\views\Functional;
 
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\views\Views;
 
@@ -81,7 +82,7 @@ class BulkFormTest extends BrowserTestBase {
 
     foreach ($nodes as $node) {
       $changed_node = $node_storage->load($node->id());
-      $this->assertTrue($changed_node->isSticky(), "Node {$node->id()} got marked as sticky.");
+      $this->assertTrue($changed_node->isSticky(), new FormattableMarkup('Node @nid got marked as sticky.', ['@nid' => $node->id()]));
     }
 
     $this->assertSession()->pageTextContains('Make content sticky was applied to 10 items.');

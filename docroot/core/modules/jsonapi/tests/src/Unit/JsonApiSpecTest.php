@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\jsonapi\Unit;
 
 use Drupal\jsonapi\JsonApiSpec;
@@ -120,7 +118,7 @@ class JsonApiSpecTest extends UnitTestCase {
     $data['custom-query-parameter-lowercase'] = ['foobar', FALSE];
     $data['custom-query-parameter-dash'] = ['foo-bar', TRUE];
     $data['custom-query-parameter-underscore'] = ['foo_bar', TRUE];
-    $data['custom-query-parameter-camel-case'] = ['fooBar', TRUE];
+    $data['custom-query-parameter-camelcase'] = ['fooBar', TRUE];
 
     return $data;
   }

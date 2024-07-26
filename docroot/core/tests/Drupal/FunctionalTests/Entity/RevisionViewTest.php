@@ -51,7 +51,6 @@ class RevisionViewTest extends BrowserTestBase {
    * @dataProvider providerRevisionPage
    */
   public function testRevisionPage(string $entityTypeId, string $expectedPageTitle): void {
-    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
     $storage = \Drupal::entityTypeManager()->getStorage($entityTypeId);
 
     // Add a field to test revision page output.

@@ -15,7 +15,6 @@ use Drupal\field\Entity\FieldStorageConfig;
  * Tests field form handling.
  *
  * @group field
- * @group #slow
  */
 class FormTest extends FieldTestBase {
 
@@ -579,10 +578,9 @@ class FormTest extends FieldTestBase {
     $this->assertEquals(2, $entity->{$field_name}->value, 'New revision has the expected value for the field with edit access.');
 
     // Check that the revision is also saved in the revisions table.
-    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
-    $storage = $this->container->get('entity_type.manager')
-      ->getStorage($entity_type);
-    $entity = $storage->loadRevision($entity->getRevisionId());
+    $entity = $this->container->get('entity_type.manager')
+      ->getStorage($entity_type)
+      ->loadRevision($entity->getRevisionId());
     $this->assertEquals(99, $entity->{$field_name_no_access}->value, 'New revision has the expected value for the field with no edit access.');
     $this->assertEquals(2, $entity->{$field_name}->value, 'New revision has the expected value for the field with edit access.');
   }

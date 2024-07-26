@@ -57,7 +57,7 @@ abstract class AssetControllerBase extends FileDownloadController {
    * for the file will be served from disk and be cached. This is done to
    * avoid situations such as where one CDN endpoint is serving a version
    * cached from PHP, while another is serving a version cached from disk.
-   * Should there be any discrepancy in behavior between those files, this
+   * Should there be any discrepancy in behaviour between those files, this
    * can make debugging very difficult.
    */
   protected const CACHE_CONTROL = 'private, no-store';
@@ -160,23 +160,19 @@ abstract class AssetControllerBase extends FileDownloadController {
     $this->themeManager->setActiveTheme($active_theme);
 
     $attached_assets = new AttachedAssets();
-    $include_libraries = explode(',', UrlHelper::uncompressQueryParameter($request->query->get('include')));
+    $include_string = UrlHelper::uncompressQueryParameter($request->query->get('include'));
 
-    // Check that library names are in the correct format.
-    $validate = function ($libraries_to_check) {
-      foreach ($libraries_to_check as $library) {
-        if (substr_count($library, '/') === 0) {
-          throw new BadRequestHttpException(sprintf('The "%s" library name must include at least one slash.', $library));
-        }
-      }
-    };
-    $validate($include_libraries);
-    $attached_assets->setLibraries($include_libraries);
+    if (!$include_string) {
+      throw new BadRequestHttpException('The libraries to include are encoded incorrectly.');
+    }
+    $attached_assets->setLibraries(explode(',', $include_string));
 
     if ($request->query->has('exclude')) {
-      $exclude_libraries = explode(',', UrlHelper::uncompressQueryParameter($request->query->get('exclude')));
-      $validate($exclude_libraries);
-      $attached_assets->setAlreadyLoadedLibraries($exclude_libraries);
+      $exclude_string = UrlHelper::uncompressQueryParameter($request->query->get('exclude'));
+      if (!$exclude_string) {
+        throw new BadRequestHttpException('The libraries to exclude are encoded incorrectly.');
+      }
+      $attached_assets->setAlreadyLoadedLibraries(explode(',', $exclude_string));
     }
     $groups = $this->getGroups($attached_assets, $request);
 
@@ -199,7 +195,11 @@ abstract class AssetControllerBase extends FileDownloadController {
     // from filling the disk, while still serving aggregates that may be
     // referenced in cached HTML.
     if (hash_equals($generated_hash, $received_hash)) {
-      $this->dumper->dumpToUri($data, $this->assetType, $uri);
+      $uri = $this->dumper->dumpToUri($data, $this->assetType, $uri);
+      $state_key = 'drupal_' . $this->assetType . '_cache_files';
+      $files = $this->state()->get($state_key, []);
+      $files[] = $uri;
+      $this->state()->set($state_key, $files);
     }
     return new Response($data, 200, [
       'Cache-control' => static::CACHE_CONTROL,

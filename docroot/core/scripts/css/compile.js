@@ -68,11 +68,12 @@ module.exports = (filePath, callback) => {
       })
     ])
     .process(css, { from: filePath })
-    .then(result => prettier.format(result.css, {
-      parser: 'css',
-      printWidth: 10000,
-    }))
-    .then(callback)
+    .then(result => {
+      callback(prettier.format(result.css, {
+        parser: 'css',
+        printWidth: 10000,
+      }));
+    })
     .catch(error => {
       log(error);
       process.exitCode = 1;

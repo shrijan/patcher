@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Core\Entity;
 
 use Drupal\Tests\UnitTestCase;
@@ -22,7 +20,9 @@ class EntityStorageBaseTest extends UnitTestCase {
    *   The mocked entity.
    */
   public function generateEntityInterface($id) {
-    $mock_entity = $this->createMock('\Drupal\Core\Entity\EntityInterface');
+    $mock_entity = $this->getMockBuilder('\Drupal\Core\Entity\EntityInterface')
+      ->onlyMethods(['id'])
+      ->getMockForAbstractClass();
     $mock_entity->expects($this->any())
       ->method('id')
       ->willReturn((string) $id);
@@ -151,7 +151,9 @@ class EntityStorageBaseTest extends UnitTestCase {
       ->willReturn($load_multiple);
 
     // Make our EntityTypeInterface mock so that we can turn off static caching.
-    $mock_entity_type = $this->createMock('\Drupal\Core\Entity\EntityTypeInterface');
+    $mock_entity_type = $this->getMockBuilder('\Drupal\Core\Entity\EntityTypeInterface')
+      ->onlyMethods(['isStaticallyCacheable'])
+      ->getMockForAbstractClass();
     // Disallow caching.
     $mock_entity_type->expects($this->any())
       ->method('isStaticallyCacheable')

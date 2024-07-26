@@ -13,7 +13,6 @@ use Drupal\Tests\BrowserTestBase;
  * Tests that the block configuration UI exists and stores data correctly.
  *
  * @group block
- * @group #slow
  */
 class BlockUiTest extends BrowserTestBase {
 
@@ -318,7 +317,7 @@ class BlockUiTest extends BrowserTestBase {
 
     // Select the 'Powered by Drupal' block to be placed.
     $block = [];
-    $block['id'] = $this->randomMachineName();
+    $block['id'] = strtolower($this->randomMachineName());
     $block['theme'] = 'stark';
     $block['region'] = 'content';
 

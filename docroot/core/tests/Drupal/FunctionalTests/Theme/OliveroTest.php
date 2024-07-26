@@ -55,7 +55,7 @@ class OliveroTest extends BrowserTestBase {
 
     // Optional configuration.
     \Drupal::service('module_installer')->install(
-      ['search', 'image', 'help', 'node']
+      ['search', 'image', 'book', 'help', 'node']
     );
     $this->rebuildAll();
     $this->drupalLogin(

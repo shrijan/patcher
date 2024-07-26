@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Core\Entity\TypedData;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
@@ -195,7 +193,7 @@ class EntityAdapterUnitTest extends UnitTestCase {
       ->method('createFieldItemList')
       ->willReturn($this->fieldItemList);
 
-    $this->entityFieldManager = $this->createMock(EntityFieldManagerInterface::class);
+    $this->entityFieldManager = $this->getMockForAbstractClass(EntityFieldManagerInterface::class);
 
     $container = new ContainerBuilder();
     $container->set('entity_type.manager', $this->entityTypeManager);

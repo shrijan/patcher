@@ -32,10 +32,7 @@ class ArgumentStringTest extends ViewsKernelTestBase {
   public function testGlossary() {
     $this->installEntitySchema('user');
     $this->installEntitySchema('node');
-    NodeType::create([
-      'type' => 'page',
-      'name' => 'Page',
-    ])->save();
+    NodeType::create(['type' => 'page'])->save();
 
     // Setup some nodes, one with a, two with b and three with c.
     $counter = 1;

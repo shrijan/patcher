@@ -120,7 +120,12 @@ class UserSession implements AccountInterface {
    * {@inheritdoc}
    */
   public function hasPermission($permission) {
-    return \Drupal::service('permission_checker')->hasPermission($permission, $this);
+    // User #1 has all privileges.
+    if ((int) $this->id() === 1) {
+      return TRUE;
+    }
+
+    return $this->getRoleStorage()->isPermissionInRoles($permission, $this->getRoles());
   }
 
   /**

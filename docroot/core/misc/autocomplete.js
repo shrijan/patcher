@@ -79,7 +79,10 @@
 
     const term = autocomplete.extractLastTerm(event.target.value);
     // Abort search if the first character is in firstCharacterBlacklist.
-    if (term.length > 0 && options.firstCharacterBlacklist.includes(term[0])) {
+    if (
+      term.length > 0 &&
+      options.firstCharacterBlacklist.indexOf(term[0]) !== -1
+    ) {
       return false;
     }
     // Only search when the term is at least the minimum length.

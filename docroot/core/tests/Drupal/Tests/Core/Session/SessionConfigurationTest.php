@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Core\Session;
 
 use Drupal\Tests\UnitTestCase;
@@ -16,7 +14,7 @@ class SessionConfigurationTest extends UnitTestCase {
   /**
    * Constructs a partially mocked SUT.
    *
-   * @return \Drupal\Core\Session\SessionConfiguration|\PHPUnit\Framework\MockObject\MockObject
+   * @returns \Drupal\Core\Session\SessionConfiguration|\PHPUnit\Framework\MockObject\MockObject
    */
   protected function createSessionConfiguration($options = []) {
     return $this->getMockBuilder('Drupal\Core\Session\SessionConfiguration')
@@ -44,7 +42,7 @@ class SessionConfigurationTest extends UnitTestCase {
   /**
    * Data provider for the cookie domain test.
    *
-   * @return array
+   * @returns array
    *   Test data
    */
   public function providerTestGeneratedCookieDomain() {
@@ -83,7 +81,7 @@ class SessionConfigurationTest extends UnitTestCase {
   /**
    * Data provider for the cookie domain test.
    *
-   * @return array
+   * @returns array
    *   Test data
    */
   public function providerTestEnforcedCookieDomain() {
@@ -149,7 +147,7 @@ class SessionConfigurationTest extends UnitTestCase {
   /**
    * Data provider for the cookie secure test.
    *
-   * @return array
+   * @returns array
    *   Test data
    */
   public function providerTestCookieSecure() {
@@ -182,7 +180,7 @@ class SessionConfigurationTest extends UnitTestCase {
   /**
    * Data provider for the cookie name test.
    *
-   * @return array
+   * @returns array
    *   Test data
    */
   public function providerTestGeneratedSessionName() {
@@ -230,7 +228,7 @@ class SessionConfigurationTest extends UnitTestCase {
   /**
    * Data provider for the cookie name test.
    *
-   * @return array
+   * @returns array
    *   Test data
    */
   public function providerTestEnforcedSessionName() {
@@ -276,7 +274,7 @@ class SessionConfigurationTest extends UnitTestCase {
   /**
    * Data provider for the constructor test.
    *
-   * @return array
+   * @returns array
    *   Test data
    */
   public function providerTestConstructorDefaultSettings() {

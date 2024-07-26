@@ -258,7 +258,17 @@ const dialogIntegrationTestScenarios = [
 module.exports = {
   '@tags': ['core'],
   before(browser) {
-    browser.drupalInstall().drupalInstallModule('tabbable_shim_test');
+    browser.drupalInstall().drupalLoginAsAdmin(() => {
+      browser
+        .drupalRelativeURL('/admin/modules')
+        .setValue('input[type="search"]', 'Tabbable Shim Test')
+        .waitForElementVisible(
+          'input[name="modules[tabbable_shim_test][enable]"]',
+          1000,
+        )
+        .click('input[name="modules[tabbable_shim_test][enable]"]')
+        .click('input[type="submit"]');
+    });
   },
   after(browser) {
     browser.drupalUninstall();

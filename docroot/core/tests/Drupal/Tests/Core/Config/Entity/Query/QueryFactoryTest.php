@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Core\Config\Entity\Query;
 
 use Drupal\Core\Config\Config;
 use Drupal\Core\Config\Entity\Query\QueryFactory;
 use Drupal\Tests\UnitTestCase;
-use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * @coversDefaultClass \Drupal\Core\Config\Entity\Query\QueryFactory
@@ -21,11 +18,7 @@ class QueryFactoryTest extends UnitTestCase {
    *
    * @dataProvider providerTestGetKeys
    */
-  public function testGetKeys(array $expected, string $key, array $sets): void {
-    $config = $this->getConfigObject('test');
-    foreach ($sets as $set) {
-      $config->set(...$set);
-    }
+  public function testGetKeys(array $expected, $key, Config $config) {
     $config_factory = $this->createMock('Drupal\Core\Config\ConfigFactoryInterface');
     $key_value_factory = $this->createMock('Drupal\Core\KeyValueStore\KeyValueFactoryInterface');
     $config_manager = $this->createMock('Drupal\Core\Config\ConfigManagerInterface');
@@ -37,68 +30,68 @@ class QueryFactoryTest extends UnitTestCase {
     $this->assertEquals($expected, $actual);
   }
 
-  public static function providerTestGetKeys(): \Generator {
-    yield [
+  public function providerTestGetKeys() {
+    $tests = [];
+
+    $tests[] = [
       ['uuid:abc'],
       'uuid',
-      [['uuid', 'abc']],
+      $this->getConfigObject('test')->set('uuid', 'abc'),
     ];
 
     // Tests a lookup being set to a top level key when sub-keys exist.
-    yield [
+    $tests[] = [
       [],
       'uuid',
-      [['uuid.blah', 'abc']],
+      $this->getConfigObject('test')->set('uuid.blah', 'abc'),
     ];
 
     // Tests a non existent key.
-    yield [
+    $tests[] = [
       [],
       'uuid',
-      [],
+      $this->getConfigObject('test'),
     ];
 
     // Tests a non existent sub key.
-    yield [
+    $tests[] = [
       [],
       'uuid.blah',
-      [['uuid', 'abc']],
+      $this->getConfigObject('test')->set('uuid', 'abc'),
     ];
 
     // Tests an existent sub key.
-    yield [
+    $tests[] = [
       ['uuid.blah:abc'],
       'uuid.blah',
-      [['uuid.blah', 'abc']],
+      $this->getConfigObject('test')->set('uuid.blah', 'abc'),
     ];
 
     // One wildcard.
-    yield [
+    $tests[] = [
       ['test.*.value:a', 'test.*.value:b'],
       'test.*.value',
-      [['test.a.value', 'a'], ['test.b.value', 'b']],
+      $this->getConfigObject('test')->set('test.a.value', 'a')->set('test.b.value', 'b'),
     ];
 
     // Three wildcards.
-    yield [
+    $tests[] = [
       ['test.*.sub2.*.sub4.*.value:aaa', 'test.*.sub2.*.sub4.*.value:aab', 'test.*.sub2.*.sub4.*.value:bab'],
       'test.*.sub2.*.sub4.*.value',
-      [
-        ['test.a.sub2.a.sub4.a.value', 'aaa'],
-        ['test.a.sub2.a.sub4.b.value', 'aab'],
-        ['test.b.sub2.a.sub4.b.value', 'bab'],
-      ],
+      $this->getConfigObject('test')
+        ->set('test.a.sub2.a.sub4.a.value', 'aaa')
+        ->set('test.a.sub2.a.sub4.b.value', 'aab')
+        ->set('test.b.sub2.a.sub4.b.value', 'bab'),
     ];
 
     // Three wildcards in a row.
-    yield [
+    $tests[] = [
       ['test.*.*.*.value:abc', 'test.*.*.*.value:abd'],
       'test.*.*.*.value',
-      [
-        ['test.a.b.c.value', 'abc'],
-        ['test.a.b.d.value', 'abd'],
-      ],
+      $this->getConfigObject('test')->set('test.a.b.c.value', 'abc')->set('test.a.b.d.value', 'abd'),
     ];
+
+    return $tests;
   }
 
   /**
@@ -127,11 +120,11 @@ class QueryFactoryTest extends UnitTestCase {
    * @param string $name
    *   The config name.
    *
-   * @return \Drupal\Core\Config\Config&\PHPUnit\Framework\MockObject\MockObject
+   * @return \Drupal\Core\Config\Config|\PHPUnit\Framework\MockObject\MockObject
    *   The test configuration object.
    */
-  protected function getConfigObject(string $name): Config&MockObject {
-    $config = $this->getMockBuilder(Config::class)
+  protected function getConfigObject($name) {
+    $config = $this->getMockBuilder('Drupal\Core\Config\Config')
       ->disableOriginalConstructor()
       ->onlyMethods(['save', 'delete'])
       ->getMock();

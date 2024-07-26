@@ -5,10 +5,10 @@ responsive_image.styles.*:
   label: 'Responsive image style'
   mapping:
     id:
-      type: machine_name
+      type: string
       label: 'Machine-readable name'
     label:
-      type: required_label
+      type: label
       label: 'Label'
     image_style_mappings:
       type: sequence

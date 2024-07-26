@@ -1,6 +1,11 @@
 <?php
 
-declare(strict_types=1);
+/**
+ * @file
+ * Contains \Drupal\Tests\Component\Plugin\Factory\ReflectionFactoryTest.
+ *
+ * Also contains Argument* classes used as data for testing.
+ */
 
 namespace Drupal\Tests\Component\Plugin\Factory;
 

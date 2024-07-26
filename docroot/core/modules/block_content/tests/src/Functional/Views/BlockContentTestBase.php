@@ -4,6 +4,7 @@ namespace Drupal\Tests\block_content\Functional\Views;
 
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Tests\views\Functional\ViewTestBase;
 
 /**
@@ -70,7 +71,7 @@ abstract class BlockContentTestBase extends ViewTestBase {
     if ($block_content = BlockContent::create($values)) {
       $status = $block_content->save();
     }
-    $this->assertEquals(SAVED_NEW, $status, "Created block content {$block_content->label()}.");
+    $this->assertEquals(SAVED_NEW, $status, new FormattableMarkup('Created block content %info.', ['%info' => $block_content->label()]));
     return $block_content;
   }
 
@@ -87,7 +88,7 @@ abstract class BlockContentTestBase extends ViewTestBase {
     // Find a non-existent random type name.
     if (!isset($values['id'])) {
       do {
-        $id = $this->randomMachineName(8);
+        $id = strtolower($this->randomMachineName(8));
       } while (BlockContentType::load($id));
     }
     else {
@@ -102,7 +103,7 @@ abstract class BlockContentTestBase extends ViewTestBase {
     $status = $bundle->save();
     block_content_add_body_field($bundle->id());
 
-    $this->assertEquals(SAVED_NEW, $status, sprintf('Created block content type %s.', $bundle->id()));
+    $this->assertEquals(SAVED_NEW, $status, new FormattableMarkup('Created block content type %bundle.', ['%bundle' => $bundle->id()]));
     return $bundle;
   }
 

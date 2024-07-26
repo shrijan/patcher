@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Traits\Core\Image;
 
 use Drupal\Core\Image\ImageInterface;

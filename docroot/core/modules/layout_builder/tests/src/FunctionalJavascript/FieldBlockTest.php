@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 
 use Drupal\field\Entity\FieldConfig;
@@ -76,9 +74,6 @@ class FieldBlockTest extends WebDriverTestBase {
     $this->drupalGet('admin/structure/block');
     $this->clickLink('Place block');
     $assert_session->assertWaitOnAjaxRequest();
-
-    // Ensure that focus is on the first focusable element on modal.
-    $this->assertJsCondition('document.activeElement === document.getElementsByClassName("block-filter-text")[0]');
 
     // Ensure that fields without any formatters are not available.
     $assert_session->pageTextNotContains('Password');

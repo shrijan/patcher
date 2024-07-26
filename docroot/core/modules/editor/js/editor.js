@@ -235,7 +235,7 @@
         });
 
         // Attach onChange handler to text format selector element.
-        if (editor.tagName === 'SELECT') {
+        if ($this.is('select')) {
           $this.on('change.editorAttach', { field }, onTextFormatChange);
         }
         // Detach any editor when the containing form is submitted.

@@ -79,7 +79,7 @@ class DiscardLayoutChangesForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return $this->sectionStorage->getLayoutBuilderUrl();
+    return $this->sectionStorage->getRedirectUrl();
   }
 
   /**
@@ -100,7 +100,7 @@ class DiscardLayoutChangesForm extends ConfirmFormBase {
 
     $this->messenger->addMessage($this->t('The changes to the layout have been discarded.'));
 
-    $form_state->setRedirectUrl($this->sectionStorage->getRedirectUrl());
+    $form_state->setRedirectUrl($this->getCancelUrl());
   }
 
 }

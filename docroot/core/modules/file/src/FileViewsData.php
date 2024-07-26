@@ -79,8 +79,6 @@ class FileViewsData extends EntityViewsData {
       // Link ourselves to the {node_field_data} table
       // so we can provide node->file relationships.
       'node_field_data' => [
-        'join_id' => 'casted_int_field_join',
-        'cast' => 'right',
         'field' => 'id',
         'left_field' => 'nid',
         'extra' => [['field' => 'type', 'value' => 'node']],
@@ -88,8 +86,6 @@ class FileViewsData extends EntityViewsData {
       // Link ourselves to the {users_field_data} table
       // so we can provide user->file relationships.
       'users_field_data' => [
-        'join_id' => 'casted_int_field_join',
-        'cast' => 'right',
         'field' => 'id',
         'left_field' => 'uid',
         'extra' => [['field' => 'type', 'value' => 'user']],
@@ -97,8 +93,6 @@ class FileViewsData extends EntityViewsData {
       // Link ourselves to the {comment_field_data} table
       // so we can provide comment->file relationships.
       'comment' => [
-        'join_id' => 'casted_int_field_join',
-        'cast' => 'right',
         'field' => 'id',
         'left_field' => 'cid',
         'extra' => [['field' => 'type', 'value' => 'comment']],
@@ -106,8 +100,6 @@ class FileViewsData extends EntityViewsData {
       // Link ourselves to the {taxonomy_term_field_data} table
       // so we can provide taxonomy_term->file relationships.
       'taxonomy_term_data' => [
-        'join_id' => 'casted_int_field_join',
-        'cast' => 'right',
         'field' => 'id',
         'left_field' => 'tid',
         'extra' => [['field' => 'type', 'value' => 'taxonomy_term']],
@@ -130,8 +122,6 @@ class FileViewsData extends EntityViewsData {
       'real field' => 'id',
       'relationship' => [
         'id' => 'standard',
-        'join_id' => 'casted_int_field_join',
-        'cast' => 'left',
         'title' => $this->t('Content'),
         'label' => $this->t('Content'),
         'base' => 'node_field_data',
@@ -167,8 +157,6 @@ class FileViewsData extends EntityViewsData {
       'real field' => 'id',
       'relationship' => [
         'id' => 'standard',
-        'join_id' => 'casted_int_field_join',
-        'cast' => 'left',
         'title' => $this->t('User'),
         'label' => $this->t('User'),
         'base' => 'users',
@@ -186,8 +174,6 @@ class FileViewsData extends EntityViewsData {
       'real field' => 'fid',
       'relationship' => [
         'id' => 'standard',
-        'join_id' => 'casted_int_field_join',
-        'cast' => 'left',
         'title' => $this->t('File'),
         'label' => $this->t('File'),
         'base' => 'file_managed',
@@ -206,8 +192,6 @@ class FileViewsData extends EntityViewsData {
       'real field' => 'id',
       'relationship' => [
         'id' => 'standard',
-        'join_id' => 'casted_int_field_join',
-        'cast' => 'left',
         'title' => $this->t('Comment'),
         'label' => $this->t('Comment'),
         'base' => 'comment_field_data',
@@ -243,8 +227,6 @@ class FileViewsData extends EntityViewsData {
       'real field' => 'id',
       'relationship' => [
         'id' => 'standard',
-        'join_id' => 'casted_int_field_join',
-        'cast' => 'left',
         'title' => $this->t('Taxonomy Term'),
         'label' => $this->t('Taxonomy Term'),
         'base' => 'taxonomy_term_data',

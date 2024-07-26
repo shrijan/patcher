@@ -3,7 +3,7 @@
 namespace Drupal\Tests\comment\Functional;
 
 use Drupal\comment\Entity\Comment;
-use Drupal\Tests\field\Traits\EntityReferenceFieldCreationTrait;
+use Drupal\Tests\field\Traits\EntityReferenceTestTrait;
 
 /**
  * Tests that comments behave correctly when added as entity references.
@@ -12,7 +12,7 @@ use Drupal\Tests\field\Traits\EntityReferenceFieldCreationTrait;
  */
 class CommentEntityReferenceTest extends CommentTestBase {
 
-  use EntityReferenceFieldCreationTrait;
+  use EntityReferenceTestTrait;
 
   /**
    * {@inheritdoc}

@@ -1,6 +1,9 @@
 <?php
 
-declare(strict_types=1);
+/**
+ * @file
+ * Contains \Drupal\Tests\Core\Entity\Sql\SqlContentEntityStorageTest.
+ */
 
 namespace Drupal\Tests\Core\Entity\Sql;
 

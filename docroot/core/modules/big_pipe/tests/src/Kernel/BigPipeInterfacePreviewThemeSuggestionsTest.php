@@ -51,8 +51,6 @@ class BigPipeInterfacePreviewThemeSuggestionsTest extends KernelTestBase {
     $this->blockViewBuilder = $this->container
       ->get('entity_type.manager')
       ->getViewBuilder('block');
-
-    $this->container->get('theme_installer')->install(['stark']);
   }
 
   /**
@@ -62,7 +60,7 @@ class BigPipeInterfacePreviewThemeSuggestionsTest extends KernelTestBase {
     $entity = $this->controller->create([
       'id' => 'test_block1',
       'theme' => 'stark',
-      'plugin' => 'system_powered_by_block',
+      'plugin' => 'test_html',
     ]);
     $entity->save();
 

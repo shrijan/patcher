@@ -22,7 +22,7 @@ class ComplexDataNormalizer extends NormalizerBase {
    */
   public function normalize($object, $format = NULL, array $context = []): array|string|int|float|bool|\ArrayObject|NULL {
     $attributes = [];
-    // $object will not always match getSupportedTypes().
+    // $object will not always match $supportedInterfaceOrClass.
     // @see \Drupal\serialization\Normalizer\EntityNormalizer
     // Other normalizers that extend this class may only provide $object that
     // implements \Traversable.

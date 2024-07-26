@@ -155,17 +155,17 @@ class ImageItemTest extends FieldKernelTestBase {
   }
 
   /**
-   * Tests generateSampleItems() method under different dimensions.
+   * Tests generateSampleItems() method under different resolutions.
    */
   public function testImageItemSampleValueGeneration() {
 
-    // Default behavior. No dimensions configuration.
+    // Default behaviour. No resolution configuration.
     $entity = EntityTest::create();
     $entity->image_test->generateSampleItems();
     $this->entityValidateAndSave($entity);
     $this->assertEquals('image/jpeg', $entity->image_test->entity->get('filemime')->value);
 
-    // Max dimensions bigger than 600x600.
+    // Max resolution bigger than 600x600.
     $entity->image_test_generation->generateSampleItems();
     $this->entityValidateAndSave($entity);
     $imageItem = $entity->image_test_generation->first()->getValue();

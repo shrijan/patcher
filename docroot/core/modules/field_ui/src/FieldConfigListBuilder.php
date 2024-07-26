@@ -204,6 +204,13 @@ class FieldConfigListBuilder extends ConfigEntityListBuilder {
       ];
     }
 
+    $operations['storage-settings'] = [
+      'title' => $this->t('Storage settings'),
+      'weight' => 20,
+      'attributes' => ['title' => $this->t('Edit storage settings.')],
+      'url' => $entity->toUrl("{$entity->getTargetEntityTypeId()}-storage-edit-form"),
+    ];
+
     return $operations;
   }
 

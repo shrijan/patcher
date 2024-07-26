@@ -15,7 +15,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @coversDefaultClass \Drupal\Core\Installer\InstallerRedirectTrait
  *
  * @group Installer
- * @group #slow
  */
 class InstallerRedirectTraitTest extends KernelTestBase {
 
@@ -73,9 +72,9 @@ class InstallerRedirectTraitTest extends KernelTestBase {
     }
     catch (\Exception $e) {
       // Mock the trait.
-      $trait = $this->getMockBuilder(InstallerRedirectTraitMockableClass::class)
+      $trait = $this->getMockBuilder(InstallerRedirectTrait::class)
         ->onlyMethods(['isCli'])
-        ->getMock();
+        ->getMockForTrait();
 
       // Make sure that the method thinks we are not using the cli.
       $trait->expects($this->any())
@@ -123,14 +122,5 @@ class InstallerRedirectTraitTest extends KernelTestBase {
       $this->assertSame($expected, $method_ref->invoke($trait, $e, $connection));
     }
   }
-
-}
-
-/**
- * A class using the InstallerRedirectTrait for mocking purposes.
- */
-class InstallerRedirectTraitMockableClass {
-
-  use InstallerRedirectTrait;
 
 }

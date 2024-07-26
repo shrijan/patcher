@@ -9,7 +9,6 @@ use Drupal\Tests\BrowserTestBase;
  * Tests form processing and alteration via form validation handlers.
  *
  * @group Form
- * @group #slow
  */
 class ValidationTest extends BrowserTestBase {
 

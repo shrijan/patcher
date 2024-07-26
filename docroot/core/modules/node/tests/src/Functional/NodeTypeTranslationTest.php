@@ -103,7 +103,7 @@ class NodeTypeTranslationTest extends BrowserTestBase {
    * Tests the node type translation.
    */
   public function testNodeTypeTranslation() {
-    $type = $this->randomMachineName(16);
+    $type = mb_strtolower($this->randomMachineName(16));
     $name = $this->randomString();
     $this->drupalLogin($this->adminUser);
     $this->drupalCreateContentType(['type' => $type, 'name' => $name]);
@@ -140,7 +140,7 @@ class NodeTypeTranslationTest extends BrowserTestBase {
    * Tests the node type title label translation.
    */
   public function testNodeTypeTitleLabelTranslation() {
-    $type = $this->randomMachineName(16);
+    $type = mb_strtolower($this->randomMachineName(16));
     $name = $this->randomString();
     $this->drupalLogin($this->adminUser);
     $this->drupalCreateContentType(['type' => $type, 'name' => $name]);
@@ -148,7 +148,7 @@ class NodeTypeTranslationTest extends BrowserTestBase {
 
     // Edit the title label for it to be displayed on the translation form.
     $this->drupalGet("admin/structure/types/manage/{$type}");
-    $this->submitForm(['title_label' => 'Edited title'], 'Save');
+    $this->submitForm(['title_label' => 'Edited title'], 'Save content type');
 
     // Assert that the title label is displayed on the translation form with the right value.
     $this->drupalGet("admin/structure/types/manage/$type/translate/$langcode/add");
@@ -166,17 +166,17 @@ class NodeTypeTranslationTest extends BrowserTestBase {
     $this->drupalGet("$langcode/node/add/$type");
     $this->assertSession()->pageTextContains('Translated title');
 
-    // Add an email field.
+    // Add an e-mail field.
     $this->drupalGet("admin/structure/types/manage/{$type}/fields/add-field");
     $this->submitForm([
       'new_storage_type' => 'email',
       'label' => 'Email',
       'field_name' => 'email',
-    ], 'Continue');
-    $this->submitForm([], 'Update settings');
+    ], 'Save and continue');
+    $this->submitForm([], 'Save field settings');
     $this->submitForm([], 'Save settings');
 
-    $type = $this->randomMachineName(16);
+    $type = mb_strtolower($this->randomMachineName(16));
     $name = $this->randomString();
     $this->drupalCreateContentType(['type' => $type, 'name' => $name]);
 

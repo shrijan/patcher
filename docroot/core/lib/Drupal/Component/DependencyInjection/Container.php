@@ -459,13 +459,6 @@ class Container implements ContainerInterface, ResetInterface {
 
           continue;
         }
-        elseif ($type == 'service_closure') {
-          $arguments[$key] = function () use ($argument) {
-            return $this->get($argument->id, $argument->invalidBehavior);
-          };
-
-          continue;
-        }
         // Check for collection.
         elseif ($type == 'collection') {
           $value = $argument->value;

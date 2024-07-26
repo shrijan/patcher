@@ -64,6 +64,8 @@ abstract class EntityKernelTestBase extends KernelTestBase {
     $this->entityTypeManager = $this->container->get('entity_type.manager');
     $this->state = $this->container->get('state');
 
+    $this->installSchema('system', 'sequences');
+
     $this->installEntitySchema('user');
     $this->installEntitySchema('entity_test');
 

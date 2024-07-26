@@ -107,7 +107,7 @@ interface UserInterface extends ContentEntityInterface, EntityChangedInterface, 
    * Sets the user password.
    *
    * @param string $password
-   *   The new un-hashed password.
+   *   The new unhashed password.
    *
    * @return $this
    *   The called user entity.

@@ -76,7 +76,7 @@
             dialogType: 'ajax',
             progress: {
               type: 'fullscreen',
-              message: Drupal.t('Processing...'),
+              message: Drupal.t('Please wait...'),
             },
           });
 
@@ -193,7 +193,7 @@
           dialogType: 'ajax',
           progress: {
             type: 'fullscreen',
-            message: loadingAnnouncement || Drupal.t('Processing...'),
+            message: loadingAnnouncement || Drupal.t('Please wait...'),
           },
         });
 

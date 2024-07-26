@@ -8,11 +8,10 @@ use Drupal\Core\Ajax\PrependCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\EventSubscriber\AjaxResponseSubscriber;
 use Drupal\Core\EventSubscriber\MainContentViewSubscriber;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Path\CurrentPathStack;
-use Drupal\Core\Render\BubbleableMetadata;
-use Drupal\Core\Render\RenderContext;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RedirectDestinationInterface;
 use Drupal\Core\Ajax\ScrollTopCommand;
@@ -27,23 +26,6 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
  * Defines a controller to load a view via AJAX.
  */
 class ViewAjaxController implements ContainerInjectionInterface {
-
-  /**
-   * Parameters that should be filtered and ignored inside ajax requests.
-   */
-  public const FILTERED_QUERY_PARAMETERS = [
-    'view_name',
-    'view_display_id',
-    'view_args',
-    'view_path',
-    'view_dom_id',
-    'pager_element',
-    'view_base_path',
-    'ajax_page_state',
-    '_drupal_ajax',
-    FormBuilderInterface::AJAX_FORM_REQUEST,
-    MainContentViewSubscriber::WRAPPER_FORMAT,
-  ];
 
   /**
    * The entity storage for views.
@@ -128,13 +110,10 @@ class ViewAjaxController implements ContainerInjectionInterface {
    *   Thrown when the view was not found.
    */
   public function ajaxView(Request $request) {
-    //$name = $request->get('view_name');
-    //$display_id = $request->get('view_display_id');
-    $name = $request->request->get('view_name');
-    $display_id = $request->request->get('view_display_id');
+    $name = $request->get('view_name');
+    $display_id = $request->get('view_display_id');
     if (isset($name) && isset($display_id)) {
-      //$args = $request->get('view_args', '');
-      $args = $request->request->get('view_args', '');
+      $args = $request->get('view_args', '');
       $args = $args !== '' ? explode('/', Html::decodeEntities($args)) : [];
 
       // Arguments can be empty, make sure they are passed on as NULL so that
@@ -143,26 +122,30 @@ class ViewAjaxController implements ContainerInjectionInterface {
         return ($arg == '' ? NULL : $arg);
       }, $args);
 
-      //$path = $request->get('view_path');
-      //$dom_id = $request->get('view_dom_id');
-      //echo $dom_id;
-      $path = $request->request->get('view_path');
-      $dom_id = $request->request->get('view_dom_id');
+      $path = $request->get('view_path');
+      $dom_id = $request->get('view_dom_id');
       $dom_id = isset($dom_id) ? preg_replace('/[^a-zA-Z0-9_-]+/', '-', $dom_id) : NULL;
-      //$pager_element = $request->get('pager_element');
-      $pager_element = $request->request->get('pager_element');
+      $pager_element = $request->get('pager_element');
       $pager_element = isset($pager_element) ? intval($pager_element) : NULL;
 
       $response = new ViewAjaxResponse();
 
       // Remove all of this stuff from the query of the request so it doesn't
-      // end up in pagers and tablesort URLs. Additionally we need to preserve
-      // ajax_page_state and add it back after the request has been processed so
-      // the related listener can behave correctly.
+      // end up in pagers and tablesort URLs.
       // @todo Remove this parsing once these are removed from the request in
       //   https://www.drupal.org/node/2504709.
-      $existing_page_state = $request->get('ajax_page_state');
-      foreach (self::FILTERED_QUERY_PARAMETERS as $key) {
+      foreach ([
+        'view_name',
+        'view_display_id',
+        'view_args',
+        'view_path',
+        'view_dom_id',
+        'pager_element',
+        'view_base_path',
+        AjaxResponseSubscriber::AJAX_REQUEST_PARAMETER,
+        FormBuilderInterface::AJAX_FORM_REQUEST,
+        MainContentViewSubscriber::WRAPPER_FORMAT,
+      ] as $key) {
         $request->query->remove($key);
         $request->request->remove($key);
       }
@@ -186,6 +169,7 @@ class ViewAjaxController implements ContainerInjectionInterface {
         // Add all POST data, because AJAX is sometimes a POST and many things,
         // such as tablesorts, exposed filters and paging assume GET.
         $param_union = $request_clone->request->all() + $request_clone->query->all();
+        unset($param_union['ajax_page_state']);
         $request_clone->query->replace($param_union);
 
         // Overwrite the destination.
@@ -207,21 +191,9 @@ class ViewAjaxController implements ContainerInjectionInterface {
         // Reuse the same DOM id so it matches that in drupalSettings.
         $view->dom_id = $dom_id;
 
-        // Populate request attributes temporarily with ajax_page_state theme
-        // and theme_token for theme negotiation.
-        $theme_keys = [
-          'theme' => TRUE,
-          'theme_token' => TRUE,
-        ];
-        if (is_array($existing_page_state) &&
-            ($temp_attributes = array_intersect_key($existing_page_state, $theme_keys))) {
-          $request->attributes->set('ajax_page_state', $temp_attributes);
-        }
         $preview = $view->preview($display_id, $args);
-        $request->attributes->remove('ajax_page_state');
         $response->addCommand(new ReplaceCommand(".js-view-dom-id-$dom_id", $preview));
         $response->addCommand(new PrependCommand(".js-view-dom-id-$dom_id", ['#type' => 'status_messages']));
-        $request->query->set('ajax_page_state', $existing_page_state);
 
         return $response;
       }

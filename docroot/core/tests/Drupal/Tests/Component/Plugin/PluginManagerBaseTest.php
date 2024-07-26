@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Component\Plugin;
 
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
@@ -38,7 +36,9 @@ class PluginManagerBaseTest extends TestCase {
    * Generates a mocked FactoryInterface object with known properties.
    */
   public function getMockFactoryInterface($expects_count) {
-    $mock_factory = $this->createMock('Drupal\Component\Plugin\Factory\FactoryInterface');
+    $mock_factory = $this->getMockBuilder('Drupal\Component\Plugin\Factory\FactoryInterface')
+      ->onlyMethods(['createInstance'])
+      ->getMockForAbstractClass();
     $mock_factory->expects($this->exactly($expects_count))
       ->method('createInstance')
       ->willReturnCallback([$this, 'createInstanceCallback']);

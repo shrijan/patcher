@@ -20,7 +20,7 @@ class UserNameConstraintValidator extends ConstraintValidator {
       return;
     }
     $name = $items->first()->value;
-    if (str_starts_with($name, ' ')) {
+    if (substr($name, 0, 1) == ' ') {
       $this->context->addViolation($constraint->spaceBeginMessage);
     }
     if (substr($name, -1) == ' ') {

@@ -192,20 +192,27 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
       unset($options['defaults']);
     }
 
-    $cid = 'views:unpack_options:' . hash('sha256', serialize([$this->options, $options])) . ':' . \Drupal::languageManager()->getCurrentLanguage()->getId();
-    if (empty(static::$unpackOptions[$cid])) {
-      $cache = \Drupal::cache('data')->get($cid);
-      if (!empty($cache->data)) {
-        $this->options = $cache->data;
+    $skip_cache = \Drupal::config('views.settings')->get('skip_cache');
+
+    if (!$skip_cache) {
+      $cid = 'views:unpack_options:' . hash('sha256', serialize([$this->options, $options])) . ':' . \Drupal::languageManager()->getCurrentLanguage()->getId();
+      if (empty(static::$unpackOptions[$cid])) {
+        $cache = \Drupal::cache('data')->get($cid);
+        if (!empty($cache->data)) {
+          $this->options = $cache->data;
+        }
+        else {
+          $this->unpackOptions($this->options, $options);
+          \Drupal::cache('data')->set($cid, $this->options, Cache::PERMANENT, $this->view->storage->getCacheTags());
+        }
+        static::$unpackOptions[$cid] = $this->options;
       }
       else {
-        $this->unpackOptions($this->options, $options);
-        \Drupal::cache('data')->set($cid, $this->options, Cache::PERMANENT, $this->view->storage->getCacheTags());
+        $this->options = static::$unpackOptions[$cid];
       }
-      static::$unpackOptions[$cid] = $this->options;
     }
     else {
-      $this->options = static::$unpackOptions[$cid];
+      $this->unpackOptions($this->options, $options);
     }
 
     // Mark the view as changed so the user has a chance to save it.
@@ -2171,7 +2178,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
    * {@inheritdoc}
    */
   public function render() {
-    $rows = (!empty($this->view->result) || $this->view->style_plugin->evenEmpty()) ? $this->view->style_plugin->render() : [];
+    $rows = (!empty($this->view->result) || $this->view->style_plugin->evenEmpty()) ? $this->view->style_plugin->render($this->view->result) : [];
 
     $element = [
       '#theme' => $this->themeFunctions(),

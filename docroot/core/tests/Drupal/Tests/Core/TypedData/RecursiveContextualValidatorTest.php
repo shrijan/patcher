@@ -1,14 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Core\TypedData;
 
 use Drupal\Core\Cache\NullBackend;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\TypedData\MapDataDefinition;
-use Drupal\Core\TypedData\TypedData as TypedDataBase;
 use Drupal\Core\TypedData\TypedDataManager;
 use Drupal\Core\TypedData\Validation\ExecutionContextFactory;
 use Drupal\Core\TypedData\Validation\RecursiveValidator;
@@ -251,13 +248,16 @@ class RecursiveContextualValidatorTest extends UnitTestCase {
 
   /**
    * Provides data for testValidatePropertyWithInvalidObjects.
+   * @return array
    */
-  public static function providerTestValidatePropertyWithInvalidObjects(): \Generator {
-    $dataDefinition = new DataDefinition();
+  public function providerTestValidatePropertyWithInvalidObjects() {
+    $data = [];
+    $data[] = [new \stdClass()];
+    $data[] = [new class() {}];
 
-    yield [new \stdClass()];
-    yield [new class() {}];
-    yield [new class($dataDefinition) extends TypedDataBase {}];
+    $data[] = [$this->createMock('Drupal\Core\TypedData\TypedDataInterface')];
+
+    return $data;
   }
 
   /**

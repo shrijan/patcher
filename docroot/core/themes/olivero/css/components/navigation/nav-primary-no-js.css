@@ -39,6 +39,10 @@
   }
 
   html:not(.js) .header-nav {
+    border: solid 1px var(--color--gray-95) !important;
+  }
+
+  html:not(.js) .header-nav {
     position: static;
     visibility: visible;
     flex-basis: 100%;
@@ -51,7 +55,6 @@
     padding-inline-start: var(--sp2);
     padding-inline-end: var(--sp2);
     transform: none;
-    border: solid 1px var(--color--gray-95) !important;
     box-shadow: 0 0 36px var(--color--gray-90);
   }
 
@@ -91,6 +94,10 @@
   }
 
   html:not(.js) body.is-always-mobile-nav .header-nav {
+    border: solid 1px var(--color--gray-95) !important;
+  }
+
+  html:not(.js) body.is-always-mobile-nav .header-nav {
     position: static;
     visibility: visible;
     flex-basis: 100%;
@@ -103,7 +110,6 @@
     padding-inline-start: var(--sp2);
     padding-inline-end: var(--sp2);
     transform: none;
-    border: solid 1px var(--color--gray-95) !important;
     box-shadow: 0 0 36px var(--color--gray-90);
   }
 

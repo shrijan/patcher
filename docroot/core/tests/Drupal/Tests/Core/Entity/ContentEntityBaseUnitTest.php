@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Core\Entity;
 
 use Drupal\Core\Access\AccessResult;
@@ -491,8 +489,8 @@ class ContentEntityBaseUnitTest extends UnitTestCase {
     // that trying to save a non-validated entity when validation is required
     // results in an exception.
     $this->assertTrue($this->entity->isValidationRequired());
-    $this->expectException(\LogicException::class);
-    $this->expectExceptionMessage('Entity validation is required, but was skipped.');
+    $this->expectException(\AssertionError::class);
+    $this->expectExceptionMessage('Entity validation was skipped.');
     $this->entity->save();
   }
 
@@ -528,7 +526,7 @@ class ContentEntityBaseUnitTest extends UnitTestCase {
   /**
    * Data provider for testGet().
    *
-   * @return array
+   * @returns
    *   - Expected output from get().
    *   - Field name parameter to get().
    *   - Language code for $activeLanguage.
@@ -588,7 +586,7 @@ class ContentEntityBaseUnitTest extends UnitTestCase {
   /**
    * Data provider for testGetFields().
    *
-   * @return array
+   * @returns array
    *   - Expected output from getFields().
    *   - $include_computed value to pass to getFields().
    *   - Value to mock from all field definitions for isComputed().
@@ -619,7 +617,9 @@ class ContentEntityBaseUnitTest extends UnitTestCase {
     // Mock field definition objects for each element of $field_definitions.
     $mocked_field_definitions = [];
     foreach ($field_definitions as $name) {
-      $mock_definition = $this->createMock('Drupal\Core\Field\FieldDefinitionInterface');
+      $mock_definition = $this->getMockBuilder('Drupal\Core\Field\FieldDefinitionInterface')
+        ->onlyMethods(['isComputed'])
+        ->getMockForAbstractClass();
       // Set expectations for isComputed(). isComputed() gets called whenever
       // $include_computed is FALSE, but not otherwise. It returns the value of
       // $is_computed.

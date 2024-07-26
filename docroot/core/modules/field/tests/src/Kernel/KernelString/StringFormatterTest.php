@@ -72,7 +72,7 @@ class StringFormatterTest extends KernelTestBase {
 
     $this->entityType = 'entity_test_rev';
     $this->bundle = $this->entityType;
-    $this->fieldName = $this->randomMachineName();
+    $this->fieldName = mb_strtolower($this->randomMachineName());
 
     $field_storage = FieldStorageConfig::create([
       'field_name' => $this->fieldName,
@@ -163,9 +163,7 @@ class StringFormatterTest extends KernelTestBase {
     $value2 = $this->randomMachineName();
     $entity->{$this->fieldName}->value = $value2;
     $entity->save();
-    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
-    $storage = $this->entityTypeManager->getStorage('entity_test_rev');
-    $entity_new_revision = $storage->loadRevision($old_revision_id);
+    $entity_new_revision = $this->entityTypeManager->getStorage('entity_test_rev')->loadRevision($old_revision_id);
 
     $this->renderEntityFields($entity, $this->display);
     $this->assertLink($value2, 0);

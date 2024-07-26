@@ -370,17 +370,7 @@ class FieldItemList extends ItemList implements FieldItemListInterface {
         ]);
       }
       else {
-        $options = [
-          'field_definition' => $this->getFieldDefinition(),
-        ];
-        // If the field does not have a widget configured in the 'default' form
-        // mode, check if there are default entity form display options defined
-        // for the 'default' form mode in the form state.
-        // @see \Drupal\field_ui\Controller\FieldConfigAddController::fieldConfigAddConfigureForm
-        if (($default_options = $form_state->get('default_options')) && isset($default_options['entity_form_display']['default'])) {
-          $options['configuration'] = $default_options['entity_form_display']['default'];
-        }
-        $widget = $field_widget_plugin_manager->getInstance($options);
+        $widget = $field_widget_plugin_manager->getInstance(['field_definition' => $definition]);
       }
 
       $form_state->set('default_value_widget', $widget);

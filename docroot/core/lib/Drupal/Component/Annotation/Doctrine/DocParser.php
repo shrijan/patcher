@@ -637,8 +637,8 @@ final class DocParser
             }
 
             $this->isNestedAnnotation = false;
-            if (false !== $annotation = $this->Annotation()) {
-                $annotations[] = $annotation;
+            if (false !== $annot = $this->Annotation()) {
+                $annotations[] = $annot;
             }
         }
 
@@ -937,16 +937,10 @@ final class DocParser
             }
         }
 
-        /**
-         * Checks if identifier ends with ::class and remove the leading backslash if it exists.
-         */
-        if ($this->identifierEndsWithClassConstant($identifier) && ! $this->identifierStartsWithBackslash($identifier))
-        {
-            return substr($identifier, 0, $this->getClassConstantPositionInIdentifier($identifier));
-        }
-        if ($this->identifierEndsWithClassConstant($identifier) && $this->identifierStartsWithBackslash($identifier))
-        {
-            return substr($identifier, 1, $this->getClassConstantPositionInIdentifier($identifier) - 1);
+        // checks if identifier ends with ::class, \strlen('::class') === 7
+        $classPos = stripos($identifier, '::class');
+        if ($classPos === strlen($identifier) - 7) {
+            return substr($identifier, 0, $classPos);
         }
 
         if (!defined($identifier)) {
@@ -954,24 +948,6 @@ final class DocParser
         }
 
         return constant($identifier);
-    }
-
-    private function identifierStartsWithBackslash(string $identifier) : bool
-    {
-        return '\\' === $identifier[0];
-    }
-
-    private function identifierEndsWithClassConstant(string $identifier) : bool
-    {
-        return $this->getClassConstantPositionInIdentifier($identifier) === strlen($identifier) - strlen('::class');
-    }
-
-    /**
-     * @return int|false
-     */
-    private function getClassConstantPositionInIdentifier(string $identifier)
-    {
-        return stripos($identifier, '::class');
     }
 
     /**

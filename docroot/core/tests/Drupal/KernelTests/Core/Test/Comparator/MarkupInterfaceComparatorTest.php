@@ -6,6 +6,7 @@ use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\TestTools\Comparator\MarkupInterfaceComparator;
+use PHPUnit\Framework\Error\Warning;
 use SebastianBergmann\Comparator\Factory;
 use SebastianBergmann\Comparator\ComparisonFailure;
 
@@ -56,37 +57,37 @@ class MarkupInterfaceComparatorTest extends KernelTestBase {
   public function dataSetProvider() {
     return [
       'FormattableMarkup vs FormattableMarkup, equal' => [
-        new FormattableMarkup('GoldFinger', []),
-        new FormattableMarkup('GoldFinger', []),
+        new FormattableMarkup('goldfinger', []),
+        new FormattableMarkup('goldfinger', []),
         TRUE,
         TRUE,
       ],
       'FormattableMarkup vs FormattableMarkup, not equal' => [
-        new FormattableMarkup('GoldFinger', []),
+        new FormattableMarkup('goldfinger', []),
         new FormattableMarkup('moonraker', []),
         TRUE,
         ComparisonFailure::class,
       ],
       'FormattableMarkup vs string, equal' => [
-        new FormattableMarkup('GoldFinger', []),
-        'GoldFinger',
+        new FormattableMarkup('goldfinger', []),
+        'goldfinger',
         TRUE,
         TRUE,
       ],
       'string vs FormattableMarkup, equal' => [
-        'GoldFinger',
-        new FormattableMarkup('GoldFinger', []),
+        'goldfinger',
+        new FormattableMarkup('goldfinger', []),
         TRUE,
         TRUE,
       ],
       'TranslatableMarkup vs FormattableMarkup, equal' => [
-        new TranslatableMarkup('GoldFinger'),
-        new FormattableMarkup('GoldFinger', []),
+        new TranslatableMarkup('goldfinger'),
+        new FormattableMarkup('goldfinger', []),
         TRUE,
         TRUE,
       ],
       'TranslatableMarkup vs string, not equal' => [
-        new TranslatableMarkup('GoldFinger'),
+        new TranslatableMarkup('goldfinger'),
         'moonraker',
         TRUE,
         ComparisonFailure::class,
@@ -104,20 +105,20 @@ class MarkupInterfaceComparatorTest extends KernelTestBase {
         TRUE,
       ],
       'FormattableMarkup vs array' => [
-        new FormattableMarkup('GoldFinger', []),
-        ['GoldFinger'],
+        new FormattableMarkup('goldfinger', []),
+        ['goldfinger'],
         FALSE,
-        FALSE,
+        Warning::class,
       ],
       'stdClass vs TranslatableMarkup' => [
-        (object) ['GoldFinger'],
-        new TranslatableMarkup('GoldFinger'),
+        (object) ['goldfinger'],
+        new TranslatableMarkup('goldfinger'),
         FALSE,
         FALSE,
       ],
       'string vs string, equal' => [
-        'GoldFinger',
-        'GoldFinger',
+        'goldfinger',
+        'goldfinger',
         FALSE,
         \LogicException::class,
       ],

@@ -11,7 +11,6 @@ use Drupal\Core\Access\AccessResultForbidden;
 use Drupal\Core\Access\AccessResultNeutral;
 use Drupal\Core\Access\AccessResultReasonInterface;
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
 
@@ -23,8 +22,6 @@ use Drupal\user\Entity\User;
  * @group block_content
  */
 class BlockContentAccessHandlerTest extends KernelTestBase {
-
-  use UserCreationTrait;
 
   /**
    * {@inheritdoc}
@@ -62,6 +59,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
+    $this->installSchema('system', ['sequences']);
     $this->installSchema('user', ['users_data']);
     $this->installEntitySchema('user');
     $this->installEntitySchema('block_content');
@@ -94,8 +92,8 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
     ])->save();
 
     $this->role = Role::create([
-      'id' => 'test',
-      'label' => 'test role',
+      'id' => 'roly',
+      'label' => 'roly poly',
     ]);
     $this->role->save();
     $this->accessControlHandler = new BlockContentAccessControlHandler(\Drupal::entityTypeManager()->getDefinition('block_content'), \Drupal::service('event_dispatcher'));
@@ -327,7 +325,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
           $operation,
           FALSE,
           TRUE,
-          [$label . ' any square block content'],
+          ['access block library', $label . ' any square block content'],
           TRUE,
           NULL,
           AccessResultAllowed::class,
@@ -336,7 +334,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
           $operation,
           TRUE,
           TRUE,
-          [$label . ' any square block content'],
+          ['access block library', $label . ' any square block content'],
           TRUE,
           NULL,
           AccessResultAllowed::class,
@@ -381,7 +379,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
           $operation,
           FALSE,
           TRUE,
-          ['edit any basic block content'],
+          ['access block library', 'edit any basic block content'],
           TRUE,
           NULL,
           AccessResultNeutral::class,
@@ -390,7 +388,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
           $operation,
           TRUE,
           TRUE,
-          ['edit any basic block content'],
+          ['access block library', 'edit any basic block content'],
           TRUE,
           NULL,
           AccessResultNeutral::class,
@@ -403,7 +401,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
         'update',
         FALSE,
         TRUE,
-        ['edit any square block content'],
+        ['access block library', 'edit any square block content'],
         TRUE,
         NULL,
         AccessResultAllowed::class,
@@ -412,7 +410,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
         'update',
         TRUE,
         TRUE,
-        ['edit any square block content'],
+        ['access block library', 'edit any square block content'],
         TRUE,
         NULL,
         AccessResultAllowed::class,
@@ -424,7 +422,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
         'delete',
         FALSE,
         TRUE,
-        ['edit any square block content'],
+        ['access block library', 'edit any square block content'],
         TRUE,
         NULL,
         AccessResultNeutral::class,
@@ -433,7 +431,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
         'delete',
         TRUE,
         TRUE,
-        ['edit any square block content'],
+        ['access block library', 'edit any square block content'],
         TRUE,
         NULL,
         AccessResultNeutral::class,
@@ -450,20 +448,20 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
       NULL,
       AccessResultNeutral::class,
     ];
-    $cases['view all revisions:view any bundle history'] = [
+    $cases['view all revisions:administer blocks'] = [
       'view all revisions',
       TRUE,
       TRUE,
-      ['view any square block content history'],
+      ['access block library', 'view any square block content history'],
       TRUE,
       NULL,
       AccessResultAllowed::class,
     ];
-    $cases['view all revisions:administer block content'] = [
+    $cases['view all revisions:view bundle'] = [
       'view all revisions',
       TRUE,
       TRUE,
-      ['administer block content'],
+      ['access block library', 'view any square block content history'],
       TRUE,
       NULL,
       AccessResultAllowed::class,
@@ -488,29 +486,38 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
       NULL,
       AccessResultNeutral::class,
     ];
-    $cases['revert:revert bundle:historical'] = [
+    $cases['revert:administer blocks:latest'] = [
       'revert',
       TRUE,
       TRUE,
-      ['revert any square block content revisions'],
-      FALSE,
-      NULL,
-      AccessResultAllowed::class,
-    ];
-    $cases['revert:administer block content:latest'] = [
-      'revert',
-      TRUE,
-      TRUE,
-      ['administer block content'],
+      ['access block library'],
       TRUE,
       NULL,
       AccessResultForbidden::class,
     ];
-    $cases['revert:administer block content:historical'] = [
+    $cases['revert:administer blocks:historical'] = [
       'revert',
       TRUE,
       TRUE,
-      ['administer block content'],
+      ['access block library', 'revert any square block content revisions'],
+      FALSE,
+      NULL,
+      AccessResultAllowed::class,
+    ];
+    $cases['revert:revert bundle:latest'] = [
+      'revert',
+      TRUE,
+      TRUE,
+      ['administer blocks'],
+      TRUE,
+      NULL,
+      AccessResultForbidden::class,
+    ];
+    $cases['revert:revert bundle:historical'] = [
+      'revert',
+      TRUE,
+      TRUE,
+      ['access block library', 'revert any square block content revisions'],
       FALSE,
       NULL,
       AccessResultAllowed::class,
@@ -545,20 +552,20 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
       NULL,
       AccessResultNeutral::class,
     ];
-    $cases['delete revision:administer block content:latest'] = [
+    $cases['delete revision:administer blocks:latest'] = [
       'delete revision',
       TRUE,
       TRUE,
-      ['administer block content'],
+      ['administer blocks'],
       TRUE,
       NULL,
       AccessResultForbidden::class,
     ];
-    $cases['delete revision:administer block content:historical'] = [
+    $cases['delete revision:administer blocks:historical'] = [
       'delete revision',
       TRUE,
       TRUE,
-      ['administer block content'],
+      ['access block library', 'delete any square block content revisions'],
       FALSE,
       NULL,
       AccessResultAllowed::class,
@@ -567,7 +574,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
       'delete revision',
       TRUE,
       TRUE,
-      ['administer block content'],
+      ['administer blocks'],
       TRUE,
       NULL,
       AccessResultForbidden::class,
@@ -576,7 +583,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
       'delete revision',
       TRUE,
       TRUE,
-      ['delete any square block content revisions'],
+      ['access block library', 'delete any square block content revisions'],
       FALSE,
       NULL,
       AccessResultAllowed::class,
@@ -585,7 +592,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
       'delete revision',
       TRUE,
       FALSE,
-      ['delete any square block content revisions'],
+      ['access block library', 'delete any square block content revisions'],
       FALSE,
       NULL,
       AccessResultForbidden::class,
@@ -593,28 +600,6 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
     ];
 
     return $cases;
-  }
-
-  /**
-   * Tests revision log access.
-   */
-  public function testRevisionLogAccess(): void {
-    $admin = $this->createUser([
-      'administer block content',
-      'access content',
-    ]);
-    $editor = $this->createUser([
-      'access content',
-      'access block library',
-      'view any square block content history',
-    ]);
-    $viewer = $this->createUser([
-      'access content',
-    ]);
-
-    $this->assertTrue($this->blockEntity->get('revision_log')->access('view', $admin));
-    $this->assertTrue($this->blockEntity->get('revision_log')->access('view', $editor));
-    $this->assertFalse($this->blockEntity->get('revision_log')->access('view', $viewer));
   }
 
 }

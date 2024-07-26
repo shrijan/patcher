@@ -200,6 +200,8 @@ abstract class ConfigBase implements RefinableCacheableDependencyInterface {
    * @param array $data
    *   Configuration array structure.
    *
+   * @return null
+   *
    * @throws \Drupal\Core\Config\ConfigValueException
    *   If any key in $data in any depth contains a dot.
    */

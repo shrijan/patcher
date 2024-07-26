@@ -34,6 +34,7 @@ class AccessTest extends KernelTestBase {
     $this->installEntitySchema('file');
     $this->installEntitySchema('user');
     $this->installSchema('file', ['file_usage']);
+    $this->installSchema('system', 'sequences');
   }
 
   /**

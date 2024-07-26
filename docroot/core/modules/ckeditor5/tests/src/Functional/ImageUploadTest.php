@@ -224,11 +224,7 @@ class ImageUploadTest extends BrowserTestBase {
             'drupalInsertImage',
           ],
         ],
-        'plugins' => [
-          'ckeditor5_imageResize' => [
-            'allow_resize' => FALSE,
-          ],
-        ],
+        'plugins' => [],
       ],
       'image_upload' => $upload_config,
     ]);

@@ -68,10 +68,7 @@ class HandlerFieldFieldTest extends KernelTestBase {
     $this->installConfig(['filter']);
     $this->installEntitySchema('user');
     $this->installEntitySchema('node');
-    NodeType::create([
-      'type' => 'page',
-      'name' => 'Page',
-    ])->save();
+    NodeType::create(['type' => 'page'])->save();
     ViewTestData::createTestViews(static::class, ['field_test_views']);
 
     // Setup basic fields.
@@ -162,7 +159,7 @@ class HandlerFieldFieldTest extends KernelTestBase {
     // @see https://www.drupal.org/project/drupal/issues/3046722
     for ($i = 0; $i < 2; $i++) {
       $field_name = $this->fieldStorages[5]->getName();
-      $rendered_field = (string) $view->style_plugin->getField($i, $field_name);
+      $rendered_field = $view->style_plugin->getField($i, $field_name);
       $this->assertEquals(3, strlen(html_entity_decode($rendered_field)));
     }
   }

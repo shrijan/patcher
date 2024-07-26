@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\TestTools\Comparator;
 
 use Drupal\Component\Render\MarkupInterface;

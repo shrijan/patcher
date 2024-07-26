@@ -29,9 +29,9 @@ class RequirementsTest extends BrowserTestBase {
     parent::setUp();
 
     // The isolation_level option is only available for MySQL.
-    $connection = Database::getConnection();
-    if ($connection->driver() !== 'mysql') {
-      $this->markTestSkipped("This test does not support the {$connection->driver()} database driver.");
+    $connectionInfo = Database::getConnectionInfo();
+    if ($connectionInfo['default']['driver'] !== 'mysql') {
+      $this->markTestSkipped("This test does not support the {$connectionInfo['default']['driver']} database driver.");
     }
   }
 

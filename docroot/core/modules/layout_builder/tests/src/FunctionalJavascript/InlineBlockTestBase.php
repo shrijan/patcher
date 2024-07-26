@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 
 use Drupal\block_content\Entity\BlockContentType;
@@ -189,6 +187,7 @@ abstract class InlineBlockTestBase extends WebDriverTestBase {
   protected function assertDialogClosedAndTextVisible($text, $css_locator = NULL) {
     $assert_session = $this->assertSession();
     $assert_session->assertNoElementAfterWait('css', '#drupal-off-canvas');
+    $assert_session->assertWaitOnAjaxRequest();
     $assert_session->elementNotExists('css', '#drupal-off-canvas');
     if ($css_locator) {
       $this->assertNotEmpty($assert_session->waitForElementVisible('css', ".dialog-off-canvas-main-canvas $css_locator:contains('$text')"));

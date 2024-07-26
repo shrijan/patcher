@@ -108,7 +108,7 @@ abstract class BlockContentTestBase extends BrowserTestBase {
     if (is_array($values)) {
       if (!isset($values['id'])) {
         do {
-          $id = $this->randomMachineName(8);
+          $id = strtolower($this->randomMachineName(8));
         } while (BlockContentType::load($id));
       }
       else {

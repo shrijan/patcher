@@ -3,7 +3,6 @@
 namespace Drupal\user;
 
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Component\Utility\Html;
 use Drupal\Core\Datetime\TimeZoneFormHelper;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityConstraintViolationListInterface;
@@ -15,7 +14,6 @@ use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Security\TrustedCallbackInterface;
 use Drupal\Core\Url;
 use Drupal\language\ConfigurableLanguageManagerInterface;
-use Drupal\user\Entity\Role;
 use Drupal\user\Plugin\LanguageNegotiation\LanguageNegotiationUser;
 use Drupal\user\Plugin\LanguageNegotiation\LanguageNegotiationUserAdmin;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -202,9 +200,7 @@ abstract class AccountForm extends ContentEntityForm implements TrustedCallbackI
       '#access' => $account->status->access('edit'),
     ];
 
-    $roles = Role::loadMultiple();
-    unset($roles[RoleInterface::ANONYMOUS_ID]);
-    $roles = array_map(fn(RoleInterface $role) => Html::escape($role->label()), $roles);
+    $roles = array_map(['\Drupal\Component\Utility\Html', 'escape'], user_role_names(TRUE));
 
     $form['account']['roles'] = [
       '#type' => 'checkboxes',

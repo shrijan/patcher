@@ -1,0 +1,116 @@
+diff --git a/docroot/modules/contrib/entity_usage/src/EntityUsage.php b/docroot/modules/contrib/entity_usage/src/EntityUsage.php
+index 4779a67..78df65b 100644
+--- a/docroot/modules/contrib/entity_usage/src/EntityUsage.php
++++ b/docroot/modules/contrib/entity_usage/src/EntityUsage.php
+@@ -9,7 +9,8 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
+ use Drupal\entity_usage\Events\Events;
+ use Drupal\entity_usage\Events\EntityUsageEvent;
+ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+-
++use Drupal\entity_usage\EntityUsageInterface;
++use Drupal\Core\Entity\EntityTypeManagerInterface;
+ /**
+  * Defines the entity usage base class.
+  */
+@@ -66,7 +67,8 @@ class EntityUsage implements EntityUsageInterface {
+    *   (optional) The table to store the entity usage info. Defaults to
+    *   'entity_usage'.
+    */
+-  public function __construct(Connection $connection, EventDispatcherInterface $event_dispatcher, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler, $table = 'entity_usage') {
++
++  public function __construct(Connection $connection, EventDispatcherInterface $event_dispatcher, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler , $table = 'entity_usage') {
+     $this->connection = $connection;
+     $this->tableName = $table;
+     $this->eventDispatcher = $event_dispatcher;
+@@ -252,6 +254,12 @@ class EntityUsage implements EntityUsageInterface {
+ 
+     $references = [];
+     foreach ($result as $usage) {
++      
++      
++      $entityTypeManager = \Drupal::service('entity_type.manager');
++      $type_storage = $entityTypeManager->getStorage($usage->source_type);
++      $source_entity = $type_storage->load($usage->source_id);
++      $link = $this->getSourceEntityLink($source_entity);
+       $source_id_value = !empty($usage->source_id) ? (string) $usage->source_id : (string) $usage->source_id_string;
+       if ($nest_results) {
+         $references[$usage->source_type][$source_id_value][] = [
+@@ -259,12 +267,15 @@ class EntityUsage implements EntityUsageInterface {
+           'source_vid' => $usage->source_vid,
+           'method' => $usage->method,
+           'field_name' => $usage->field_name,
++          'source_type' => $usage->source_type,
++          'link'=>$link,
+           'count' => $usage->count,
+         ];
+       }
+       else {
+         $references[] = [
+           'source_type' => $usage->source_type,
++          'link'=>link,
+           'source_id' => $source_id_value,
+           'source_langcode' => $usage->source_langcode,
+           'source_vid' => $usage->source_vid,
+@@ -395,5 +406,62 @@ class EntityUsage implements EntityUsageInterface {
+     }
+     return $references;
+   }
++  
++  protected function getSourceEntityLink(EntityInterface $source_entity, $text = NULL) {
++    // Note that $paragraph_entity->label() will return a string of type:
++    // "{parent label} > {parent field}", which is actually OK for us.
++    $entity_label = $source_entity->access('view label') ? $source_entity->label() : $this->t('- Restricted access -');
++
++    $rel = NULL;
++    if ($source_entity->hasLinkTemplate('revision')) {
++      $rel = 'revision';
++    }
++    elseif ($source_entity->hasLinkTemplate('canonical')) {
++      $rel = 'canonical';
++    }
++
++    // Block content likely used in Layout Builder inline blocks.
++    if ($source_entity instanceof BlockContentInterface && !$source_entity->isReusable()) {
++      $rel = NULL;
++    }
++
++    $link_text = $text ?: $entity_label;
++    if ($rel) {
++      // Prevent 404s by exposing the text unlinked if the user has no access
++      // to view the entity.
++      return $source_entity->access('view') ? $source_entity->toLink($link_text, $rel) : $link_text;
++    }
++
++    // Treat paragraph entities in a special manner. Normal paragraph entities
++    // only exist in the context of their host (parent) entity. For this reason
++    // we will use the link to the parent's entity label instead.
++    /** @var \Drupal\paragraphs\ParagraphInterface $source_entity */
++    if ($source_entity->getEntityTypeId() == 'paragraph') {
++      $parent = $source_entity->getParentEntity();
++      if ($parent) {
++        return $this->getSourceEntityLink($parent, $link_text);
++      }
++    }
++    // Treat block_content entities in a special manner. Block content
++    // relationships are stored as serialized data on the host entity. This
++    // makes it difficult to query parent data. Instead we look up relationship
++    // data which may exist in entity_usage tables. This requires site builders
++    // to set up entity usage on host-entity-type -> block_content manually.
++    // @todo this could be made more generic to support other entity types with
++    // difficult to handle parent -> child relationships.
++    elseif ($source_entity->getEntityTypeId() === 'block_content') {
++      $sources = \Drupal::service('entity_usage.usage')->listSources($source_entity, FALSE);
++      $source = reset($sources);
++      if ($source !== FALSE) {
++        $parent = \Drupal::entityTypeManager()->getStorage($source['source_type'])->load($source['source_id']);
++        if ($parent) {
++          return $this->getSourceEntityLink($parent);
++        }
++      }
++    }
++
++    // As a fallback just return a non-linked label.
++    return $link_text;
++  }
+ 
+ }

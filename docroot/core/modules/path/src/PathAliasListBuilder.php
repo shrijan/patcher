@@ -171,12 +171,10 @@ class PathAliasListBuilder extends EntityListBuilder {
       '#url' => $url,
     ];
 
-    // Create a new URL for linking to the un-aliased system path.
-    $system_url = Url::fromUri("base:{$path}");
     $row['data']['path']['data'] = [
       '#type' => 'link',
       '#title' => $path,
-      '#url' => $system_url,
+      '#url' => $url,
     ];
 
     if ($this->languageManager->isMultilingual()) {

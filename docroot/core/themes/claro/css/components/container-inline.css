@@ -15,5 +15,10 @@
 }
 
 .container-inline .form-radios .form-type-radio {
-  margin-inline-end: 1em;
+  margin-right: 1em;
+}
+
+[dir="rtl"] .container-inline .form-radios .form-type-radio {
+  margin-right: 0;
+  margin-left: 1em;
 }

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Core\Password;
 
 use Drupal\Core\Password\PhpPassword;
@@ -114,7 +112,7 @@ class PhpPasswordTest extends UnitTestCase {
 
     // Check a string of 3-byte UTF-8 characters, 510 byte long password is
     // allowed.
-    $len = (int) floor(PasswordInterface::PASSWORD_MAX_LENGTH / 3);
+    $len = floor(PasswordInterface::PASSWORD_MAX_LENGTH / 3);
     $diff = PasswordInterface::PASSWORD_MAX_LENGTH % 3;
     $passwords['utf8'] = [str_repeat('€', $len), TRUE];
     // 512 byte long password is allowed.
@@ -124,16 +122,6 @@ class PhpPasswordTest extends UnitTestCase {
     // allowed.
     $passwords['utf8_too_long'] = [str_repeat('€', $len + 1), FALSE];
     return $passwords;
-  }
-
-  /**
-   * Tests password check in case provided hash is NULL.
-   *
-   * @covers ::check
-   */
-  public function testEmptyHash(): void {
-    $this->assertFalse($this->passwordHasher->check($this->password, NULL));
-    $this->assertFalse($this->passwordHasher->check($this->password, ''));
   }
 
 }

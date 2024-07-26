@@ -29,6 +29,17 @@ class InstallerExistingConfigSyncDirectoryMultilingualTest extends InstallerExis
   protected $existingSyncDirectory = TRUE;
 
   /**
+   * {@inheritdoc}
+   *
+   * @todo Remove this and thus re-enable this test in
+   *   https://www.drupal.org/project/drupal/issues/3361121
+   */
+  protected function setUp(): void {
+    $this->markTestSkipped('Skipped due to frequent random test failures.');
+    parent::setUp();
+  }
+
+  /**
    * Installer step: Select installation profile.
    */
   protected function setUpProfile() {
@@ -138,7 +149,7 @@ class InstallerExistingConfigSyncDirectoryMultilingualTest extends InstallerExis
     $this->assertEquals($expected_changelist_spanish_collection, $comparer->getChangelist(NULL, 'language.es'));
 
     // Change a translation and ensure configuration is updated.
-    $po = <<<PO
+    $po = <<<ENDPO
 msgid ""
 msgstr ""
 
@@ -148,7 +159,7 @@ msgstr "Anonymous es"
 msgid "Apply"
 msgstr "Aplicar New"
 
-PO;
+ENDPO;
     file_put_contents($this->publicFilesDirectory . '/translations/drupal-8.0.0.es.po', $po);
 
     // Manually update the translation status so can re-run the import.
@@ -194,7 +205,7 @@ PO;
    *   Contents for the test .po file.
    */
   protected function getPo($langcode) {
-    return <<<PO
+    return <<<ENDPO
 msgid ""
 msgstr ""
 
@@ -204,7 +215,7 @@ msgstr "Anonymous $langcode"
 msgid "Apply"
 msgstr "Aplicar"
 
-PO;
+ENDPO;
   }
 
 }

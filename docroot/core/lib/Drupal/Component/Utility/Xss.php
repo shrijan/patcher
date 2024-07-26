@@ -141,7 +141,7 @@ class Xss {
    *   version of the HTML element.
    */
   protected static function split($string, array $html_tags, $class) {
-    if (!str_starts_with($string, '<')) {
+    if (substr($string, 0, 1) != '<') {
       // We matched a lone ">" character.
       return '&gt;';
     }
@@ -217,8 +217,8 @@ class Xss {
             $attribute_name = strtolower($match[1]);
             $skip = (
               $attribute_name == 'style' ||
-              str_starts_with($attribute_name, 'on') ||
-              str_starts_with($attribute_name, '-') ||
+              substr($attribute_name, 0, 2) == 'on' ||
+              substr($attribute_name, 0, 1) == '-' ||
               // Ignore long attributes to avoid unnecessary processing
               // overhead.
               strlen($attribute_name) > 96
@@ -232,7 +232,7 @@ class Xss {
             // such attributes.
             // @see \Drupal\Component\Utility\UrlHelper::filterBadProtocol()
             // @see http://www.w3.org/TR/html4/index/attributes.html
-            $skip_protocol_filtering = str_starts_with($attribute_name, 'data-') || in_array($attribute_name, [
+            $skip_protocol_filtering = substr($attribute_name, 0, 5) === 'data-' || in_array($attribute_name, [
               'title',
               'alt',
               'rel',

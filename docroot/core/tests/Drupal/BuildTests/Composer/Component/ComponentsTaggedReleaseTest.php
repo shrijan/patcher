@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\BuildTests\Composer\Component;
 
 use Drupal\BuildTests\Composer\ComposerBuildTestBase;
@@ -15,6 +13,8 @@ use Drupal\Composer\Composer;
  * @group Component
  *
  * @coversNothing
+ *
+ * @requires externalCommand composer
  */
 class ComponentsTaggedReleaseTest extends ComposerBuildTestBase {
 

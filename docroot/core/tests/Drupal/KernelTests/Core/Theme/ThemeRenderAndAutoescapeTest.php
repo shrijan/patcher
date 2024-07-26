@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\KernelTests\Core\Theme\ThemeRenderAndAutoescapeTest.
+ */
+
 namespace Drupal\KernelTests\Core\Theme;
 
 use Drupal\Component\Utility\Html;
@@ -15,7 +20,6 @@ use Drupal\KernelTests\KernelTestBase;
  *
  * @group Theme
  * @group legacy
- * @group #slow
  */
 class ThemeRenderAndAutoescapeTest extends KernelTestBase {
 

@@ -1,14 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\forum\Unit\Breadcrumb;
 
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Link;
 use Drupal\forum\Breadcrumb\ForumNodeBreadcrumbBuilder;
-use Drupal\node\Entity\Node;
 use Drupal\taxonomy\TermStorageInterface;
 use Drupal\Tests\UnitTestCase;
 use Symfony\Component\DependencyInjection\Container;
@@ -47,19 +44,10 @@ class ForumNodeBreadcrumbBuilderTest extends UnitTestCase {
    * @dataProvider providerTestApplies
    * @covers ::applies
    */
-  public function testApplies(bool $expected, ?string $route_name = NULL, array $parameter_map = []): void {
+  public function testApplies($expected, $route_name = NULL, $parameter_map = []) {
     // Make some test doubles.
     $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
     $config_factory = $this->getConfigFactoryStub([]);
-    $map = [];
-    if ($parameter_map) {
-      foreach ($parameter_map as $parameter) {
-        $map[] = [
-          $parameter[0],
-          $parameter[1] === TRUE ? $this->getMockBuilder(Node::class)->disableOriginalConstructor()->getMock() : $parameter[1],
-        ];
-      }
-    }
 
     $forum_manager = $this->createMock('Drupal\forum\ForumManagerInterface');
     $forum_manager->expects($this->any())
@@ -77,7 +65,7 @@ class ForumNodeBreadcrumbBuilderTest extends UnitTestCase {
       ->willReturn($route_name);
     $route_match->expects($this->any())
       ->method('getParameter')
-      ->willReturnMap($map);
+      ->willReturnMap($parameter_map);
 
     $this->assertEquals($expected, $builder->applies($route_match));
   }
@@ -87,17 +75,40 @@ class ForumNodeBreadcrumbBuilderTest extends UnitTestCase {
    *
    * Note that this test is incomplete, because we can't mock NodeInterface.
    *
-   * @return \Generator
-   *   Datasets for testApplies(). Structured as such:
+   * @return array
+   *   Array of datasets for testApplies(). Structured as such:
    *   - ForumNodeBreadcrumbBuilder::applies() expected result.
    *   - ForumNodeBreadcrumbBuilder::applies() $attributes input array.
    */
-  public static function providerTestApplies(): \Generator {
-    yield [FALSE];
-    yield [FALSE, 'NOT.entity.node.canonical'];
-    yield [FALSE, 'entity.node.canonical'];
-    yield [FALSE, 'entity.node.canonical', [['node', NULL]]];
-    yield [TRUE, 'entity.node.canonical', [['node', TRUE]]];
+  public function providerTestApplies() {
+    // Send a Node mock, because NodeInterface cannot be mocked.
+    $mock_node = $this->getMockBuilder('Drupal\node\Entity\Node')
+      ->disableOriginalConstructor()
+      ->getMock();
+
+    return [
+      [
+        FALSE,
+      ],
+      [
+        FALSE,
+        'NOT.entity.node.canonical',
+      ],
+      [
+        FALSE,
+        'entity.node.canonical',
+      ],
+      [
+        FALSE,
+        'entity.node.canonical',
+        [['node', NULL]],
+      ],
+      [
+        TRUE,
+        'entity.node.canonical',
+        [['node', $mock_node]],
+      ],
+    ];
   }
 
   /**

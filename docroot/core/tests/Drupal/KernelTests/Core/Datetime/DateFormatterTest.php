@@ -5,8 +5,6 @@ namespace Drupal\KernelTests\Core\Datetime;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\language\Entity\ConfigurableLanguage;
 
-// cspell:ignore marzo
-
 /**
  * Tests date formatting.
  *

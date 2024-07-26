@@ -1,6 +1,9 @@
 <?php
 
-declare(strict_types=1);
+/**
+ * @file
+ * Contains \Drupal\Tests\Core\Menu\LocalActionManagerTest.
+ */
 
 namespace Drupal\Tests\Core\Menu;
 
@@ -394,7 +397,7 @@ class TestLocalActionManager extends LocalActionManager {
     $this->routeMatch = $route_match;
     $this->moduleHandler = $module_handler;
     $this->alterInfo('menu_local_actions');
-    $this->setCacheBackend($cache_backend, 'local_action_plugins');
+    $this->setCacheBackend($cache_backend, 'local_action_plugins', ['local_action']);
   }
 
 }

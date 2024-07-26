@@ -66,7 +66,6 @@ class RevisionRouteProviderTest extends KernelTestBase {
    * @dataProvider providerOperationAccessRevisionRoutes
    */
   public function testOperationAccessRevisionRoutes(string $linkTemplate, string $entityLabel): void {
-    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $entityStorage */
     $entityStorage = \Drupal::entityTypeManager()->getStorage('entity_test_rev');
 
     $entity = EntityTestRev::create()

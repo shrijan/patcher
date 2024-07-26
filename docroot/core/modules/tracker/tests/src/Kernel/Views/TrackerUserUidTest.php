@@ -45,6 +45,7 @@ class TrackerUserUidTest extends KernelTestBase {
    * Tests the user uid filter and argument.
    */
   public function testUserUid() {
+    $this->installSchema('system', ['sequences']);
     $this->installConfig(['filter']);
     $this->installEntitySchema('user');
     $this->installEntitySchema('node');

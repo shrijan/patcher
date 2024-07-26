@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\taxonomy\Kernel;
 
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\Tests\taxonomy\Traits\TaxonomyTestTrait;
@@ -52,7 +53,7 @@ class LoadMultipleTest extends KernelTestBase {
     $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
     $terms = $term_storage->loadByProperties(['vid' => $vocabulary->id()]);
     $count = count($terms);
-    $this->assertEquals(5, $count, "Correct number of terms were loaded. $count terms.");
+    $this->assertEquals(5, $count, new FormattableMarkup('Correct number of terms were loaded. @count terms.', ['@count' => $count]));
 
     // Load the same terms again by tid.
     $terms2 = Term::loadMultiple(array_keys($terms));

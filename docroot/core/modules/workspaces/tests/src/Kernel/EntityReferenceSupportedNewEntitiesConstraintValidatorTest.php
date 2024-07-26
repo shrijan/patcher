@@ -43,6 +43,7 @@ class EntityReferenceSupportedNewEntitiesConstraintValidatorTest extends KernelT
     parent::setUp();
 
     $this->installEntitySchema('user');
+    $this->installSchema('system', ['sequences']);
     $this->createUser();
 
     $fields['supported_reference'] = BaseFieldDefinition::create('entity_reference')->setSetting('target_type', 'entity_test_mulrevpub');

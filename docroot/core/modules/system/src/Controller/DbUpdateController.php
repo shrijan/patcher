@@ -2,7 +2,6 @@
 
 namespace Drupal\system\Controller;
 
-use Drupal\Core\Asset\AssetQueryStringInterface;
 use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Controller\ControllerBase;
@@ -15,8 +14,8 @@ use Drupal\Core\State\StateInterface;
 use Drupal\Core\Update\UpdateRegistry;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Controller routines for database update routes.
@@ -98,10 +97,8 @@ class DbUpdateController extends ControllerBase {
    *   The bare HTML page renderer.
    * @param \Drupal\Core\Update\UpdateRegistry $post_update_registry
    *   The post update registry.
-   * @param \Drupal\Core\Asset\AssetQueryStringInterface $assetQueryString
-   *   The asset query string.
    */
-  public function __construct($root, KeyValueExpirableFactoryInterface $key_value_expirable_factory, CacheBackendInterface $cache, StateInterface $state, ModuleHandlerInterface $module_handler, AccountInterface $account, BareHtmlPageRendererInterface $bare_html_page_renderer, UpdateRegistry $post_update_registry, protected ?AssetQueryStringInterface $assetQueryString = NULL) {
+  public function __construct($root, KeyValueExpirableFactoryInterface $key_value_expirable_factory, CacheBackendInterface $cache, StateInterface $state, ModuleHandlerInterface $module_handler, AccountInterface $account, BareHtmlPageRendererInterface $bare_html_page_renderer, UpdateRegistry $post_update_registry) {
     $this->root = $root;
     $this->keyValueExpirableFactory = $key_value_expirable_factory;
     $this->cache = $cache;
@@ -110,11 +107,6 @@ class DbUpdateController extends ControllerBase {
     $this->account = $account;
     $this->bareHtmlPageRenderer = $bare_html_page_renderer;
     $this->postUpdateRegistry = $post_update_registry;
-    if ($this->assetQueryString === NULL) {
-      $this->assetQueryString = \Drupal::service('asset.query_string');
-      @trigger_error('Calling' . __METHOD__ . '() without the $assetQueryString argument is deprecated in drupal:10.2.0 and is required in drupal:11.0.0. See https://www.drupal.org/node/3358337', E_USER_DEPRECATED);
-    }
-
   }
 
   /**
@@ -129,8 +121,7 @@ class DbUpdateController extends ControllerBase {
       $container->get('module_handler'),
       $container->get('current_user'),
       $container->get('bare_html_page_renderer'),
-      $container->get('update.post_update_registry'),
-      $container->get('asset.query_string')
+      $container->get('update.post_update_registry')
     );
   }
 
@@ -216,7 +207,7 @@ class DbUpdateController extends ControllerBase {
    */
   protected function info(Request $request) {
     // Change query-strings on css/js files to enforce reload for all users.
-    $this->assetQueryString->reset();
+    _drupal_flush_css_js();
     // Flush the cache of all data for the update status module.
     $this->keyValueExpirableFactory->get('update')->deleteAll();
     $this->keyValueExpirableFactory->get('update_available_release')->deleteAll();

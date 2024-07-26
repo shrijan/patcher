@@ -14,7 +14,7 @@ use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
-use Drupal\Tests\field\Traits\EntityReferenceFieldCreationTrait;
+use Drupal\Tests\field\Traits\EntityReferenceTestTrait;
 use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
 use Drupal\user\Entity\User;
 
@@ -25,7 +25,7 @@ use Drupal\user\Entity\User;
  */
 class ContentEntityTest extends KernelTestBase {
 
-  use EntityReferenceFieldCreationTrait;
+  use EntityReferenceTestTrait;
   use MediaTypeCreationTrait;
 
   /**
@@ -94,6 +94,7 @@ class ContentEntityTest extends KernelTestBase {
     $this->installEntitySchema('media');
     $this->installEntitySchema('taxonomy_term');
     $this->installEntitySchema('user');
+    $this->installSchema('system', ['sequences']);
     $this->installSchema('user', 'users_data');
     $this->installSchema('file', 'file_usage');
     $this->installSchema('node', ['node_access']);
@@ -170,7 +171,7 @@ class ContentEntityTest extends KernelTestBase {
     ]);
     $node->save();
     $node->addTranslation('fr', [
-      'title' => 'fr - Apples',
+      'title' => 'Pommes',
       $this->fieldName => $term->id(),
     ])->save();
 
@@ -320,7 +321,7 @@ class ContentEntityTest extends KernelTestBase {
       }
       $this->assertEquals('fr', $values['langcode']);
       $this->assertEquals(1, $values['status'][0]['value']);
-      $this->assertEquals('fr - Apples', $values['title'][0]['value']);
+      $this->assertEquals('Pommes', $values['title'][0]['value']);
       $this->assertEquals(0, $values['default_langcode'][0]['value']);
       $this->assertEquals(1, $values['field_entity_reference'][0]['target_id']);
     }

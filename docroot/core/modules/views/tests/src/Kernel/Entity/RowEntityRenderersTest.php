@@ -106,10 +106,7 @@ class RowEntityRenderersTest extends ViewsKernelTestBase {
     $this->testAuthor->save();
 
     // Make sure we do not try to render non-existing user data.
-    $node_type = NodeType::create([
-      'type' => 'test',
-      'name' => 'Test',
-    ]);
+    $node_type = NodeType::create(['type' => 'test']);
     $node_type->setDisplaySubmitted(FALSE);
     $node_type->save();
 
@@ -386,7 +383,7 @@ class RowEntityRenderersTest extends ViewsKernelTestBase {
     foreach ($expected as $index => $expected_output) {
       if (!empty($view->result[$index])) {
         $build = $view->rowPlugin->render($view->result[$index]);
-        $output = (string) \Drupal::service('renderer')->renderRoot($build);
+        $output = \Drupal::service('renderer')->renderRoot($build);
         $result = str_contains($output, $expected_output);
         if (!$result) {
           break;

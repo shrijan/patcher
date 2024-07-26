@@ -152,7 +152,7 @@ class ElementsTableSelectTest extends BrowserTestBase {
   /**
    * Tests error handling for invalid tableselect values with checkboxes.
    */
-  public function testMultipleTrueOptionChecker() {
+  public function testMultipleTrueOptionchecker() {
 
     [$header, $options] = _form_test_tableselect_get_data();
 
@@ -175,7 +175,7 @@ class ElementsTableSelectTest extends BrowserTestBase {
   /**
    * Tests error handling for invalid tableselect values with radio buttons.
    */
-  public function testMultipleFalseOptionChecker() {
+  public function testMultipleFalseOptionchecker() {
 
     [$header, $options] = _form_test_tableselect_get_data();
 

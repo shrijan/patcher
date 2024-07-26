@@ -14,9 +14,8 @@
    *   The HTML for the progress bar.
    */
   Drupal.theme.progressBar = function (id) {
-    const escapedId = Drupal.checkPlain(id);
     return (
-      `<div id="${escapedId}" class="progress" aria-live="polite">` +
+      `<div id="${id}" class="progress" aria-live="polite">` +
       '<div class="progress__label">&nbsp;</div>' +
       '<div class="progress__track"><div class="progress__bar"></div></div>' +
       '<div class="progress__percentage"></div>' +
@@ -77,9 +76,7 @@
         if (percentage >= 0 && percentage <= 100) {
           $(this.element)
             .find('div.progress__bar')
-            .each(function () {
-              this.style.width = `${percentage}%`;
-            });
+            .css('width', `${percentage}%`);
           $(this.element)
             .find('div.progress__percentage')
             .html(`${percentage}%`);
@@ -126,7 +123,7 @@
           // When doing a post request, you need non-null data. Otherwise a
           // HTTP 411 or HTTP 406 (with Apache mod_security) error may result.
           let uri = this.uri;
-          if (!uri.includes('?')) {
+          if (uri.indexOf('?') === -1) {
             uri += '?';
           } else {
             uri += '&';

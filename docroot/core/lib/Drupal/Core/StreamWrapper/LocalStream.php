@@ -335,18 +335,18 @@ abstract class LocalStream implements StreamWrapperInterface {
     if ($recursive) {
       // $this->getLocalPath() fails if $uri has multiple levels of directories
       // that do not yet exist.
-      $local_path = $this->getDirectoryPath() . '/' . $this->getTarget($uri);
+      $localpath = $this->getDirectoryPath() . '/' . $this->getTarget($uri);
     }
     else {
-      $local_path = $this->getLocalPath($uri);
+      $localpath = $this->getLocalPath($uri);
     }
     /** @var \Drupal\Core\File\FileSystemInterface $file_system */
     $file_system = \Drupal::service('file_system');
     if ($options & STREAM_REPORT_ERRORS) {
-      return $file_system->mkdir($local_path, $mode, $recursive);
+      return $file_system->mkdir($localpath, $mode, $recursive);
     }
     else {
-      return @$file_system->mkdir($local_path, $mode, $recursive);
+      return @$file_system->mkdir($localpath, $mode, $recursive);
     }
   }
 

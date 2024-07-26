@@ -98,9 +98,7 @@ interface MigrateDestinationInterface extends PluginInspectionInterface {
    * @param \Drupal\migrate\Row $row
    *   The row object.
    * @param array $old_destination_id_values
-   *   (optional) The destination IDs from the previous import of this source
-   *   row. This is empty the first time a source row is migrated. Defaults to
-   *   an empty array.
+   *   (optional) The old destination IDs. Defaults to an empty array.
    *
    * @return array|bool
    *   An indexed array of destination IDs in the same order as defined in the

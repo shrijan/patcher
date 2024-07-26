@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\language\Unit;
 
 use Drupal\Core\Language\LanguageInterface;
@@ -267,7 +265,7 @@ class ContentLanguageSettingsUnitTest extends UnitTestCase {
       ->with('language_content_settings')
       ->willReturn($this->configEntityStorageInterface);
 
-    $entity_type_repository = $this->createMock(EntityTypeRepositoryInterface::class);
+    $entity_type_repository = $this->getMockForAbstractClass(EntityTypeRepositoryInterface::class);
     $entity_type_repository->expects($this->any())
       ->method('getEntityTypeFromClass')
       ->with(ContentLanguageSettings::class)

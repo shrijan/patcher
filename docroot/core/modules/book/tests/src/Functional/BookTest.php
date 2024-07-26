@@ -10,7 +10,6 @@ use Drupal\user\RoleInterface;
  * Create a book, add pages, and test book interface.
  *
  * @group book
- * @group #slow
  */
 class BookTest extends BrowserTestBase {
 

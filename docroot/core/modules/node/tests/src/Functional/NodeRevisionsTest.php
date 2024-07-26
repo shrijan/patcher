@@ -95,6 +95,9 @@ class NodeRevisionsTest extends NodeTestBase {
 
     // Create initial node.
     $node = $this->drupalCreateNode();
+    $settings = get_object_vars($node);
+    $settings['revision'] = 1;
+    $settings['isDefaultRevision'] = TRUE;
 
     $nodes = [];
     $logs = [];

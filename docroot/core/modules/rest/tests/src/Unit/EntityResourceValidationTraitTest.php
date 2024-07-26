@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\rest\Unit;
 
 use Drupal\Core\Entity\EntityConstraintViolationList;
@@ -75,6 +73,7 @@ class EntityResourceValidationTraitTest extends UnitTestCase {
 /**
  * A test class to use to test EntityResourceValidationTrait.
  *
+ * Using ->getMockForTrait is problematic, as this trait is marked internal.
  * Because the mock doesn't use the \Drupal namespace, the Symfony 4+ class
  * loader will throw a deprecation error.
  */

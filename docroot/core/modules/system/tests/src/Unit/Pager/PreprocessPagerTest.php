@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\system\Unit\Pager;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
@@ -90,7 +88,7 @@ class PreprocessPagerTest extends UnitTestCase {
     /** @var \Drupal\Core\Template\AttributeString $attribute */
     $attribute = $variables['items']['pages']['2']['attributes']->offsetGet('aria-current');
     $this->assertInstanceOf(AttributeString::class, $attribute);
-    $this->assertEquals('page', $attribute->value());
+    $this->assertEquals('Current page', $attribute->value());
   }
 
 }

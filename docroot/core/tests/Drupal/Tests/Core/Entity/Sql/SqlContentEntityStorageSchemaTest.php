@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Core\Entity\Sql;
 
 use Drupal\Core\Entity\ContentEntityType;
@@ -1536,12 +1534,12 @@ class SqlContentEntityStorageSchemaTest extends UnitTestCase {
       ]);
 
     // The original indexes should be dropped before the new one is added.
-    $indexes = ['entity_test__b588603cb9', 'entity_test__removed_field', 'entity_test__b588603cb9'];
-    $this->dbSchemaHandler->expects($this->exactly(count($indexes)))
+    $this->dbSchemaHandler->expects($this->exactly(3))
       ->method('dropIndex')
-      ->with('entity_test', $this->callback(function ($index) use (&$indexes) {
-        return array_shift($indexes) === $index;
-      }));
+      ->withConsecutive(
+        ['entity_test', 'entity_test__b588603cb9'],
+        ['entity_test', 'entity_test__removed_field'],
+      );
 
     $this->dbSchemaHandler->expects($this->atLeastOnce())
       ->method('fieldExists')

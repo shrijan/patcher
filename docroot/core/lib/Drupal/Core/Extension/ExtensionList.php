@@ -21,9 +21,7 @@ use Drupal\Core\State\StateInterface;
 abstract class ExtensionList {
 
   /**
-   * The type of the extension.
-   *
-   * Possible values: "module", "theme", "profile" or "database_driver".
+   * The type of the extension: "module", "theme" or "profile".
    *
    * @var string
    */

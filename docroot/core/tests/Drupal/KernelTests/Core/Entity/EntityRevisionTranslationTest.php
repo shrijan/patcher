@@ -63,7 +63,6 @@ class EntityRevisionTranslationTest extends EntityKernelTestBase {
    */
   public function testRevertRevisionAfterTranslation() {
     $user = $this->createUser();
-    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
     $storage = $this->entityTypeManager->getStorage('entity_test_mulrev');
 
     // Create a test entity.
@@ -99,7 +98,6 @@ class EntityRevisionTranslationTest extends EntityKernelTestBase {
    */
   public function testTranslationValuesWhenSavingPendingRevisions() {
     $user = $this->createUser();
-    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
     $storage = $this->entityTypeManager->getStorage('entity_test_mulrev');
 
     // Create a test entity and a translation for it.

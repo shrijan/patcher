@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Tests\migrate\Kernel\SqlBaseTest.
+ */
+
 namespace Drupal\Tests\migrate\Kernel;
 
 use Drupal\Core\Database\Query\ConditionInterface;
@@ -127,10 +132,6 @@ class SqlBaseTest extends MigrateTestBase {
    * Tests the exception when a connection is defined but not available.
    */
   public function testBrokenConnection(): void {
-    if (Database::getConnection()->driver() === 'sqlite') {
-      $this->markTestSkipped('Not compatible with sqlite');
-    }
-
     $sql_base = new TestSqlBase([], $this->migration);
     $target = 'test_state_db_target2';
     $key = 'test_state_migrate_connection2';

@@ -11,7 +11,6 @@ use Drupal\Tests\field\Functional\FieldTestBase;
  * Tests the Options widgets.
  *
  * @group options
- * @group #slow
  */
 class OptionsWidgetsTest extends FieldTestBase {
 
@@ -693,7 +692,7 @@ class OptionsWidgetsTest extends FieldTestBase {
     $xpath = '//select[@id=:id]//option[@value="_none" and text()=:label]';
     $xpath_args = [':id' => 'edit-card-1', ':label' => '- None -'];
     $this->assertSession()->elementExists('xpath', $this->assertSession()->buildXPathQuery($xpath, $xpath_args));
-    $xpath_args = [':id' => 'edit-card-4', ':label' => '- Select something -'];
+    $xpath_args = [':id' => 'edit-card-4', ':label' => '- Please select something -'];
     $this->assertSession()->elementExists('xpath', $this->assertSession()->buildXPathQuery($xpath, $xpath_args));
 
     // Display form: check that options are displayed correctly.

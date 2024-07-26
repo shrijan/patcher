@@ -71,25 +71,15 @@ final class ComponentNodeVisitor implements NodeVisitorInterface {
       new Node([new ConstantExpression($component_id, $line)]),
       $line
     ), $line);
-
-    // Append the print nodes to the display_start node.
-    $node->setNode(
-      'display_start',
-      new Node([
-        $node->getNode('display_start'),
-        ...$print_nodes,
-      ]),
-    );
-
+    foreach ($print_nodes as $index => $print_node) {
+      $node->getNode('display_start')->setNode((string) $index, $print_node);
+    }
     if ($env->isDebug()) {
-      // Append the closing comment to the display_end node.
-      $node->setNode(
-        'display_end',
-        new Node([
-          new PrintNode(new ConstantExpression(sprintf('<!-- %s Component end: %s -->', $emoji, $component_id), $line), $line),
-          $node->getNode('display_end'),
-        ])
-      );
+      $node->getNode('display_end')
+        ->setNode(
+          '0',
+          new PrintNode(new ConstantExpression(sprintf('<!-- %s Component end: %s -->', $emoji, $component_id), $line), $line)
+        );
     }
     // Slots can be validated at compile time, we don't need to add nodes to
     // execute functions during display with the actual data.
@@ -165,7 +155,7 @@ final class ComponentNodeVisitor implements NodeVisitorInterface {
     $error_messages = [];
     if (!empty($undocumented_ids)) {
       $error_messages[] = sprintf(
-        'We found an unexpected slot that is not declared: [%s]. Declare them in "%s.component.yml".',
+        'We found an unexpected slot that is not declared: [%s]. Please declare them in "%s.component.yml".',
         implode(', ', $undocumented_ids),
         $component->machineName
       );

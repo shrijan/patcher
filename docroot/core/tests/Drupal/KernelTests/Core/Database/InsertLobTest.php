@@ -2,6 +2,8 @@
 
 namespace Drupal\KernelTests\Core\Database;
 
+use Drupal\Component\Render\FormattableMarkup;
+
 /**
  * Tests the Insert query builder with LOB fields.
  *
@@ -19,7 +21,7 @@ class InsertLobTest extends DatabaseTestBase {
       ->fields(['blob1' => $data])
       ->execute();
     $r = $this->connection->query('SELECT * FROM {test_one_blob} WHERE [id] = :id', [':id' => $id])->fetchAssoc();
-    $this->assertSame($data, $r['blob1'], "Can insert a blob: id $id, " . serialize($r));
+    $this->assertSame($data, $r['blob1'], new FormattableMarkup('Can insert a blob: id @id, @data.', ['@id' => $id, '@data' => serialize($r)]));
   }
 
   /**

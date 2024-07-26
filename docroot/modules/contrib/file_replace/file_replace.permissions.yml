@@ -1,4 +1,4 @@
 replace files:
   title: 'Replace files'
   description: 'Replace files.'
-  restrict access: true
+  restrict access: false

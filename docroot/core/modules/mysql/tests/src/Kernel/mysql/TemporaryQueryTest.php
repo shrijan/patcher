@@ -23,7 +23,7 @@ class TemporaryQueryTest extends TemporaryQueryTestBase {
 
     // Assert that the table is indeed a temporary one.
     $temporary_table_info = $connection->query("SHOW CREATE TABLE {" . $table_name_test . "}")->fetchAssoc();
-    $this->assertStringContainsString('CREATE TEMPORARY TABLE', $temporary_table_info['Create Table']);
+    $this->stringContains($temporary_table_info["Create Table"], "CREATE TEMPORARY TABLE");
 
     // Assert that both have the same field names.
     $normal_table_fields = $connection->query("SELECT * FROM {test}")->fetch();

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Composer\Plugin\VendorHardening;
 
 use Composer\Composer;
@@ -113,7 +111,8 @@ class VendorHardeningPluginTest extends TestCase {
       ->method('getAllCleanupPaths')
       ->willReturn(['drupal/package' => ['tests']]);
 
-    $package = $this->createMock(PackageInterface::class);
+    $package = $this->getMockBuilder(PackageInterface::class)
+      ->getMockForAbstractClass();
     $package->expects($this->any())
       ->method('getName')
       ->willReturn('drupal/package');

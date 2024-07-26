@@ -35,11 +35,7 @@ class ValidKeysConstraintValidator extends ConstraintValidator {
       $constraint->getAllowedKeys($this->context)
     );
     foreach ($invalid_keys as $key) {
-      $this->context->buildViolation($constraint->invalidKeyMessage)
-        ->setParameter('@key', $key)
-        ->atPath($key)
-        ->setInvalidValue($key)
-        ->addViolation();
+      $this->context->addViolation($constraint->invalidKeyMessage, ['@key' => $key]);
     }
   }
 

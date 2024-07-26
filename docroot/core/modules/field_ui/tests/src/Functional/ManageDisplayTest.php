@@ -17,7 +17,6 @@ use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
  * Tests the Field UI "Manage display" and "Manage form display" screens.
  *
  * @group field_ui
- * @group #slow
  */
 class ManageDisplayTest extends BrowserTestBase {
 
@@ -80,7 +79,7 @@ class ManageDisplayTest extends BrowserTestBase {
     $this->drupalLogin($admin_user);
 
     // Create content type, with underscores.
-    $type_name = $this->randomMachineName(8) . '_test';
+    $type_name = strtolower($this->randomMachineName(8)) . '_test';
     $type = $this->drupalCreateContentType(['name' => $type_name, 'type' => $type_name]);
     $this->type = $type->id();
 
@@ -88,7 +87,7 @@ class ManageDisplayTest extends BrowserTestBase {
     $vocabulary = Vocabulary::create([
       'name' => $this->randomMachineName(),
       'description' => $this->randomMachineName(),
-      'vid' => $this->randomMachineName(),
+      'vid' => mb_strtolower($this->randomMachineName()),
       'langcode' => LanguageInterface::LANGCODE_NOT_SPECIFIED,
       'help' => '',
       'nodes' => ['article' => 'article'],
@@ -108,7 +107,7 @@ class ManageDisplayTest extends BrowserTestBase {
     // For this test, use a formatter setting value that is an integer unlikely
     // to appear in a rendered node other than as part of the field being tested
     // (for example, unlikely to be part of the "Submitted by ... on ..." line).
-    $value = '12345';
+    $value = 12345;
     $settings = [
       'type' => $this->type,
       'field_test' => [['value' => $value]],
@@ -246,12 +245,12 @@ class ManageDisplayTest extends BrowserTestBase {
     $this->assertOrderInPage(['RSS', 'Teaser']);
 
     $edit = [
-      'label' => 'Breezier',
+      'label' => 'Breezer',
     ];
     $this->drupalGet('admin/structure/display-modes/view/manage/node.teaser');
     $this->submitForm($edit, 'Save');
 
-    $this->assertOrderInPage(['Breezier', 'RSS']);
+    $this->assertOrderInPage(['Breezer', 'RSS']);
   }
 
   /**

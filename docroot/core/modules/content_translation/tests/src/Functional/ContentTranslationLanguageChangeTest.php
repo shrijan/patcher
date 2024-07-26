@@ -2,7 +2,9 @@
 
 namespace Drupal\Tests\content_translation\Functional;
 
-use Drupal\Tests\content_translation\Traits\ContentTranslationTestTrait;
+use Drupal\Core\Language\LanguageInterface;
+use Drupal\language\Entity\ConfigurableLanguage;
+use Drupal\language\Entity\ContentLanguageSettings;
 use Drupal\Tests\image\Kernel\ImageFieldCreationTrait;
 use Drupal\Tests\node\Functional\NodeTestBase;
 use Drupal\Tests\TestFileCreationTrait;
@@ -14,7 +16,6 @@ use Drupal\Tests\TestFileCreationTrait;
  */
 class ContentTranslationLanguageChangeTest extends NodeTestBase {
 
-  use ContentTranslationTestTrait;
   use ImageFieldCreationTrait;
   use TestFileCreationTrait {
     getTestFiles as drupalGetTestFiles;
@@ -47,7 +48,7 @@ class ContentTranslationLanguageChangeTest extends NodeTestBase {
     parent::setUp();
     $langcodes = ['de', 'fr'];
     foreach ($langcodes as $langcode) {
-      static::createLanguageFromLangcode($langcode);
+      ConfigurableLanguage::createFromLangcode($langcode)->save();
     }
     $this->drupalPlaceBlock('local_tasks_block');
     $user = $this->drupalCreateUser([
@@ -65,8 +66,17 @@ class ContentTranslationLanguageChangeTest extends NodeTestBase {
     ]);
     $this->drupalLogin($user);
 
-    // Enable translations for article.
-    $this->enableContentTranslation('node', 'article');
+    // Enable translation for article.
+    $config = ContentLanguageSettings::loadByEntityTypeBundle('node', 'article');
+    $config->setDefaultLangcode(LanguageInterface::LANGCODE_SITE_DEFAULT);
+    $config->setLanguageAlterable(TRUE);
+    $config->save();
+
+    $content_translation_manager = $this->container->get('content_translation.manager');
+    $content_translation_manager->setEnabled('node', 'article', TRUE);
+    $content_translation_manager->setBundleTranslationSettings('node', 'article', [
+      'untranslatable_fields_hide' => FALSE,
+    ]);
 
     $this->rebuildContainer();
 

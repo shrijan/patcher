@@ -407,8 +407,8 @@ class PoStreamReader implements PoStreamInterface, PoReaderInterface {
         }
 
         // Extract the plurality.
-        $from_bracket = strstr($line, '[');
-        $this->currentPluralIndex = substr($from_bracket, 1, strpos($from_bracket, ']') - 1);
+        $frombracket = strstr($line, '[');
+        $this->currentPluralIndex = substr($frombracket, 1, strpos($frombracket, ']') - 1);
 
         // Skip to the next whitespace and trim away any further whitespace,
         // bringing $line to the message text only.

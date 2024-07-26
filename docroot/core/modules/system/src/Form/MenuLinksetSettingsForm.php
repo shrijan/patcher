@@ -2,8 +2,6 @@
 
 namespace Drupal\system\Form;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteBuilderInterface;
@@ -15,21 +13,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class MenuLinksetSettingsForm extends ConfigFormBase {
 
   /**
-   * Constructs a MenuLinksetSettingsForm object.
+   * Constructs the routerBuilder service.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The factory for configuration objects.
-   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
-   *   The typed config manager.
    * @param \Drupal\Core\Routing\RouteBuilderInterface $routerBuilder
    *   The router builder service.
    */
-  public function __construct(
-    ConfigFactoryInterface $config_factory,
-    TypedConfigManagerInterface $typedConfigManager,
-    protected readonly RouteBuilderInterface $routerBuilder
-  ) {
-    parent::__construct($config_factory, $typedConfigManager);
+  public function __construct(protected readonly RouteBuilderInterface $routerBuilder) {
   }
 
   /**
@@ -37,8 +26,6 @@ class MenuLinksetSettingsForm extends ConfigFormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('config.factory'),
-      $container->get('config.typed'),
       $container->get('router.builder')
     );
   }

@@ -207,31 +207,26 @@
 
         $(window).on({
           'dialog:aftercreate': (event, dialog, $element, settings) => {
-            const toolbarBar = document.getElementById('toolbar-bar');
-            if (toolbarBar) {
-              toolbarBar.style.marginTop = '0';
+            const $toolbar = $('#toolbar-bar');
+            $toolbar.css('margin-top', '0');
 
-              // When off-canvas is positioned in top, toolbar has to be moved down.
-              if (settings.drupalOffCanvasPosition === 'top') {
-                const height = Drupal.offCanvas
+            // When off-canvas is positioned in top, toolbar has to be moved down.
+            if (settings.drupalOffCanvasPosition === 'top') {
+              const height = Drupal.offCanvas
+                .getContainer($element)
+                .outerHeight();
+              $toolbar.css('margin-top', `${height}px`);
+
+              $element.on('dialogContentResize.off-canvas', () => {
+                const newHeight = Drupal.offCanvas
                   .getContainer($element)
                   .outerHeight();
-                toolbarBar.style.marginTop = `${height}px`;
-
-                $element.on('dialogContentResize.off-canvas', () => {
-                  const newHeight = Drupal.offCanvas
-                    .getContainer($element)
-                    .outerHeight();
-                  toolbarBar.style.marginTop = `${newHeight}px`;
-                });
-              }
+                $toolbar.css('margin-top', `${newHeight}px`);
+              });
             }
           },
           'dialog:beforeclose': () => {
-            const toolbarBar = document.getElementById('toolbar-bar');
-            if (toolbarBar) {
-              toolbarBar.style.marginTop = '0';
-            }
+            $('#toolbar-bar').css('margin-top', '0');
           },
         });
       });

@@ -25,8 +25,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class VersionHistoryController extends ControllerBase {
 
-  const REVISIONS_PER_PAGE = 50;
-
   /**
    * Constructs a new VersionHistoryController.
    *
@@ -215,7 +213,6 @@ class VersionHistoryController extends ControllerBase {
       ->allRevisions()
       ->condition($entityType->getKey('id'), $entity->id())
       ->sort($entityType->getKey('revision'), 'DESC')
-      ->pager(self::REVISIONS_PER_PAGE)
       ->execute();
 
     $currentLangcode = $this->languageManager
@@ -225,7 +222,7 @@ class VersionHistoryController extends ControllerBase {
       // Only show revisions that are affected by the language that is being
       // displayed.
       if (!$translatable || ($revision->hasTranslation($currentLangcode) && $revision->getTranslation($currentLangcode)->isRevisionTranslationAffected())) {
-        yield ($translatable ? $revision->getTranslation($currentLangcode) : $revision);
+        yield $revision;
       }
     }
   }
@@ -251,8 +248,6 @@ class VersionHistoryController extends ControllerBase {
     foreach ($this->loadRevisions($entity) as $revision) {
       $build['entity_revisions_table']['#rows'][$revision->getRevisionId()] = $this->buildRow($revision);
     }
-
-    $build['pager'] = ['#type' => 'pager'];
 
     (new CacheableMetadata())
       // Only dealing with this entity and no external dependencies.

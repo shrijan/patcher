@@ -1,0 +1,81 @@
+diff --git a/docroot/modules/contrib/entity_usage/entity_usage.module b/docroot/modules/contrib/entity_usage/entity_usage.module
+index 6556436..ea95193 100644
+--- a/docroot/modules/contrib/entity_usage/entity_usage.module
++++ b/docroot/modules/contrib/entity_usage/entity_usage.module
+@@ -100,9 +100,6 @@ function entity_usage_form_alter(&$form, FormStateInterface $form_state, $form_i
+     return;
+   }
+   $usage_data = \Drupal::service('entity_usage.usage')->listSources($entity);
+-  if (empty($usage_data)) {
+-    return;
+-  }
+   // Check for the edit warning.
+   if (method_exists($form_object, 'getOperation')
+     && $form_object->getOperation() === 'edit'
+@@ -134,21 +131,50 @@ function entity_usage_form_alter(&$form, FormStateInterface $form_state, $form_i
+       }
+     }
+     if ($is_delete_form) {
+-      $form['entity_usage_delete_warning'] = [
+-        '#theme' => 'status_messages',
+-        '#message_list' => [
+-          'warning' => [
+-            t('There are <a href="@usage_url" target="_blank">recorded usages</a> of this entity.', [
+-              '@usage_url' => Url::fromRoute('entity_usage.usage_list', [
+-                'entity_type' => $entity->getEntityTypeId(),
+-                'entity_id' => $entity->id(),
+-              ])->toString(),
+-            ])
++      $usage_data = \Drupal::service('entity_usage.usage')->listSources($entity);
++      $entity_type = $form_object->getEntity()->getEntityType();
++      $trash_url = Url::fromRoute('trash.admin_content_trash_entity_type', [
++        'entity_type_id' => $entity_type->id(),
++      ])->toString();
++      //To get rid of 'action cannot be done' message
++      $form['description']['#markup']='';
++      if (!empty($usage_data)) {
++        $form['#attached']['drupalSettings']['mediaFileDelete']['usageDataAvailable'] = TRUE;
++        $form['actions']['submit']['#attributes']['disabled'] = 'disabled';
++        $form['entity_usage_delete_warning'] = [
++          '#theme' => 'status_messages',
++          '#message_list' => [
++            'warning' => [
++              t('There are <a href="@usage_url" target="_blank">recorded usages</a> of this asset on this website. Please use the link provided to remove or unpublish all usages of this asset, then try again.', [
++                '@usage_url' => Url::fromRoute('entity_usage.usage_list', [
++                  'entity_type' => $entity->getEntityTypeId(),
++                  'entity_id' => $entity->id(),
++                ])->toString(),
++              ])
++            ],
++          ],
++          '#status_headings' => ['warning' => t('Warning message')],
++          '#weight' => -201,
++        ];
++      }else{
++       $form['#attached']['drupalSettings']['mediaFileDelete']['usageDataAvailable'] = FALSE;
++        $form['entity_usage_delete_warning'] = [
++          '#theme' => 'status_messages',
++          '#message_list' => [
++            'warning' => [
++              t('There are no recorded usages of this asset. Once deletion is confirmed, it will be unpublished and moved to Trash. The asset can be purged or restored from the <a href="@trash_url">Trash</a> menu, otherwise it will <a href="@trash_url">automatically be deleted from Trash in 30 days</a>.', [
++                '@usage_url' => Url::fromRoute('entity_usage.usage_list', [
++                  'entity_type' => $entity->getEntityTypeId(),
++                  'entity_id' => $entity->id(),
++                ])->toString(),
++                '@trash_url' => $trash_url,
++              ])
++            ],
+           ],
+-        ],
+-        '#status_headings' => ['warning' => t('Warning message')],
+-        '#weight' => -201,
+-      ];
++          '#status_headings' => ['warning' => t('Warning message')],
++          '#weight' => -201,
++        ];
++      }
+     }
+   }
+-}
++}
+\ No newline at end of file

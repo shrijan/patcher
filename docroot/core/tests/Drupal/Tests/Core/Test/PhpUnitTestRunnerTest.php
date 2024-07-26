@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Core\Test;
 
 use Drupal\Core\Test\PhpUnitTestRunner;
@@ -30,7 +28,7 @@ class PhpUnitTestRunnerTest extends UnitTestCase {
     // Create a mock test run storage.
     $storage = $this->getMockBuilder(SimpletestTestRunResultsStorage::class)
       ->disableOriginalConstructor()
-      ->onlyMethods(['createNew'])
+      ->setMethods(['createNew'])
       ->getMock();
 
     // Set some expectations for createNew().

@@ -12,7 +12,6 @@ use Drupal\Tests\BrowserTestBase;
  * Tests deleting a revision with revision delete form.
  *
  * @group Entity
- * @group #slow
  * @coversDefaultClass \Drupal\Core\Entity\Form\RevisionDeleteForm
  */
 class RevisionDeleteFormTest extends BrowserTestBase {
@@ -52,7 +51,6 @@ class RevisionDeleteFormTest extends BrowserTestBase {
    * @dataProvider providerPageTitle
    */
   public function testPageTitle(string $entityTypeId, string $expectedQuestion): void {
-    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
     $storage = \Drupal::entityTypeManager()->getStorage($entityTypeId);
 
     $entity = $storage->create([
@@ -97,7 +95,7 @@ class RevisionDeleteFormTest extends BrowserTestBase {
    *
    * @covers \Drupal\Core\Entity\EntityAccessControlHandler::checkAccess
    */
-  public function testAccessDeleteLatestDefault(): void {
+  public function testAccessDeleteLatest(): void {
     /** @var \Drupal\entity_test\Entity\EntityTestRev $entity */
     $entity = EntityTestRev::create();
     $entity->setName('delete revision');
@@ -108,32 +106,6 @@ class RevisionDeleteFormTest extends BrowserTestBase {
 
     $this->drupalGet($entity->toUrl('revision-delete-form'));
     $this->assertSession()->statusCodeEquals(403);
-  }
-
-  /**
-   * Ensure that forward revision can be deleted.
-   *
-   * @covers \Drupal\Core\Entity\EntityAccessControlHandler::checkAccess
-   */
-  public function testAccessDeleteLatestForwardRevision(): void {
-    /** @var \Drupal\entity_test\Entity\EntityTestRevPub $entity */
-    $entity = EntityTestRevPub::create();
-    $entity->setName('delete revision');
-    $entity->save();
-
-    $entity->isDefaultRevision(TRUE);
-    $entity->setPublished();
-    $entity->setNewRevision();
-    $entity->save();
-
-    $entity->isDefaultRevision(FALSE);
-    $entity->setUnpublished();
-    $entity->setNewRevision();
-    $entity->save();
-
-    $this->drupalGet($entity->toUrl('revision-delete-form'));
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertTrue($entity->access('delete revision', $this->rootUser, FALSE));
   }
 
   /**
@@ -159,16 +131,14 @@ class RevisionDeleteFormTest extends BrowserTestBase {
     $entity->save();
 
     // Reload the entity.
-    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
-    $storage = \Drupal::entityTypeManager()->getStorage('entity_test_revpub');
     /** @var \Drupal\entity_test\Entity\EntityTestRevPub $revision */
-    $revision = $storage->loadRevision($revisionId);
+    $revision = \Drupal::entityTypeManager()->getStorage('entity_test_revpub')
+      ->loadRevision($revisionId);
     // Check default but not latest.
     $this->assertTrue($revision->isDefaultRevision());
     $this->assertFalse($revision->isLatestRevision());
-    $this->drupalGet($revision->toUrl('revision-delete-form'));
+    $this->drupalGet($entity->toUrl('revision-delete-form'));
     $this->assertSession()->statusCodeEquals(403);
-    $this->assertFalse($revision->access('delete revision', $this->rootUser, FALSE));
   }
 
   /**
@@ -188,12 +158,10 @@ class RevisionDeleteFormTest extends BrowserTestBase {
     $entity->save();
 
     // Reload the entity.
-    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
-    $storage = \Drupal::entityTypeManager()->getStorage('entity_test_rev');
-    $revision = $storage->loadRevision($revisionId);
+    $revision = \Drupal::entityTypeManager()->getStorage('entity_test_rev')
+      ->loadRevision($revisionId);
     $this->drupalGet($revision->toUrl('revision-delete-form'));
     $this->assertSession()->statusCodeEquals(200);
-    $this->assertTrue($revision->access('delete revision', $this->rootUser, FALSE));
   }
 
   /**
@@ -222,7 +190,6 @@ class RevisionDeleteFormTest extends BrowserTestBase {
     if (count($permissions) > 0) {
       $this->drupalLogin($this->createUser($permissions));
     }
-    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
     $storage = \Drupal::entityTypeManager()->getStorage($entityTypeId);
 
     $entity = $storage->create([

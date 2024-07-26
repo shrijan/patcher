@@ -56,8 +56,8 @@ class DeleteMultipleFormTest extends BrowserTestBase {
    * Tests the delete form for translatable entities.
    */
   public function testTranslatableEntities() {
-    ConfigurableLanguage::createFromLangcode('es')->save();
-    ConfigurableLanguage::createFromLangcode('fr')->save();
+    ConfigurableLanguage::create(['id' => 'es'])->save();
+    ConfigurableLanguage::create(['id' => 'fr'])->save();
 
     $selection = [];
 

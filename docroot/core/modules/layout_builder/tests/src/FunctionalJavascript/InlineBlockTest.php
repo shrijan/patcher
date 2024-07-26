@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
@@ -11,7 +9,6 @@ use Drupal\node\Entity\Node;
  * Tests that the inline block feature works correctly.
  *
  * @group layout_builder
- * @group #slow
  */
 class InlineBlockTest extends InlineBlockTestBase {
 

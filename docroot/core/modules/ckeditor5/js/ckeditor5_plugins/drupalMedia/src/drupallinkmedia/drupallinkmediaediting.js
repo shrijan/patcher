@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-/* cspell:ignore drupallinkmediaediting linkediting linkimageediting linkcommand */
+/* cspell:words drupallinkmediaediting linkediting linkimageediting linkcommand */
 import { Plugin } from 'ckeditor5/src/core';
 import { Matcher } from 'ckeditor5/src/engine';
 import { toMap } from 'ckeditor5/src/utils';
@@ -53,7 +53,7 @@ function upcastMediaLink() {
         const linkHref = viewLink.getAttribute('href');
 
         // Missing the `href` attribute.
-        if (linkHref === null) {
+        if (!linkHref) {
           return;
         }
 

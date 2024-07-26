@@ -32,7 +32,6 @@ class EntityReferenceSelectionSortTest extends EntityKernelTestBase {
     // Create an Article node type.
     $article = NodeType::create([
       'type' => 'article',
-      'name' => 'Article',
     ]);
     $article->save();
 

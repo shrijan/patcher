@@ -2,4 +2,5 @@ name: Announcements
 type: module
 description: Displays announcements from the Drupal community.
 version: VERSION
-package: Core
+package: Core (Experimental)
+lifecycle: experimental

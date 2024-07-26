@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests;
 
 use Behat\Mink\Driver\BrowserKitDriver;
@@ -39,12 +37,6 @@ trait ApiRequestTrait {
    * @see \GuzzleHttp\ClientInterface::request()
    */
   protected function makeApiRequest($method, Url $url, array $request_options) {
-    // HEAD requests do not have bodies. If one is specified, Guzzle will not
-    // ignore it and the request will be treated as GET with an overridden
-    // method string, and libcurl will expect to read a response body.
-    if ($method === 'HEAD' && array_key_exists('body', $request_options)) {
-      unset($request_options['body']);
-    }
     $this->refreshVariables();
     $request_options[RequestOptions::HTTP_ERRORS] = FALSE;
     $request_options[RequestOptions::ALLOW_REDIRECTS] = FALSE;

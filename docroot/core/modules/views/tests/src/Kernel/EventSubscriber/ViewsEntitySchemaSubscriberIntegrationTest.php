@@ -12,7 +12,6 @@ use Drupal\Tests\views\Kernel\ViewsKernelTestBase;
  * Tests \Drupal\views\EventSubscriber\ViewsEntitySchemaSubscriber.
  *
  * @group Views
- * @group #slow
  */
 class ViewsEntitySchemaSubscriberIntegrationTest extends ViewsKernelTestBase {
 

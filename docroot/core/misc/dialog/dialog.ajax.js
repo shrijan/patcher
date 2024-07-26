@@ -38,16 +38,8 @@
           $dialog.trigger('dialogButtonsChange');
         }
 
-        setTimeout(function () {
-          // Account for pre-existing focus handling that may have already moved
-          // the focus inside the dialog.
-          if (!$dialog[0].contains(document.activeElement)) {
-            // Move focus to the first focusable element in the next event loop
-            // to allow dialog buttons to be changed first.
-            $dialog.dialog('instance')._focusedElement = null;
-            $dialog.dialog('instance')._focusTabbable();
-          }
-        }, 0);
+        // Force focus on the modal when the behavior is run.
+        $dialog.dialog('widget').trigger('focus');
       }
 
       const originalClose = settings.dialog.close;
@@ -94,27 +86,25 @@
     prepareDialogButtons($dialog) {
       const buttons = [];
       const $buttons = $dialog.find(
-        '.form-actions input[type=submit], .form-actions a.button, .form-actions a.action-link',
+        '.form-actions input[type=submit], .form-actions a.button',
       );
       $buttons.each(function () {
-        const $originalButton = $(this);
-        this.style.display = 'none';
+        const $originalButton = $(this).css({ display: 'none' });
         buttons.push({
           text: $originalButton.html() || $originalButton.attr('value'),
           class: $originalButton.attr('class'),
-          'data-once': $originalButton.data('once'),
           click(e) {
             // If the original button is an anchor tag, triggering the "click"
             // event will not simulate a click. Use the click method instead.
-            if ($originalButton[0].tagName === 'A') {
+            if ($originalButton.is('a')) {
               $originalButton[0].click();
             } else {
               $originalButton
                 .trigger('mousedown')
                 .trigger('mouseup')
                 .trigger('click');
+              e.preventDefault();
             }
-            e.preventDefault();
           },
         });
       });
@@ -160,19 +150,8 @@
     ajax.commands.insert(ajax, response, status);
 
     // Move the buttons to the jQuery UI dialog buttons area.
-    response.dialogOptions = response.dialogOptions || {};
-    if (typeof response.dialogOptions.drupalAutoButtons === 'undefined') {
+    if (!response.dialogOptions.buttons) {
       response.dialogOptions.drupalAutoButtons = true;
-    } else if (response.dialogOptions.drupalAutoButtons === 'false') {
-      response.dialogOptions.drupalAutoButtons = false;
-    } else {
-      response.dialogOptions.drupalAutoButtons =
-        !!response.dialogOptions.drupalAutoButtons;
-    }
-    if (
-      !response.dialogOptions.buttons &&
-      response.dialogOptions.drupalAutoButtons
-    ) {
       response.dialogOptions.buttons =
         Drupal.behaviors.dialog.prepareDialogButtons($dialog);
     }

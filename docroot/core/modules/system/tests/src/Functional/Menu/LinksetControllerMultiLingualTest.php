@@ -197,7 +197,7 @@ final class LinksetControllerMultiLingualTest extends LinksetControllerTestBase 
   }
 
   /**
-   * Test core functions of the linkset for multilingual behavior.
+   * Test core functions of the linkset for multilingual behaviour.
    *
    * @throws \Exception
    */
@@ -210,7 +210,7 @@ final class LinksetControllerMultiLingualTest extends LinksetControllerTestBase 
   }
 
   /**
-   * Test core functions of the linkset for multilingual behavior.
+   * Test core functions of the linkset for multilingual behaviour.
    *
    * @throws \Exception
    */

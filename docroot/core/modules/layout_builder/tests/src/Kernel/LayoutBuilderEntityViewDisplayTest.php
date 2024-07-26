@@ -9,7 +9,6 @@ use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
  * @coversDefaultClass \Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay
  *
  * @group layout_builder
- * @group #slow
  */
 class LayoutBuilderEntityViewDisplayTest extends SectionListTestBase {
 

@@ -2,7 +2,7 @@
 
 namespace Drupal\Component\Transliteration;
 
-// cspell:ignore Brion Vibber
+// cspell:ignore vibber
 
 /**
  * Implements transliteration without using the PECL extensions.

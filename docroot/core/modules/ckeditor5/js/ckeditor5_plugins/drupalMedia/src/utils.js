@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-// cspell:ignore documentselection
+// cSpell:words documentselection
 import { isWidget } from 'ckeditor5/src/widget';
 
 /**

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\Core\Form;
 
 use Drupal\Core\Form\FormState;
@@ -373,7 +371,10 @@ class FormValidatorTest extends UnitTestCase {
    * @dataProvider providerTestPerformRequiredValidation
    */
   public function testPerformRequiredValidation($element, $expected_message, $call_watchdog) {
-    $form_validator = new FormValidator(new RequestStack(), $this->getStringTranslationStub(), $this->csrfToken, $this->logger, $this->formErrorHandler);
+    $form_validator = $this->getMockBuilder('Drupal\Core\Form\FormValidator')
+      ->setConstructorArgs([new RequestStack(), $this->getStringTranslationStub(), $this->csrfToken, $this->logger, $this->formErrorHandler])
+      ->addMethods(['setError'])
+      ->getMock();
 
     if ($call_watchdog) {
       $this->logger->expects($this->once())

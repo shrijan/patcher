@@ -1,6 +1,9 @@
 <?php
 
-declare(strict_types=1);
+/**
+ * @file
+ * Contains \Drupal\Tests\field\Unit\FieldStorageConfigEntityUnitTest.
+ */
 
 namespace Drupal\Tests\field\Unit;
 

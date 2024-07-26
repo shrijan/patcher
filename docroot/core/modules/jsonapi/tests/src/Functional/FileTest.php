@@ -15,7 +15,6 @@ use GuzzleHttp\RequestOptions;
  * JSON:API integration test for the "File" content entity type.
  *
  * @group jsonapi
- * @group #slow
  */
 class FileTest extends ResourceTestBase {
 

@@ -61,9 +61,7 @@ class EntityRevisionParamConverter implements ParamConverterInterface {
    */
   public function convert($value, $definition, $name, array $defaults) {
     $entity_type_id = $this->getEntityTypeFromDefaults($definition, $name, $defaults);
-    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
-    $storage = $this->entityTypeManager->getStorage($entity_type_id);
-    $entity = $storage->loadRevision($value);
+    $entity = $this->entityTypeManager->getStorage($entity_type_id)->loadRevision($value);
 
     // If the entity type is translatable, ensure we return the proper
     // translation object for the current context.

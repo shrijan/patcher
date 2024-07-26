@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\system\FunctionalJavascript;
 
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
@@ -38,6 +36,7 @@ abstract class OffCanvasTestBase extends WebDriverTestBase {
    * the page is received.
    */
   protected function assertPageLoadComplete() {
+    $this->assertSession()->assertWaitOnAjaxRequest();
     if ($this->loggedInUser && $this->loggedInUser->hasPermission('access contextual links')) {
       $this->assertAllContextualLinksLoaded();
     }

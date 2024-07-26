@@ -4,8 +4,6 @@ namespace Drupal\Tests\block_content\Kernel\Plugin\migrate\source\d7;
 
 use Drupal\Tests\migrate\Kernel\MigrateSqlSourceTestBase;
 
-// cspell:ignore objectid objectindex
-
 /**
  * Tests i18n content block translations source plugin.
  *

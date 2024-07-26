@@ -10,7 +10,6 @@ use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
  * Tests validation of Layout Builder's entity_view_display entities.
  *
  * @group layout_builder
- * @group #slow
  */
 class LayoutBuilderEntityViewDisplayValidationTest extends ConfigEntityValidationTestBase {
 
@@ -38,15 +37,6 @@ class LayoutBuilderEntityViewDisplayValidationTest extends ConfigEntityValidatio
       'bundle' => 'user',
     ]);
     $this->entity->save();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function testLabelValidation(): void {
-    // @todo Remove this override in https://www.drupal.org/i/2939931. The label of Layout Builder's EntityViewDisplay override is computed dynamically, that issue will change this.
-    // @see \Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay::label()
-    $this->markTestSkipped();
   }
 
 }
