@@ -3,4 +3,5 @@ services:
     class: Drupal\purge_queuer_coretags\CacheTagsQueuer
     tags:
       - { name: cache_tags_invalidator }
-    arguments: ['@service_container']
+    calls:
+      - [setContainer, ['@service_container']]

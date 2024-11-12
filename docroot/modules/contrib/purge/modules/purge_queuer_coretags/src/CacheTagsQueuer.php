@@ -5,29 +5,14 @@ namespace Drupal\purge_queuer_coretags;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\purge\Plugin\Purge\Invalidation\Exception\TypeUnsupportedException;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 /**
  * Queues invalidated cache tags.
  */
-class CacheTagsQueuer implements CacheTagsInvalidatorInterface {
-
-  /**
-   * The container service.
-   *
-   * @var \Symfony\Component\DependencyInjection\ContainerInterface
-   */
-  protected $container;
-
-  /**
-   * Construct the Cache Tags Queuer.
-   *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *   The container service.
-   */
-  public function __construct(ContainerInterface $container) {
-    $this->container = $container;
-  }
+class CacheTagsQueuer implements CacheTagsInvalidatorInterface, ContainerAwareInterface {
+  use ContainerAwareTrait;
 
   /**
    * A list of tag prefixes that should not go into the queue.

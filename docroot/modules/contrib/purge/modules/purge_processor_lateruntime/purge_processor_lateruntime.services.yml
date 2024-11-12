@@ -3,4 +3,5 @@ services:
     class: Drupal\purge_processor_lateruntime\EventSubscriber\LateRuntimeProcessor
     tags:
       - { name: event_subscriber }
-    arguments: ['@service_container']
+    calls:
+      - [setContainer, ['@service_container']]
