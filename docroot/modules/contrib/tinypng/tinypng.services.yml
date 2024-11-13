@@ -1,0 +1,20 @@
+services:
+  tinypng.compress:
+    class: Drupal\tinypng\TinyPng
+    arguments:
+      - '@config.factory'
+      - '@file_system'
+      - '@file_url_generator'
+
+  tinypng.route_subscriber:
+    class: Drupal\tinypng\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }
+
+  tinypng.image_handler:
+    class: Drupal\tinypng\TinyPngImageHandler
+    arguments:
+      - '@tinypng.compress'
+      - '@config.factory'
+      - '@image.factory'
+      - '@logger.factory'

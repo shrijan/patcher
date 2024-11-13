@@ -1,0 +1,9 @@
+langcode: en
+status: true
+name: 'Views Sort Null Field Test Content'
+type: views_sort_null_field_content
+description: 'Content type used for testing the basic functionality of the Views Sort Null Field module.'
+help: ''
+new_revision: false
+preview_mode: 1
+display_submitted: true

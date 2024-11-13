@@ -1,0 +1,39 @@
+<?php
+
+/**
+ * @file
+ * Hook implementation file for Hierarchical Term Formatter.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function hierarchical_term_formatter_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.hierarchical_term_formatter':
+      $output = '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('This module provides hierarchical term formatters for taxonomy reference fields. In other words, it can display a taxonomy term reference on, say, a node as Parent > Child, rather than just Child.') . '</p>';
+      $output .= '<h3>' . t('Usage') . '</h3>';
+      $output .= '<p>' . t('Install and enable the module. Go to Admin » Structure » Content types and open the Display settings page for a taxonomy term field. (Taxonomy term fields may also be available on other entities than nodes.)') . '</p>';
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function hierarchical_term_formatter_theme($existing, $type, $theme, $path) {
+  return [
+    'hierarchical_term_formatter' => [
+      'variables' => [
+        'terms' => [],
+        'wrapper' => '',
+        'separator' => ' » ',
+        'link' => FALSE,
+      ],
+      'file' => 'hierarchical_term_formatter.theme.inc',
+    ],
+  ];
+}

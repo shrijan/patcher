@@ -1,0 +1,10 @@
+name: Search and Replace Scanner
+type: module
+description: Perform search and replace on chosen text fields.
+core_version_requirement: '^9 | ^10'
+configure: scanner.admin_config
+
+# Information added by Drupal.org packaging script on 2023-05-17
+version: '8.x-1.0-rc7'
+project: 'scanner'
+datestamp: 1684337147

@@ -1,0 +1,16 @@
+diff --git docroot/modules/contrib/purge/config/schema/purge.schema.yml docroot/modules/contrib/purge/config/schema/purge.schema.yml
+index bada222d..277f4715 100644
+--- docroot/modules/contrib/purge/config/schema/purge.schema.yml
++++ docroot/modules/contrib/purge/config/schema/purge.schema.yml
+@@ -1,4 +1,11 @@
+  # Schema for the configuration files of the Purge module.
++purge.settings:
++  type: config_object
++  label: 'Purge settings'
++  mapping:
++    simplification_logic:
++      type: boolean
++      label: 'Enable simplification logic'
+ purge.logger_channels:
+  type: config_object
+  label: 'Purge logger channels'

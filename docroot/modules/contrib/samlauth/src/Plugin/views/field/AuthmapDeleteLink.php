@@ -74,7 +74,7 @@ class AuthmapDeleteLink extends LinkBase {
     // referer headers. (The confirm form will need to recalculate the hash(es)
     // in order to check which authname we're talking about - but assuming the
     // number of authnames per UID is low, that won't be too expensive.)
-    return Url::fromRoute('samlauth.authmap_delete_form', ['uid' => $row->users_field_data_authmap_uid]);
+    return Url::fromRoute('samlauth.authmap_delete_form', ['uid' => $row->authmap_uid]);
   }
 
   /**

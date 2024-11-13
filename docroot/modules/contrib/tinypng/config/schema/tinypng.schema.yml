@@ -1,0 +1,7 @@
+image.style.*.third_party.tinypng:
+  type: mapping
+  label: 'TinyPNG configuration'
+  mapping:
+    tinypng_compress:
+      type: boolean
+      label: 'Compress with TinyPNG'

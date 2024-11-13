@@ -1,0 +1,31 @@
+{
+  "name": "drupal/hierarchical_term_formatter",
+  "description": "This module provides hierarchical term formatters for taxonomy reference fields.",
+  "type": "drupal-module",
+  "license": "GPL-2.0-or-later",
+  "keywords": ["Drupal"],
+  "homepage": "https://www.drupal.org/project/hierarchical_term_formatter",
+  "authors": [
+    {
+      "name": "Aaron Wolfe (awolfey)",
+      "homepage": "https://www.drupal.org/u/awolfey",
+      "role": "Maintainer"
+    },
+    {
+      "name": "Ivan Bustos (ibustos)",
+      "homepage": "https://www.drupal.org/u/ibustos",
+      "role": "Maintainer"
+    },
+    {
+      "name": "Viktor Holovachek (AstonVictor)",
+      "homepage": "https://www.drupal.org/u/astonvictor",
+      "role": "Maintainer"
+    }
+  ],
+  "minimum-stability": "dev",
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/hierarchical_term_formatter",
+    "source": "https://git.drupalcode.org/project/hierarchical_term_formatter"
+  },
+  "require": { }
+}

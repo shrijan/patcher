@@ -1,0 +1,81 @@
+<?php
+
+/**
+ * @file
+ * TinyPng module.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\image\ImageStyleInterface;
+
+/**
+ * Implements hook_help().
+ */
+function tinypng_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.tinypng':
+      $output = '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('TinyPNG uses smart lossy compression techniques to reduce the file size of your PNG files. By selectively decreasing the number of colors in the image, fewer bytes are required to store the data. The effect is nearly invisible but it makes a very large difference in file size!') . '</p>';
+      $output .= '<p>' . t('Having installed the module, go to <b>/admin/config/tinypng</b> page and set your TinyPNG API key. On the same page you can select the mode you want to compress images.') . '</p>';
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_entity_presave().
+ *
+ * Process the image with TinyPNG service.
+ */
+function tinypng_entity_presave(EntityInterface $entity) {
+  /** @var \Drupal\tinypng\TinyPngImageHandlerInterface $service */
+  $service = \Drupal::service('tinypng.image_handler');
+  $service->hookEntityPresave($entity);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function tinypng_form_image_style_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $config = \Drupal::config('tinypng.settings');
+  if (
+    empty($config->get('api_key'))
+    || empty($config->get('image_action'))
+  ) {
+    return;
+  }
+
+  /** @var \Drupal\image\Form\ImageStyleEditForm $form_object */
+  $form_object = $form_state->getFormObject();
+
+  /** @var \Drupal\image\Entity\ImageStyle $image_style */
+  $image_style = $form_object->getEntity();
+
+  $form['tinypng_compress'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Compress with TinyPNG', [], ['context' => 'tinypng']),
+    '#default_value' => $image_style->getThirdPartySetting('tinypng', 'tinypng_compress'),
+    '#weight' => $form['effects']['#weight'] + 0.1,
+  ];
+  $form['#entity_builders'][] = 'tinypng_image_style_edit_form_builder';
+}
+
+/**
+ * Entity form builder to add the TinyPNG settings to ImageStyle.
+ *
+ * @param string $entity_type_id
+ *   Entity type ID.
+ * @param \Drupal\image\ImageStyleInterface $image_style
+ *   Edited ImageStyle instance.
+ * @param array $form
+ *   Entity form to alter.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   Form state.
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ */
+function tinypng_image_style_edit_form_builder($entity_type_id, ImageStyleInterface $image_style, array &$form, FormStateInterface $form_state) {
+  $image_style->setThirdPartySetting('tinypng', 'tinypng_compress', $form_state->getValue('tinypng_compress'));
+  $image_style->save();
+}

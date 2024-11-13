@@ -1,0 +1,13 @@
+name: Block IP Address
+type: module
+description: 'Enhances block visibility settings by adding IP Address options.'
+package: Other
+core: 8.x
+core_version_requirement: ^8 || ^9 || ^10
+dependencies:
+  - drupal:block
+
+# Information added by Drupal.org packaging script on 2022-07-14
+version: '8.x-1.0'
+project: 'block_ipaddress'
+datestamp: 1657797351

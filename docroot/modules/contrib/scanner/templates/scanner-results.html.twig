@@ -1,0 +1,31 @@
+<div>
+  <strong>{{ 'Search Results:'|t }}</strong><br />
+  <span>{{ 'Found @count matches.'|t({'@count': data.count}) }}</span>
+  {% for content_type, bundles in data.values %}
+    {% for bundle, fields in bundles %}
+      <h2>{{content_type | capitalize}} - {{bundle | capitalize}}</h2>
+      {% for field, values in fields %}
+        <h5>{{ 'Field: @field'|t({'@field': field}) }}</h5>
+        <ol>
+          {% for id, value in values %}
+            <li>
+              {{value.title}} | 
+              <a href="{{ path('entity.node.canonical', {'node':id}) }}">{{ 'view'|t }}</a> |
+              <a href="/node/{{id}}/edit">{{ 'edit'|t }}</a>
+            </li>
+            {% if value.field|length > 1 %}
+              <span>[{{ '@count matches in the field'|t({'@count': value.field|length})}}]</span>
+            {% else %}
+              <span>[{{ '@count match in the field'|t({'@count': value.field|length})}}]</span>
+            {% endif %}
+            <ul>
+              {% for idx, item in value.field %}
+                <li>{{ item|striptags('<strong>')|raw }}</li>
+              {% endfor %}
+            </ul>
+          {% endfor %}
+        </ol>
+      {% endfor %}
+    {% endfor %}
+  {% endfor %}
+</div>

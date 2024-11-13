@@ -25,11 +25,7 @@ class RequestContext extends SymfonyRequestContext {
    *   The current request stack.
    */
   public function fromRequestStack(RequestStack $request_stack) {
-    $request = $request_stack->getCurrentRequest();
-
-    if(!empty($request)) {
-      $this->fromRequest($request);
-    }
+    $this->fromRequest($request_stack->getCurrentRequest());
   }
 
   /**

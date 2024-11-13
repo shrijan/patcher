@@ -1,0 +1,11 @@
+name: Views Sort Null Field Test
+type: module
+description: Set up module for Views Sort Null Field testing.
+package: Testing
+dependencies:
+  - views_sort_null_field:views_sort_null_field
+
+# Information added by Drupal.org packaging script on 2024-05-12
+version: '8.x-1.3'
+project: 'views_sort_null_field'
+datestamp: 1715539941

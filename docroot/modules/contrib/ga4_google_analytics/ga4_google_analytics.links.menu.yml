@@ -1,0 +1,6 @@
+ga4_google_analytics.configure:
+  title: 'GA4 Google Analytics'
+  description: 'Configure the Google Analytics GA4 settings'
+  parent: system.admin_config_services
+  route_name: ga4_google_analytics.configure
+  menu_name: ga4-configuration

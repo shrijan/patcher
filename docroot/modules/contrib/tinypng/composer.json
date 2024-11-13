@@ -1,0 +1,17 @@
+{
+  "name": "drupal/tinypng",
+  "type": "drupal-module",
+  "license": "GPL-2.0+",
+  "description": "Compress images using the TinyPNG service",
+  "authors": [
+    {
+      "name": "Vince Tikász",
+      "email": "vince.tikasz@gmail.com"
+    }
+  ],
+  "require": {
+    "drupal/core": "^8 || ^9 || ^10",
+    "tinify/tinify": "^1"
+  },
+  "minimum-stability": "stable"
+}

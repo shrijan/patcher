@@ -1,0 +1,12 @@
+name: Views Sort Null Field
+type: module
+description: Provides a Views sort handler to sort fields by whether they are empty.
+dependencies:
+  - drupal:views
+  - drupal:field
+core_version_requirement: ^8 || ^9 || ^10 || ^11
+
+# Information added by Drupal.org packaging script on 2024-05-12
+version: '8.x-1.3'
+project: 'views_sort_null_field'
+datestamp: 1715539941

@@ -1,0 +1,10 @@
+name: Vite
+type: module
+description: Vite integration for Drupal asset libraries.
+core_version_requirement: ^9 || ^10 || ^11
+php: 8.0
+
+# Information added by Drupal.org packaging script on 2024-08-09
+version: '1.2.1'
+project: 'vite'
+datestamp: 1723228675

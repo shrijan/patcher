@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * @file
+ * Primary hook implementations for the Scanner module.
+ */
+
+use Drupal\Core\Database\Query\AlterableInterface;
+use Drupal\Core\Database\Query\SelectInterface;
+use Drupal\scanner\Plugin\Scanner\Entity;
+
+/**
+ * Implements hook_theme().
+ */
+function scanner_theme($existing, $type, $theme, $path) {
+  return [
+    'scanner_results' => [
+      'variables' => [
+        'data' => NULL,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_query_TAG_alter() for 'scanner_search_regexp_like'.
+ */
+function scanner_query_scanner_search_regexp_like_alter(AlterableInterface $query) {
+  if (!$query instanceof SelectInterface) {
+    return;
+  }
+  Entity::addRegexpLikeCondition($query);
+}

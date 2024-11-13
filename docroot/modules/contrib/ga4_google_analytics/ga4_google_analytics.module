@@ -1,0 +1,92 @@
+<?php
+
+/**
+ * @file
+ * The ga4_google_analytics module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_help().
+ */
+function ga4_google_analytics_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.ga4_google_analytics':
+      $variables = [
+        ':ga4_google_analytics' => Url::fromRoute('ga4_google_analytics.configure', [])->toString(),
+      ];
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('A simple module to integrate <a href="https://analytics.google.com/" target="_blank">Google Analytics GA4</a> tracking into your Drupal site.', $variables) . '</p>';
+      $output .= '<h3>' . t('Configuration') . '</h3>';
+      $output .= '<p>' . t('Configure the Google Analytics <a href=":ga4_google_analytics">settings</a> for GA4 Measurement ID, list of specific pages to track, and when a user with a specific role visits a page.', $variables) . '</p>';
+      $output .= '<h3>' . t('How to find your Google Analytics GA4 Measurement ID') . '</h3>';
+      $output .= '<p>' . t('Your Google Analytics GA4 Measurement ID can be found by logging into your Google account.') . '</p>';
+      $output .= '<ul>';
+      $output .= '<li>' . t('Go to Admin Panel in Google Analytics 4.') . '</li>';
+      $output .= '<li>' . t('Select the property that you want to get the Measurement ID for.') . '</li>';
+      $output .= '<li>' . t('Click on "Data Stream", then click on the Data Stream name.') . '</li>';
+      $output .= '<li>' . t('On the next screen, in the top right corner, you will find the Measurement ID that starts with G-') . '</li>';
+      $output .= '</ul>';
+      return $output;
+  }
+  return '';
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function ga4_google_analytics_page_attachments(array &$attachments) {
+  $config = \Drupal::config("ga4_google_analytics.config");
+  $measurement_id = $config->get("measurement_id");
+  if ($measurement_id) {
+    $ga4_access_roles = $config->get("ga4_access_roles") ?? [];
+
+    // Get the current user.
+    $current_user = \Drupal::currentUser();
+
+    // Get the roles of the current user.
+    $user_roles = $current_user->getRoles();
+    $selected_roles = array_values(array_filter($ga4_access_roles));
+    $active_roles = (bool) array_intersect($selected_roles, $user_roles);
+
+    if ($active_roles || empty($selected_roles)) {
+      /** @var \Drupal\system\Plugin\Condition\RequestPath $condition */
+      $condition = \Drupal::getContainer()
+        ->get("plugin.manager.condition")
+        ->createInstance("request_path");
+      $visibility = $config->get("ga4_access_pages");
+
+      if ($visibility) {
+        $condition->setConfiguration($visibility);
+      }
+
+      if ($visibility["negate"] xor $condition->evaluate()) {
+        $attachments["#attached"]["html_head"][] = [
+          [
+            "#type" => "inline_template",
+            "#template" => "",
+            "#theme" => "ga4_google_analytics",
+            "#measurement_id" => $measurement_id,
+          ],
+          "ga4_google_analytics",
+        ];
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function ga4_google_analytics_theme() {
+  return [
+    "ga4_google_analytics" => [
+      "variables" => [
+        "measurement_id" => "",
+      ],
+    ],
+  ];
+}

@@ -1,0 +1,7 @@
+ga4_google_analytics.configure:
+  path: '/admin/config/services/ga4-google-analytics'
+  defaults:
+    _title: 'GA4 Google Analytics Settings'
+    _form: '\Drupal\ga4_google_analytics\Form\Ga4GoogleAnalyticsSettings'
+  requirements:
+    _permission: 'ga4 configre'
