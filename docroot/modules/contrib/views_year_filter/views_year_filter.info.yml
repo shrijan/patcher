@@ -1,0 +1,11 @@
+name: Views Year Filter
+type: module
+description: 'Add Year filter to views.'
+core_version_requirement: ^9 || ^10 || ^11
+configure: views_year_filter.settings_form
+package: Date
+
+# Information added by Drupal.org packaging script on 2024-09-18
+version: '2.1.5'
+project: 'views_year_filter'
+datestamp: 1726675379
