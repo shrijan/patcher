@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\Tests\preview_link\Functional;
 
@@ -49,9 +49,9 @@ final class PreviewLinkForwardRevisionTest extends BrowserTestBase {
     $this->createContentType(['type' => 'page']);
 
     $workflow = Workflow::load('editorial');
-    $workflow
-      ->getTypePlugin()
-      ->addEntityTypeAndBundle('node', 'page');
+    /** @var \Drupal\content_moderation\Plugin\WorkflowType\ContentModerationInterface $typePlugin */
+    $typePlugin = $workflow->getTypePlugin();
+    $typePlugin->addEntityTypeAndBundle('node', 'page');
     $workflow->save();
   }
 

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\preview_link\Entity\PreviewLink;
@@ -39,13 +39,13 @@ function _preview_link_entity_migration(string $entityTypeClass, array &$sandbox
   $remainingQuery = (clone $all)
     ->condition($storage->getEntityType()->getKey('id'), $sandbox['hwm'], '>');
 
-  $remaining = (int) (clone $remainingQuery)->count()->execute();
+  $remaining = (clone $remainingQuery)->count()->execute();
   if ($remaining === 0) {
     $sandbox['#finished'] = 1;
     return new TranslatableMarkup('Finished migration');
   }
 
-  $total = (int) (clone $all)->count()->execute();
+  $total = (clone $all)->count()->execute();
   $sandbox['#finished'] = ($total - $remaining) / $total;
 
   $ids = (clone $remainingQuery)

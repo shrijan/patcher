@@ -258,6 +258,8 @@ abstract class BaseCommand extends Command
             'COMPOSER_PREFER_STABLE' => ['prefer-stable'],
             'COMPOSER_PREFER_LOWEST' => ['prefer-lowest'],
             'COMPOSER_MINIMAL_CHANGES' => ['minimal-changes'],
+            'COMPOSER_WITH_DEPENDENCIES' => ['with-dependencies'],
+            'COMPOSER_WITH_ALL_DEPENDENCIES' => ['with-all-dependencies'],
         ];
         foreach ($envOptions as $envName => $optionNames) {
             foreach ($optionNames as $optionName) {
@@ -287,6 +289,29 @@ abstract class BaseCommand extends Command
         }
 
         parent::initialize($input, $output);
+    }
+
+    /**
+     * Calls {@see Factory::create()} with the given arguments, taking into account flags and default states for disabling scripts and plugins
+     *
+     * @param  mixed    $config either a configuration array or a filename to read from, if null it will read from
+     *                          the default filename
+     * @return Composer
+     */
+    protected function createComposerInstance(InputInterface $input, IOInterface $io, $config = null, ?bool $disablePlugins = null, ?bool $disableScripts = null): Composer
+    {
+        $disablePlugins = $disablePlugins === true || $input->hasParameterOption('--no-plugins');
+        $disableScripts = $disableScripts === true || $input->hasParameterOption('--no-scripts');
+
+        $application = parent::getApplication();
+        if ($application instanceof Application && $application->getDisablePluginsByDefault()) {
+            $disablePlugins = true;
+        }
+        if ($application instanceof Application && $application->getDisableScriptsByDefault()) {
+            $disableScripts = true;
+        }
+
+        return Factory::create($io, $config, $disablePlugins, $disableScripts);
     }
 
     /**

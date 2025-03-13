@@ -30,8 +30,8 @@ services:
   preview_link.host:
     class: Drupal\preview_link\PreviewLinkHost
     arguments:
-     - '@entity_type.manager'
-     - '@datetime.time'
+      - '@entity_type.manager'
+      - '@datetime.time'
   preview_link.message:
     class: Drupal\preview_link\PreviewLinkMessage
     arguments: ['@string_translation', '@current_user']

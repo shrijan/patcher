@@ -22,3 +22,9 @@ entity_browser.browser.widget.entity_form:
     form_mode:
       type: string
       label: 'Form display mode ID'
+    allowed_bundles:
+      type: sequence
+      label: 'Allowed bundles'
+      sequence:
+        type: string
+        label: 'Bundle'

@@ -1,0 +1,15 @@
+entity.linky.admin:
+  path: '/admin/structure/linky'
+  defaults:
+    _controller: '\Drupal\linky\Controller\LinkyController::admin'
+    _title: 'Manage Linky'
+  requirements:
+    _permission: 'administer linky fields'
+  _admin_route: true
+linky.settings:
+  path: '/admin/config/content/linky'
+  defaults:
+    _form: '\Drupal\linky\Form\LinkySettingsForm'
+    _title: 'Linky settings'
+  requirements:
+    _permission: 'administer linky settings'

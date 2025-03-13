@@ -4,6 +4,7 @@ namespace Drupal\structure_sync\Form;
 
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
@@ -40,8 +41,8 @@ class BlocksSyncForm extends ConfigFormBase {
   /**
    * Class constructor.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, Connection $database, EntityTypeManagerInterface $entityManager) {
-    parent::__construct($config_factory);
+  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, Connection $database, EntityTypeManagerInterface $entityManager) {
+    parent::__construct($config_factory, $typedConfigManager);
     $this->database = $database;
     $this->entityTypeManager = $entityManager;
   }
@@ -52,6 +53,7 @@ class BlocksSyncForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new self(
       $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('database'),
       $container->get('entity_type.manager')
     );

@@ -1,0 +1,14 @@
+name: Paragraphs Browser Previewer
+type: module
+description: 'Provides integration between Paragraphs Previewer and paragraphs Browser.'
+core_version_requirement: ^8 || ^9 || ^10
+package: Paragraphs
+
+dependencies:
+  - paragraphs_previewer:paragraphs_previewer
+  - paragraphs_browser:paragraphs_browser
+
+# Information added by Drupal.org packaging script on 2023-01-20
+version: '2.0.1'
+project: 'paragraphs_browser_previewer'
+datestamp: 1674210758

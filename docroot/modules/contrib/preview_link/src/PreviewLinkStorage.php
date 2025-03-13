@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link;
 
@@ -22,49 +22,31 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Preview Link entity storage.
  */
-class PreviewLinkStorage extends SqlContentEntityStorage implements PreviewLinkStorageInterface {
-
-  /**
-   * Time service.
-   *
-   * @var \Drupal\Component\Datetime\TimeInterface
-   */
-  protected $time;
+final class PreviewLinkStorage extends SqlContentEntityStorage implements PreviewLinkStorageInterface {
 
   /**
    * Constructs a new PreviewLinkStorage.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Database\Connection $database
-   *   The database connection to be used.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
-   *   The entity field manager.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
-   *   The cache backend to be used.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
-   *   The language manager.
-   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface|null $memory_cache
-   *   The memory cache backend to be used.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
-   *   The entity type bundle info.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Component\Uuid\UuidInterface $uuid
-   *   The UUID service.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   Time service.
    */
-  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityFieldManagerInterface $entity_field_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache, EntityTypeBundleInfoInterface $entity_type_bundle_info, EntityTypeManagerInterface $entity_type_manager, UuidInterface $uuid, TimeInterface $time) {
+  public function __construct(
+    EntityTypeInterface $entity_type,
+    Connection $database,
+    EntityFieldManagerInterface $entity_field_manager,
+    CacheBackendInterface $cache,
+    LanguageManagerInterface $language_manager,
+    MemoryCacheInterface $memory_cache,
+    EntityTypeBundleInfoInterface $entity_type_bundle_info,
+    EntityTypeManagerInterface $entity_type_manager,
+    UuidInterface $uuid,
+    protected TimeInterface $time,
+  ) {
     parent::__construct($entity_type, $database, $entity_field_manager, $cache, $language_manager, $memory_cache, $entity_type_bundle_info, $entity_type_manager);
     $this->uuidService = $uuid;
-    $this->time = $time;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): self {
     return new static(
       $entity_type,
       $container->get('database'),

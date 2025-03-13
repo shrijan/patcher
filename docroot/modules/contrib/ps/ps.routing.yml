@@ -1,0 +1,31 @@
+ps.report:
+  path: '/admin/reports/paragraphs-stats-report'
+  defaults:
+    _title: 'Paragraphs stats Report'
+    _controller: 'Drupal\ps\Controller\PsController::showStatsMainReport'
+  requirements:
+    _permission: 'access paragraphs stats report'
+
+ps.dd_report:
+  path: '/admin/reports/paragraphs-stats-report/drill-down/{contentType}/{paragraph}/{bundle}'
+  defaults:
+    _title: 'Paragraphs stats Drill Down Report'
+    _controller: 'Drupal\ps\Controller\PsController::showStatsDrillDownReport'
+  requirements:
+    _permission: 'access paragraphs stats report'
+
+ps.get.structure:
+  path: '/admin/reports/paragraphs-stats-report/update-structure'
+  defaults:
+    _title: 'Update the structure of paragraph fields'
+    _controller: '\Drupal\ps\Controller\PsController::updateStructure'
+  requirements:
+    _permission: 'administer paragraphs stats configuration'
+
+ps.export:
+  path: '/admin/reports/paragraphs-stats-report/export/csv'
+  defaults:
+    _title: 'Export to CSV'
+    _controller: '\Drupal\ps\Controller\PsController::exportCsv'
+  requirements:
+    _permission: 'access paragraphs stats report'

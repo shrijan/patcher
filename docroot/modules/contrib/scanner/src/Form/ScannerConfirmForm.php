@@ -5,9 +5,9 @@ namespace Drupal\scanner\Form;
 use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
-use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\TempStore\PrivateTempStoreFactory;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -82,7 +82,7 @@ class ScannerConfirmForm extends ConfirmFormBase {
     ] as $value) {
       $values[$value] = $scannerStore->get($value);
     }
-    $fields = \Drupal::config('scanner.admin_settings')->get('fields_of_selected_content_type');
+    $fields = $this->configFactory()->get('scanner.admin_settings')->get('fields_of_selected_content_type');
     $operations = [];
     // Build an array of batch operation jobs. Batch job will need the field
     // and the filter values the users entered in the form.
@@ -125,7 +125,7 @@ class ScannerConfirmForm extends ConfirmFormBase {
       // The instance could not be found so fail gracefully and let the user
       // know.
       \Drupal::logger('scanner')->error($e->getMessage());
-      \Drupal::messenger()->addError(t('An error occured @e:', ['@e' => $e->getMessage()]));
+      \Drupal::messenger()->addError(t('An error occurred @e:', ['@e' => $e->getMessage()]));
     }
 
     $results_data = [];
@@ -172,7 +172,7 @@ class ScannerConfirmForm extends ConfirmFormBase {
           }
           else {
             // Something went wrong.
-            \Drupal::logger('scanner')->error('An issue has occured during the replace operation.');
+            \Drupal::logger('scanner')->error('An issue has occurred during the replace operation.');
           }
         }
         $results['count'] = $count;

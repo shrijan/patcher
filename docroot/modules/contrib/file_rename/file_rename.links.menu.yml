@@ -1,0 +1,6 @@
+file_rename.settings_form:
+  weight: 99
+  route_name: file_rename.settings
+  title: 'File Rename settings'
+  description: 'Configure File Rename default settings.'
+  parent: system.admin_config_media

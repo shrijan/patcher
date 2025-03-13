@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link\Routing;
 
@@ -20,14 +20,16 @@ class PreviewLinkRouteProvider implements EntityRouteProviderInterface {
   public function getRoutes(EntityTypeInterface $entity_type) {
     $collection = new RouteCollection();
 
-    if ($route = $this->getGeneratePreviewLinkRoute($entity_type)) {
+    $generateRoute = $this->getGeneratePreviewLinkRoute($entity_type);
+    if ($generateRoute !== NULL) {
       $entity_type_id = $entity_type->id();
-      $collection->add("entity.{$entity_type_id}.preview_link_generate", $route);
+      $collection->add("entity.{$entity_type_id}.preview_link_generate", $generateRoute);
     }
 
-    if ($route = $this->getPreviewLinkRoute($entity_type)) {
+    $linkRoute = $this->getPreviewLinkRoute($entity_type);
+    if ($linkRoute !== NULL) {
       $entity_type_id = $entity_type->id();
-      $collection->add("entity.{$entity_type_id}.preview_link", $route);
+      $collection->add("entity.{$entity_type_id}.preview_link", $linkRoute);
     }
 
     return $collection;

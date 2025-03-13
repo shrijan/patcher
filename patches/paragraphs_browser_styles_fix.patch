@@ -1,0 +1,65 @@
+diff --git a/css/paragraphs_browser.css b/css/paragraphs_browser.css
+index 8b49a06..f210561 100644
+--- a/css/paragraphs_browser.css
++++ b/css/paragraphs_browser.css
+@@ -28,6 +28,7 @@
+ .paragraphs-browser-wrapper .form-wrapper {
+   display: flex;
+   flex-wrap: wrap;
++  row-gap: 30px;
+ }
+ 
+ .paragraphs-browser-wrapper .form-wrapper {
+@@ -46,7 +47,7 @@
+ .paragraphs-browser-wrapper fieldset:not(.fieldgroup) {
+   width: 100%;
+   box-sizing: border-box;
+-  padding: 24px 10px 35px;
++  padding: 24px 10px 70px;
+   margin-right: 0;
+   position: relative;
+ }
+@@ -75,7 +76,7 @@
+ @media screen and (min-width: 800px) {
+   .paragraphs-browser-wrapper fieldset:not(.fieldgroup) {
+     margin-left: 1.99%;
+-    width: 32%;
++    width: 30%;
+   }
+ 
+   .paragraphs-browser-wrapper fieldset:nth-of-type(odd) {
+@@ -87,6 +88,12 @@
+   }
+ }
+ 
++@media screen and (min-width: 900px) {
++  .paragraphs-browser-wrapper fieldset:not(.fieldgroup) {
++    width: 32%;
++  }
++}
++
+ .paragraphs-browser-wrapper fieldset:not(.fieldgroup) legend {
+   text-align: center;
+   position: relative;
+@@ -104,7 +111,7 @@
+   position: absolute;
+   top: 100%;
+   left: 50%;
+-  transform: translate(-50%, -85%);
++  transform: translate(-50%, -125%);
+   max-width: 30%;
+   margin: 0;
+   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .25);
+@@ -116,12 +123,6 @@
+   }
+ }
+ 
+-@media screen and (min-width: 600px) {
+-  .paragraphs-browser-wrapper fieldset input {
+-    transform: translate(-50%, -50%);
+-  }
+-}
+-
+ .paragraphs-browser-wrapper img {
+   max-width: 100%;
+   height: auto;

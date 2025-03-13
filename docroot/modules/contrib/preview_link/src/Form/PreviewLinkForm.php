@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link\Form;
 
@@ -27,25 +27,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @property \Drupal\preview_link\Entity\PreviewLinkInterface $entity
  */
-class PreviewLinkForm extends ContentEntityForm {
+final class PreviewLinkForm extends ContentEntityForm {
 
   /**
    * PreviewLinkForm constructor.
-   *
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
-   *   The entity repository service.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
-   *   The entity type bundle service.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
-   *   The date formatter service.
-   * @param \Drupal\preview_link\PreviewLinkExpiry $linkExpiry
-   *   Calculates link expiry time.
-   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
-   *   The messenger service.
-   * @param \Drupal\preview_link\PreviewLinkHostInterface $previewLinkHost
-   *   Preview link host service.
    */
   public function __construct(
     EntityRepositoryInterface $entity_repository,
@@ -63,7 +48,7 @@ class PreviewLinkForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): self {
     return new static(
       $container->get('entity.repository'),
       $container->get('entity_type.bundle.info'),
@@ -116,7 +101,7 @@ class PreviewLinkForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, RouteMatchInterface $routeMatch = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?RouteMatchInterface $routeMatch = NULL) {
     if (!isset($routeMatch)) {
       throw new \LogicException('Route match not populated from argument resolver');
     }
@@ -127,6 +112,7 @@ class PreviewLinkForm extends ContentEntityForm {
       '@lifetime' => $this->dateFormatter->formatInterval($this->linkExpiry->getLifetime(), 1),
     ]);
 
+    /** @var \Drupal\preview_link\Entity\PreviewLinkInterface $previewLink */
     $previewLink = $this->getEntity();
     $link = Url::fromRoute('entity.' . $host->getEntityTypeId() . '.preview_link', [
       $host->getEntityTypeId() => $host->id(),

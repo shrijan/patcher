@@ -63,8 +63,8 @@ class WordBoundariesHelper {
       return version_compare($db_version, '8.0.4', '>=');
     }
 
-    // Assume other implementations of the databases are modern enough to support
-    // inline PCRE flags. The BINARY flag is MySQL specific anyway.
+    // Assume other implementations of the databases are modern enough to
+    // support inline PCRE flags. The BINARY flag is MySQL specific anyway.
     return TRUE;
   }
 

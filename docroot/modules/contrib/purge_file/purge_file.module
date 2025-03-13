@@ -38,9 +38,9 @@ function purge_file_file_delete(FileInterface $file) {
  * Purge a file using the late runtime processor.
  */
 function purge_file_purge(FileInterface $file) {
-  // TODO: replace strpos() with str_starts_with() when we no longer need
+  // @todo Replace strpos() with str_starts_with() when we no longer need
   // backwards compatibility with PHP 7.
-  if (strpos($file->getFileUri(),'temporary://') === 0) {
+  if (strpos($file->getFileUri(), 'temporary://') === 0) {
     // Skip files that appear only in the temporary file stream.
     // (Not all temporary files will be in the temporary file stream!)
     return FALSE;
@@ -55,18 +55,26 @@ function purge_file_purge(FileInterface $file) {
       $purgeProcessors = \Drupal::service('purge.processors');
       $purgePurgers = \Drupal::service('purge.purgers');
 
-      $base_urls = $purge_file_config->get('base_urls');
+      $base_urls_input = $purge_file_config->get('base_urls');
       $wildcard = $purge_file_config->get('wildcard');
       $invalidator = 'url';
-      $urls = [];
-      if (!empty($base_urls)) {
-        $base_urls = explode(',', $base_urls);
-        foreach ($base_urls as $base_url) {
-          $urls[] = $base_url . $file->createFileUrl();
-        }
+
+      $base_urls = [];
+      if (!empty($base_urls_input)) {
+        $base_urls = array_filter(array_map('trim', explode(',', $base_urls_input)));
       }
       else {
-        $urls[] = $file->createFileUrl(FALSE);
+        $base_urls[] =  \Drupal::request()->getSchemeAndHttpHost() . base_path();
+      }
+
+      // Allow others to dynamically alter the base urls to purge.
+      \Drupal::moduleHandler()->alter('purge_file_base_urls', $base_urls, $file);
+
+      // Build urls to purge.
+      $urls = [];
+
+      foreach ($base_urls as $base_url) {
+        $urls[] = rtrim($base_url, '/') . $file->createFileUrl();
       }
 
       $invalidations = [];

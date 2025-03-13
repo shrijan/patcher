@@ -1,0 +1,4 @@
+backend-styles:
+  css:
+    component:
+      css/file-rename.css: { }

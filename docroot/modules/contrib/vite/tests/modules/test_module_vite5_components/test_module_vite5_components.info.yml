@@ -1,0 +1,16 @@
+name: 'Test module'
+description: 'Test module with name ending with "components".'
+type: module
+core_version_requirement: ^9 || ^10 || ^11
+
+dependencies:
+  - vite:vite
+
+vite:
+  enableInAllLibraries: true
+  enableInAllComponents: true
+
+# Information added by Drupal.org packaging script on 2025-03-08
+version: '1.4.1'
+project: 'vite'
+datestamp: 1741466749

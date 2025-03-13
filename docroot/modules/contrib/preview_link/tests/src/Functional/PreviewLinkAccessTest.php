@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\Tests\preview_link\Functional;
 
@@ -163,7 +163,7 @@ final class PreviewLinkAccessTest extends BrowserTestBase {
   /**
    * Tests access for a referenced entity on a preview link route.
    */
-  public function testPreviewLinkReferencedEntity() {
+  public function testPreviewLinkReferencedEntity(): void {
     // Set up an entity reference field.
     $field_storage = FieldStorageConfig::create([
       'field_name' => 'entity_test_rev_ref',
@@ -215,13 +215,14 @@ final class PreviewLinkAccessTest extends BrowserTestBase {
       'preview_token' => $token,
     ]);
     $this->drupalGet($url);
-    $this->assertSession()->pageTextContains($reference->label());
+    $label = (string) $reference->label();
+    $this->assertSession()->pageTextContains($label);
 
     // Check it still shows the referenced entity when it has a preview link
     // as well.
     $this->getNewPreviewLinkForEntity($reference);
     $this->drupalGet($url);
-    $this->assertSession()->pageTextContains($reference->label());
+    $this->assertSession()->pageTextContains($label);
   }
 
   /**

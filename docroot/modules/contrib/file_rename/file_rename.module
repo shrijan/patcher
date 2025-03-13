@@ -1,0 +1,240 @@
+<?php
+
+/**
+ * @file
+ * Contains file_rename.module.
+ */
+
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\WidgetInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
+use Drupal\file\FileInterface;
+use Drupal\file\Plugin\Field\FieldWidget\FileWidget;
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function file_rename_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the file_rename module.
+    case 'help.page.file_rename':
+      $output = '';
+      $output .= '<h2>' . t('About') . '</h2>';
+      $output .= '<p>' . t('This module adds the ability to rename a file which was uploaded to the system.') . '</p>';
+      $output .= '<p>';
+      $output .= t('Visit the <a href=":project_link">File rename project page</a> on Drupal.org for more information.', [
+        ':project_link' => 'https://www.drupal.org/project/file_rename',
+      ]);
+      $output .= '</p>';
+
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_entity_type_build().
+ */
+function file_rename_entity_type_build(array &$entity_types) {
+  $entity_types['file']->setFormClass('rename', 'Drupal\file_rename\Form\FileRenameForm');
+  $entity_types['file']->setLinkTemplate('rename-form', '/admin/content/files/{file}/rename/');
+}
+
+/**
+ * Add rename button position on file widgets.
+ *
+ * Implements hook_field_widget_form_alter().
+ */
+function file_rename_field_widget_single_element_form_alter(&$element, FormStateInterface $form_state, $context) {
+  /** @var \Drupal\file\Plugin\Field\FieldWidget\FileWidget $widget */
+  $widget = $context['widget'];
+  $is_enabled = _file_rename_widget_link_is_enabled_globally() ||
+    _file_rename_link_is_enabled_for_widget($widget);
+  if (
+    $widget instanceof FileWidget &&
+    isset($element['#default_value']['target_id']) &&
+    $is_enabled
+  ) {
+    $element['#process'][] = '_file_rename_widget_custom_process';
+  }
+
+}
+
+/**
+ * Add 'show rename link' setting to widget settings.
+ *
+ * Implements hook_field_widget_third_party_settings_form().
+ */
+function file_rename_field_widget_third_party_settings_form(WidgetInterface $plugin, FieldDefinitionInterface $field_definition, $form_mode, array $form, FormStateInterface $form_state) {
+  $element = [];
+  // Add a 'show_rename_link' checkbox.
+  $plugin_definition = $plugin->getPluginDefinition();
+  if ($plugin_definition['class'] === FileWidget::class || is_subclass_of($plugin_definition['class'], FileWidget::class)) {
+    $is_enabled_globally = _file_rename_widget_link_is_enabled_globally();
+    $is_enabled = _file_rename_link_is_enabled_for_widget($plugin);
+    $element['show_rename_link'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Show rename link'),
+      '#default_value' => $is_enabled_globally || $is_enabled,
+      '#disabled' => $is_enabled_globally,
+    ];
+    if ($is_enabled_globally) {
+      $element['show_rename_link']['#description'] = t('This setting is overriden globally. <a href=":url">Settings</a>', [
+        ':url' => Url::fromRoute('file_rename.settings')->toString(),
+      ]);
+    }
+  }
+  return $element;
+}
+
+/**
+ * Add rename link to widget settings summary.
+ *
+ * Implements hook_field_widget_settings_summary_alter().
+ */
+function file_rename_field_widget_settings_summary_alter(array &$summary, array $context) {
+  // Append a message to the summary when an instance of file_generic has
+  // show_rename_link set to TRUE for the current view mode.
+  $is_enabled_globally = _file_rename_widget_link_is_enabled_globally();
+  if ($context['widget'] instanceof FileWidget && !$is_enabled_globally) {
+    $is_enabled = _file_rename_link_is_enabled_for_widget($context['widget']);
+    if ($is_enabled) {
+      $summary[] = t('Show rename link: yes');
+    }
+  }
+}
+
+/**
+ * Flush image styles just before file is renamed.
+ *
+ * Implements hook_file_prerename().
+ */
+function file_rename_file_prerename(FileInterface $file) {
+  // Flush image cache.
+  if (\Drupal::moduleHandler()->moduleExists('image')) {
+    if (explode('/', $file->getMimeType())[0] == 'image') {
+      /** @var \Drupal\image\Entity\ImageStyle[] $image_styles */
+      $image_styles = \Drupal::entityTypeManager()->getStorage('image_style')->loadMultiple();
+      foreach ($image_styles as $image_style) {
+        $image_style->flush($file->getFileUri());
+      }
+      \Drupal::messenger()->addMessage(t('Image styles flushed for %file', [
+        '%file' => $file->getFilename(),
+      ]));
+    }
+  }
+}
+
+/**
+ * Helper to add Rename button to file widgets.
+ *
+ * @param array $element
+ *   Render element.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   Current form state.
+ * @param array $form
+ *   Current form.
+ *
+ * @todo Multiple file field is not fully supported yet.
+ *    On remove one of the files the Rename button disappears.
+ *    See: https://www.drupal.org/project/drupal/issues/3177977
+ *
+ */
+function _file_rename_widget_custom_process(array $element, FormStateInterface $form_state, array $form) {
+  $parents_prefix = implode('_', $element['#parents']);
+  $route_name = \Drupal::routeMatch()->getRouteName();
+  if ($route_name == 'entity.node.edit_form') {
+    // the rename form will open in a new tab. After the user saves, take them to node view page.
+    // (We don't want them to be editing the same node in two different tabs.)
+    $node = \Drupal::routeMatch()->getParameter('node');
+    $request_destination = Url::fromRoute('entity.node.canonical', ['node' => $node->id()])->toString();
+  } else {
+    $request_destination = \Drupal::requestStack()
+      ->getCurrentRequest()
+      ->getPathInfo();
+  }
+  /** @var \Drupal\file\FileStorage $file_storage */
+  $file_storage = \Drupal::entityTypeManager()->getStorage('file');
+  $file_id = $element['#default_value']['target_id'];
+  /** @var FileInterface $file */
+  if ($file = $file_storage->load($file_id)) {
+    $element['file_' . $file_id]['rename_link'] = [
+      '#name' => $parents_prefix . '_rename_link',
+      '#type' => 'link',
+      '#title' => t('Rename'),
+      '#url' => Url::fromRoute('entity.file.rename_form', ['file' => $file_id], [
+        'query' => [
+          'destination' => $request_destination,
+        ],
+      ]),
+      '#access' => $file->isPermanent() && \Drupal::currentUser()->hasPermission('rename files'),
+      '#weight' => 0,
+      '#prefix' => '<small class="file-rename__link-wrapper">',
+      '#suffix' => '</small>',
+      '#attributes' => [
+        'class' => ['admin-link'],
+        'target' => '_blank',
+      ],
+      '#attached' => ['library' => ['file_rename/backend-styles']],
+    ];
+    return $element;
+  }
+}
+
+/**
+ * Helper returns flag if rename link shown for all file widgets.
+ *
+ * @return bool
+ *   Flag if rename link is enabled for every file widget.
+ */
+function _file_rename_widget_link_is_enabled_globally() {
+  return !empty(\Drupal::config('file_rename.settings')->get('always_show_widget_link'));
+}
+
+/**
+ * Helper returns flag if rename link shown for all file widgets.
+ *
+ * @return bool
+ *   Flag if rename link is enabled for every file widget.
+ */
+function _file_rename_link_is_enabled_for_widget(WidgetInterface $widget) {
+  return !empty($widget->getThirdPartySetting('file_rename', 'show_rename_link'));
+}
+
+/**
+ * Adds rename action link for file entities.
+ *
+ * Implements hook_entity_operation().
+ */
+function file_rename_entity_operation(EntityInterface $entity) {
+  $operations = [];
+  if ($entity instanceof FileInterface && $entity->access('rename') && $entity->isPermanent()) {
+    $operations['rename'] = [
+      'title' => t('Rename'),
+      'url' => Url::fromRoute('entity.file.rename_form', [
+        'file' => $entity->id(),
+      ]),
+      'weight' => 100,
+    ];
+  }
+  return $operations;
+}
+
+/**
+ * Checks user permission for 'rename' operation.
+ *
+ * Implements hook_entity_access().
+ */
+function file_rename_entity_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  if ($entity instanceof FileInterface && $operation === 'rename') {
+    return $account->hasPermission('rename files')
+      ? AccessResult::allowed()->cachePerPermissions()
+      : AccessResult::forbidden()->cachePerPermissions();
+  }
+
+  return AccessResult::neutral();
+}

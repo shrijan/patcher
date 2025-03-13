@@ -1,0 +1,20 @@
+entity.microcontent.collection:
+  title: Micro-content
+  route_name: entity.microcontent.collection
+  base_route: system.admin_content
+
+entity.microcontent_type.edit_form:
+  title: 'Edit'
+  route_name: entity.microcontent_type.edit_form
+  base_route: entity.microcontent_type.edit_form
+
+entity.microcontent.edit_form:
+  route_name: entity.microcontent.canonical
+  base_route: entity.microcontent.canonical
+  title: Edit
+
+entity.microcontent.delete_form:
+  route_name:  entity.microcontent.delete_form
+  base_route:  entity.microcontent.canonical
+  title: Delete
+  weight: 10

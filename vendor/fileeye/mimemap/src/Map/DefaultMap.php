@@ -9,9 +9,6 @@ namespace FileEye\MimeMap\Map;
  */
 class DefaultMap extends AbstractMap
 {
-    /**
-     * @var MapInterface|null
-     */
     protected static $instance;
 
     public function getFileName(): string
@@ -214,6 +211,23 @@ class DefaultMap extends AbstractMap
         0 => 'dcm',
       ),
     ),
+    'application/docbook+xml' =>
+    array (
+      'a' =>
+      array (
+        0 => 'application/x-docbook+xml',
+        1 => 'application/vnd.oasis.docbook+xml',
+      ),
+      'desc' =>
+      array (
+        0 => 'DocBook document',
+      ),
+      'e' =>
+      array (
+        0 => 'dbk',
+        1 => 'docbook',
+      ),
+    ),
     'application/dssc+der' =>
     array (
       'e' =>
@@ -381,6 +395,18 @@ class DefaultMap extends AbstractMap
       'e' =>
       array (
         0 => 'gz',
+      ),
+    ),
+    'application/hta' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'Windows HTML desktop application',
+        1 => 'HTML: HyperText Markup Language',
+      ),
+      'e' =>
+      array (
+        0 => 'hta',
       ),
     ),
     'application/hyperstudio' =>
@@ -647,6 +673,28 @@ class DefaultMap extends AbstractMap
       'e' =>
       array (
         0 => 'mets',
+      ),
+    ),
+    'application/microsoftpatch' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'Windows Installer patch',
+      ),
+      'e' =>
+      array (
+        0 => 'msp',
+      ),
+    ),
+    'application/microsoftupdate' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'Windows Update package',
+      ),
+      'e' =>
+      array (
+        0 => 'msu',
       ),
     ),
     'application/mods+xml' =>
@@ -1673,6 +1721,21 @@ class DefaultMap extends AbstractMap
       'e' =>
       array (
         0 => 'atx',
+      ),
+    ),
+    'application/vnd.apache.parquet' =>
+    array (
+      'a' =>
+      array (
+        0 => 'application/x-parquet',
+      ),
+      'desc' =>
+      array (
+        0 => 'Apache Parquet file',
+      ),
+      'e' =>
+      array (
+        0 => 'parquet',
       ),
     ),
     'application/vnd.appimage' =>
@@ -3153,7 +3216,6 @@ class DefaultMap extends AbstractMap
         5 => 'efi',
         6 => 'ocx',
         7 => 'sys',
-        8 => 'lib',
       ),
     ),
     'application/vnd.mif' =>
@@ -3801,6 +3863,23 @@ class DefaultMap extends AbstractMap
         0 => 'ext',
       ),
     ),
+    'application/vnd.oasis.opendocument.base' =>
+    array (
+      'a' =>
+      array (
+        0 => 'application/vnd.oasis.opendocument.database',
+        1 => 'application/vnd.sun.xml.base',
+      ),
+      'desc' =>
+      array (
+        0 => 'ODB database',
+        1 => 'ODB: OpenDocument Database',
+      ),
+      'e' =>
+      array (
+        0 => 'odb',
+      ),
+    ),
     'application/vnd.oasis.opendocument.chart' =>
     array (
       'desc' =>
@@ -3823,22 +3902,6 @@ class DefaultMap extends AbstractMap
       'e' =>
       array (
         0 => 'otc',
-      ),
-    ),
-    'application/vnd.oasis.opendocument.database' =>
-    array (
-      'a' =>
-      array (
-        0 => 'application/vnd.sun.xml.base',
-      ),
-      'desc' =>
-      array (
-        0 => 'ODB database',
-        1 => 'ODB: OpenDocument Database',
-      ),
-      'e' =>
-      array (
-        0 => 'odb',
       ),
     ),
     'application/vnd.oasis.opendocument.formula' =>
@@ -4029,6 +4092,18 @@ class DefaultMap extends AbstractMap
         0 => 'odm',
       ),
     ),
+    'application/vnd.oasis.opendocument.text-master-template' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'ODM template',
+        1 => 'ODM: OpenDocument Master',
+      ),
+      'e' =>
+      array (
+        0 => 'otm',
+      ),
+    ),
     'application/vnd.oasis.opendocument.text-template' =>
     array (
       'desc' =>
@@ -4071,7 +4146,7 @@ class DefaultMap extends AbstractMap
     array (
       'desc' =>
       array (
-        0 => 'OpenOffice.org extension',
+        0 => 'LibreOffice extension',
       ),
       'e' =>
       array (
@@ -4284,6 +4359,10 @@ class DefaultMap extends AbstractMap
     ),
     'application/vnd.quark.quarkxpress' =>
     array (
+      'desc' =>
+      array (
+        0 => 'QuarkXPress document',
+      ),
       'e' =>
       array (
         0 => 'qxd',
@@ -4292,6 +4371,7 @@ class DefaultMap extends AbstractMap
         3 => 'qwt',
         4 => 'qxl',
         5 => 'qxb',
+        6 => 'qxp',
       ),
     ),
     'application/vnd.rar' =>
@@ -4524,14 +4604,17 @@ class DefaultMap extends AbstractMap
       ),
       'e' =>
       array (
-        0 => 'sqsh',
+        0 => 'sfs',
+        1 => 'sqfs',
+        2 => 'sqsh',
+        3 => 'squashfs',
       ),
     ),
     'application/vnd.stardivision.calc' =>
     array (
       'desc' =>
       array (
-        0 => 'StarCalc spreadsheet',
+        0 => 'StarCalc 5 spreadsheet',
       ),
       'e' =>
       array (
@@ -4542,7 +4625,7 @@ class DefaultMap extends AbstractMap
     array (
       'desc' =>
       array (
-        0 => 'StarChart chart',
+        0 => 'StarChart 5 chart',
       ),
       'e' =>
       array (
@@ -4553,7 +4636,7 @@ class DefaultMap extends AbstractMap
     array (
       'desc' =>
       array (
-        0 => 'StarDraw drawing',
+        0 => 'StarDraw 5 drawing',
       ),
       'e' =>
       array (
@@ -4564,30 +4647,40 @@ class DefaultMap extends AbstractMap
     array (
       'desc' =>
       array (
-        0 => 'StarImpress presentation',
+        0 => 'StarImpress 5 presentation',
       ),
       'e' =>
       array (
         0 => 'sdd',
-        1 => 'sdp',
+      ),
+    ),
+    'application/vnd.stardivision.impress-packed' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'StarImpress packed presentation',
+      ),
+      'e' =>
+      array (
+        0 => 'sdp',
       ),
     ),
     'application/vnd.stardivision.mail' =>
     array (
       'desc' =>
       array (
-        0 => 'StarMail email',
+        0 => 'StarMail 5 email',
       ),
       'e' =>
       array (
-        0 => 'smd',
+        0 => 'sdm',
       ),
     ),
     'application/vnd.stardivision.math' =>
     array (
       'desc' =>
       array (
-        0 => 'StarMath formula',
+        0 => 'StarMath 5 formula',
       ),
       'e' =>
       array (
@@ -4596,19 +4689,25 @@ class DefaultMap extends AbstractMap
     ),
     'application/vnd.stardivision.writer' =>
     array (
-      'a' =>
-      array (
-        0 => 'application/vnd.stardivision.writer-global',
-      ),
       'desc' =>
       array (
-        0 => 'StarWriter document',
+        0 => 'StarWriter 5 document',
       ),
       'e' =>
       array (
         0 => 'sdw',
         1 => 'vor',
-        2 => 'sgl',
+      ),
+    ),
+    'application/vnd.stardivision.writer-global' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'StarWriter 5 master document',
+      ),
+      'e' =>
+      array (
+        0 => 'sgl',
       ),
     ),
     'application/vnd.stepmania.package' =>
@@ -4629,7 +4728,7 @@ class DefaultMap extends AbstractMap
     array (
       'desc' =>
       array (
-        0 => 'LibreOffice Calc spreadsheet',
+        0 => 'OpenOffice.org 1.0 Calc spreadsheet',
       ),
       'e' =>
       array (
@@ -4640,7 +4739,7 @@ class DefaultMap extends AbstractMap
     array (
       'desc' =>
       array (
-        0 => 'LibreOffice Calc template',
+        0 => 'OpenOffice.org 1.0 Calc template',
       ),
       'e' =>
       array (
@@ -4651,7 +4750,7 @@ class DefaultMap extends AbstractMap
     array (
       'desc' =>
       array (
-        0 => 'LibreOffice Draw drawing',
+        0 => 'OpenOffice.org 1.0 Draw drawing',
       ),
       'e' =>
       array (
@@ -4662,7 +4761,7 @@ class DefaultMap extends AbstractMap
     array (
       'desc' =>
       array (
-        0 => 'LibreOffice Draw template',
+        0 => 'OpenOffice.org 1.0 Draw template',
       ),
       'e' =>
       array (
@@ -4673,7 +4772,7 @@ class DefaultMap extends AbstractMap
     array (
       'desc' =>
       array (
-        0 => 'LibreOffice Impress presentation',
+        0 => 'OpenOffice.org 1.0 Impress presentation',
       ),
       'e' =>
       array (
@@ -4684,7 +4783,7 @@ class DefaultMap extends AbstractMap
     array (
       'desc' =>
       array (
-        0 => 'LibreOffice Impress template',
+        0 => 'OpenOffice.org 1.0 Impress template',
       ),
       'e' =>
       array (
@@ -4695,7 +4794,7 @@ class DefaultMap extends AbstractMap
     array (
       'desc' =>
       array (
-        0 => 'LibreOffice Math formula',
+        0 => 'OpenOffice.org 1.0 Math formula',
       ),
       'e' =>
       array (
@@ -4706,7 +4805,7 @@ class DefaultMap extends AbstractMap
     array (
       'desc' =>
       array (
-        0 => 'LibreOffice Writer document',
+        0 => 'OpenOffice.org 1.0 Writer document',
       ),
       'e' =>
       array (
@@ -4717,7 +4816,7 @@ class DefaultMap extends AbstractMap
     array (
       'desc' =>
       array (
-        0 => 'LibreOffice Writer global document',
+        0 => 'OpenOffice.org 1.0 Writer global document',
       ),
       'e' =>
       array (
@@ -4728,7 +4827,7 @@ class DefaultMap extends AbstractMap
     array (
       'desc' =>
       array (
-        0 => 'LibreOffice Writer template',
+        0 => 'OpenOffice.org 1.0 Writer template',
       ),
       'e' =>
       array (
@@ -5272,6 +5371,7 @@ class DefaultMap extends AbstractMap
       array (
         0 => 'a',
         1 => 'ar',
+        2 => 'lib',
       ),
     ),
     'application/x-arj' =>
@@ -5827,23 +5927,6 @@ class DefaultMap extends AbstractMap
         0 => 'cdi',
       ),
     ),
-    'application/x-docbook+xml' =>
-    array (
-      'a' =>
-      array (
-        0 => 'application/docbook+xml',
-        1 => 'application/vnd.oasis.docbook+xml',
-      ),
-      'desc' =>
-      array (
-        0 => 'DocBook document',
-      ),
-      'e' =>
-      array (
-        0 => 'dbk',
-        1 => 'docbook',
-      ),
-    ),
     'application/x-doom' =>
     array (
       'e' =>
@@ -6258,7 +6341,8 @@ class DefaultMap extends AbstractMap
       array (
         0 => 'gen',
         1 => 'smd',
-        2 => 'sgd',
+        2 => 'md',
+        3 => 'sgd',
       ),
     ),
     'application/x-gerber-job' =>
@@ -7449,6 +7533,21 @@ class DefaultMap extends AbstractMap
         0 => 'nds',
       ),
     ),
+    'application/x-nintendo-switch-xci' =>
+    array (
+      'a' =>
+      array (
+        0 => 'application/x-nx-xci',
+      ),
+      'desc' =>
+      array (
+        0 => 'Nintendo Switch encrypted ROM',
+      ),
+      'e' =>
+      array (
+        0 => 'xci',
+      ),
+    ),
     'application/x-nuscript' =>
     array (
       'a' =>
@@ -7581,6 +7680,19 @@ class DefaultMap extends AbstractMap
       'e' =>
       array (
         0 => 'pce',
+      ),
+    ),
+    'application/x-pcapng' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'PCAPNG packet capture',
+        1 => 'PCAPNG: PCAP Next Generation',
+      ),
+      'e' =>
+      array (
+        0 => 'pcapng',
+        1 => 'ntar',
       ),
     ),
     'application/x-perl' =>
@@ -7716,6 +7828,17 @@ class DefaultMap extends AbstractMap
         1 => 'pyo',
       ),
     ),
+    'application/x-qbrew' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'QBrew beer recipes',
+      ),
+      'e' =>
+      array (
+        0 => 'qbrew',
+      ),
+    ),
     'application/x-qed-disk' =>
     array (
       'desc' =>
@@ -7775,6 +7898,7 @@ class DefaultMap extends AbstractMap
         0 => 'wb1',
         1 => 'wb2',
         2 => 'wb3',
+        3 => 'qpw',
       ),
     ),
     'application/x-quicktime-media-link' =>
@@ -7862,6 +7986,29 @@ class DefaultMap extends AbstractMap
       'e' =>
       array (
         0 => 'rb',
+      ),
+    ),
+    'application/x-rzip' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'Rzip archive',
+      ),
+      'e' =>
+      array (
+        0 => 'rz',
+      ),
+    ),
+    'application/x-rzip-compressed-tar' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'Tar archive (rzip-compressed)',
+      ),
+      'e' =>
+      array (
+        0 => 'tar.rz',
+        1 => 'trz',
       ),
     ),
     'application/x-sami' =>
@@ -8020,6 +8167,17 @@ class DefaultMap extends AbstractMap
         0 => 'sms',
       ),
     ),
+    'application/x-sony-bbeb' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'BroadBand eBook',
+      ),
+      'e' =>
+      array (
+        0 => 'lrf',
+      ),
+    ),
     'application/x-source-rpm' =>
     array (
       'desc' =>
@@ -8077,6 +8235,95 @@ class DefaultMap extends AbstractMap
       'e' =>
       array (
         0 => 'sqlite2',
+      ),
+    ),
+    'application/x-starcalc' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'StarCalc 3-4 spreadsheet',
+      ),
+      'e' =>
+      array (
+        0 => 'sdc',
+      ),
+    ),
+    'application/x-starchart' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'StarChart 3-4 chart',
+      ),
+      'e' =>
+      array (
+        0 => 'sds',
+      ),
+    ),
+    'application/x-stardraw' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'StarDraw 4 drawing',
+      ),
+      'e' =>
+      array (
+        0 => 'sda',
+      ),
+    ),
+    'application/x-starimpress' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'StarImpress 3-4 presentation',
+      ),
+      'e' =>
+      array (
+        0 => 'sdd',
+      ),
+    ),
+    'application/x-starmail' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'StarMail 4 email',
+      ),
+      'e' =>
+      array (
+        0 => 'smd',
+      ),
+    ),
+    'application/x-starmath' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'StarMath 3-4 formula',
+      ),
+      'e' =>
+      array (
+        0 => 'smf',
+      ),
+    ),
+    'application/x-starwriter' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'StarWriter 3-4 document',
+      ),
+      'e' =>
+      array (
+        0 => 'sdw',
+        1 => 'vor',
+      ),
+    ),
+    'application/x-starwriter-global' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'StarWriter 4 master document',
+      ),
+      'e' =>
+      array (
+        0 => 'sgl',
       ),
     ),
     'application/x-stuffit' =>
@@ -8145,6 +8392,22 @@ class DefaultMap extends AbstractMap
       'e' =>
       array (
         0 => 'sv4crc',
+      ),
+    ),
+    'application/x-sylk' =>
+    array (
+      'a' =>
+      array (
+        0 => 'text/spreadsheet',
+      ),
+      'desc' =>
+      array (
+        0 => 'Spreadsheet interchange document',
+      ),
+      'e' =>
+      array (
+        0 => 'sylk',
+        1 => 'slk',
       ),
     ),
     'application/x-t3vm-image' =>
@@ -10165,6 +10428,17 @@ class DefaultMap extends AbstractMap
         2 => 'hif',
       ),
     ),
+    'image/hej2k' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'JPEG 2000 image encapsulated in HEIF',
+      ),
+      'e' =>
+      array (
+        0 => 'hej2',
+      ),
+    ),
     'image/ief' =>
     array (
       'desc' =>
@@ -10487,6 +10761,14 @@ class DefaultMap extends AbstractMap
     ),
     'image/vnd.fpx' =>
     array (
+      'a' =>
+      array (
+        0 => 'image/x-fpx',
+      ),
+      'desc' =>
+      array (
+        0 => 'FlashPix image',
+      ),
       'e' =>
       array (
         0 => 'fpx',
@@ -10902,6 +11184,19 @@ class DefaultMap extends AbstractMap
         2 => 'jpc',
       ),
     ),
+    'image/x-kiss-cel' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'KiSS cel',
+        1 => 'KiSS: Kisekae Set System',
+      ),
+      'e' =>
+      array (
+        0 => 'cel',
+        1 => 'kcf',
+      ),
+    ),
     'image/x-kodak-dcr' =>
     array (
       'desc' =>
@@ -11079,6 +11374,17 @@ class DefaultMap extends AbstractMap
         0 => 'pef',
       ),
     ),
+    'image/x-pfm' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'Portable FloatMap',
+      ),
+      'e' =>
+      array (
+        0 => 'pfm',
+      ),
+    ),
     'image/x-photo-cd' =>
     array (
       'desc' =>
@@ -11154,6 +11460,17 @@ class DefaultMap extends AbstractMap
         0 => 'ppm',
       ),
     ),
+    'image/x-pxr' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'Pixar raster',
+      ),
+      'e' =>
+      array (
+        0 => 'pxr',
+      ),
+    ),
     'image/x-quicktime' =>
     array (
       'desc' =>
@@ -11175,6 +11492,18 @@ class DefaultMap extends AbstractMap
       'e' =>
       array (
         0 => 'rgb',
+      ),
+    ),
+    'image/x-sct' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'Scitex CT',
+        1 => 'CT: Continuous Tone',
+      ),
+      'e' =>
+      array (
+        0 => 'sct',
       ),
     ),
     'image/x-sgi' =>
@@ -11444,6 +11773,10 @@ class DefaultMap extends AbstractMap
     ),
     'model/obj' =>
     array (
+      'a' =>
+      array (
+        0 => 'application/prs.wavefront-obj',
+      ),
       'desc' =>
       array (
         0 => 'OBJ 3D model',
@@ -11451,6 +11784,18 @@ class DefaultMap extends AbstractMap
       'e' =>
       array (
         0 => 'obj',
+      ),
+    ),
+    'model/step' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'STEP 3D model',
+      ),
+      'e' =>
+      array (
+        0 => 'step',
+        1 => 'stp',
       ),
     ),
     'model/stl' =>
@@ -11496,13 +11841,6 @@ class DefaultMap extends AbstractMap
       'e' =>
       array (
         0 => 'gtw',
-      ),
-    ),
-    'model/vnd.mts' =>
-    array (
-      'e' =>
-      array (
-        0 => 'mts',
       ),
     ),
     'model/vnd.vtu' =>
@@ -11579,6 +11917,7 @@ class DefaultMap extends AbstractMap
         0 => 'ics',
         1 => 'ifb',
         2 => 'vcs',
+        3 => 'icalendar',
       ),
     ),
     'text/css' =>
@@ -11769,18 +12108,6 @@ class DefaultMap extends AbstractMap
       array (
         0 => 'sgml',
         1 => 'sgm',
-      ),
-    ),
-    'text/spreadsheet' =>
-    array (
-      'desc' =>
-      array (
-        0 => 'Spreadsheet interchange document',
-      ),
-      'e' =>
-      array (
-        0 => 'sylk',
-        1 => 'slk',
       ),
     ),
     'text/tab-separated-values' =>
@@ -12089,6 +12416,10 @@ class DefaultMap extends AbstractMap
     ),
     'text/x-asm' =>
     array (
+      'desc' =>
+      array (
+        0 => 'Assembly code',
+      ),
       'e' =>
       array (
         0 => 's',
@@ -12259,6 +12590,19 @@ class DefaultMap extends AbstractMap
       array (
         0 => 'c',
         1 => 'dic',
+      ),
+    ),
+    'text/x-cython' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'Cython source code',
+      ),
+      'e' =>
+      array (
+        0 => 'pxd',
+        1 => 'pxi',
+        2 => 'pyx',
       ),
     ),
     'text/x-dbus-service' =>
@@ -12822,6 +13166,17 @@ class DefaultMap extends AbstractMap
         1 => 'nimble',
       ),
     ),
+    'text/x-nix' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'Nix source code',
+      ),
+      'e' =>
+      array (
+        0 => 'nix',
+      ),
+    ),
     'text/x-objc++src' =>
     array (
       'desc' =>
@@ -12945,8 +13300,19 @@ class DefaultMap extends AbstractMap
       'e' =>
       array (
         0 => 'py',
-        1 => 'pyx',
-        2 => 'wsgi',
+        1 => 'wsgi',
+      ),
+    ),
+    'text/x-python2' =>
+    array (
+      'desc' =>
+      array (
+        0 => 'Python 2 script',
+      ),
+      'e' =>
+      array (
+        0 => 'py',
+        1 => 'py2',
       ),
     ),
     'text/x-python3' =>
@@ -12959,8 +13325,7 @@ class DefaultMap extends AbstractMap
       array (
         0 => 'py',
         1 => 'py3',
-        2 => 'py3x',
-        3 => 'pyi',
+        2 => 'pyi',
       ),
     ),
     'text/x-qml' =>
@@ -13495,9 +13860,9 @@ class DefaultMap extends AbstractMap
       ),
       'e' =>
       array (
-        0 => 'm2t',
-        1 => 'm2ts',
-        2 => 'ts',
+        0 => 'ts',
+        1 => 'm2t',
+        2 => 'm2ts',
         3 => 'mts',
         4 => 'cpi',
         5 => 'clpi',
@@ -13993,13 +14358,6 @@ class DefaultMap extends AbstractMap
   ),
   'e' =>
   array (
-    123 =>
-    array (
-      't' =>
-      array (
-        0 => 'application/vnd.lotus-1-2-3',
-      ),
-    ),
     '32x' =>
     array (
       't' =>
@@ -14076,20 +14434,6 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'model/3mf',
-      ),
-    ),
-    602 =>
-    array (
-      't' =>
-      array (
-        0 => 'application/x-t602',
-      ),
-    ),
-    669 =>
-    array (
-      't' =>
-      array (
-        0 => 'audio/x-mod',
       ),
     ),
     '7z' =>
@@ -15302,6 +15646,13 @@ class DefaultMap extends AbstractMap
         0 => 'application/vnd.cinderella',
       ),
     ),
+    'cel' =>
+    array (
+      't' =>
+      array (
+        0 => 'image/x-kiss-cel',
+      ),
+    ),
     'cer' =>
     array (
       't' =>
@@ -15827,7 +16178,7 @@ class DefaultMap extends AbstractMap
     array (
       't' =>
       array (
-        0 => 'application/x-docbook+xml',
+        0 => 'application/docbook+xml',
       ),
     ),
     'dcl' =>
@@ -16084,7 +16435,7 @@ class DefaultMap extends AbstractMap
     array (
       't' =>
       array (
-        0 => 'application/x-docbook+xml',
+        0 => 'application/docbook+xml',
       ),
     ),
     'docm' =>
@@ -17757,6 +18108,13 @@ class DefaultMap extends AbstractMap
         0 => 'image/heif',
       ),
     ),
+    'hej2' =>
+    array (
+      't' =>
+      array (
+        0 => 'image/hej2k',
+      ),
+    ),
     'hfe' =>
     array (
       't' =>
@@ -17832,6 +18190,13 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'text/x-haskell',
+      ),
+    ),
+    'hta' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/hta',
       ),
     ),
     'htc' =>
@@ -17918,6 +18283,13 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/x-ica',
+      ),
+    ),
+    'icalendar' =>
+    array (
+      't' =>
+      array (
+        0 => 'text/calendar',
       ),
     ),
     'icb' =>
@@ -18548,6 +18920,13 @@ class DefaultMap extends AbstractMap
         1 => 'application/x-karbon',
       ),
     ),
+    'kcf' =>
+    array (
+      't' =>
+      array (
+        0 => 'image/x-kiss-cel',
+      ),
+    ),
     'kdc' =>
     array (
       't' =>
@@ -18870,7 +19249,7 @@ class DefaultMap extends AbstractMap
     array (
       't' =>
       array (
-        0 => 'application/vnd.microsoft.portable-executable',
+        0 => 'application/x-archive',
       ),
     ),
     'link66' =>
@@ -18956,6 +19335,7 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/octet-stream',
+        1 => 'application/x-sony-bbeb',
       ),
     ),
     'lrm' =>
@@ -19366,6 +19746,7 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'text/markdown',
+        1 => 'application/x-genesis-rom',
       ),
     ),
     'mdb' =>
@@ -20041,11 +20422,25 @@ class DefaultMap extends AbstractMap
         0 => 'image/x-msod',
       ),
     ),
+    'msp' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/microsoftpatch',
+      ),
+    ),
     'msty' =>
     array (
       't' =>
       array (
         0 => 'application/vnd.muvee.style',
+      ),
+    ),
+    'msu' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/microsoftupdate',
       ),
     ),
     'msx' =>
@@ -20073,8 +20468,7 @@ class DefaultMap extends AbstractMap
     array (
       't' =>
       array (
-        0 => 'model/vnd.mts',
-        1 => 'video/mp2t',
+        0 => 'video/mp2t',
       ),
     ),
     'mup' =>
@@ -20287,6 +20681,13 @@ class DefaultMap extends AbstractMap
         0 => 'application/vnd.nitf',
       ),
     ),
+    'nix' =>
+    array (
+      't' =>
+      array (
+        0 => 'text/x-nix',
+      ),
+    ),
     'nlu' =>
     array (
       't' =>
@@ -20363,6 +20764,13 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'video/x-nsv',
+      ),
+    ),
+    'ntar' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/x-pcapng',
       ),
     ),
     'ntf' =>
@@ -20461,7 +20869,7 @@ class DefaultMap extends AbstractMap
     array (
       't' =>
       array (
-        0 => 'application/vnd.oasis.opendocument.database',
+        0 => 'application/vnd.oasis.opendocument.base',
       ),
     ),
     'odc' =>
@@ -20734,6 +21142,13 @@ class DefaultMap extends AbstractMap
         0 => 'application/vnd.oasis.opendocument.image-template',
       ),
     ),
+    'otm' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/vnd.oasis.opendocument.text-master-template',
+      ),
+    ),
     'otp' =>
     array (
       't' =>
@@ -20902,6 +21317,13 @@ class DefaultMap extends AbstractMap
         0 => 'application/x-par2',
       ),
     ),
+    'parquet' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/vnd.apache.parquet',
+      ),
+    ),
     'part' =>
     array (
       't' =>
@@ -20963,6 +21385,13 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/vnd.tcpdump.pcap',
+      ),
+    ),
+    'pcapng' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/x-pcapng',
       ),
     ),
     'pcd' =>
@@ -21128,6 +21557,7 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/x-font-type1',
+        1 => 'image/x-pfm',
       ),
     ),
     'pfr' =>
@@ -21644,22 +22074,44 @@ class DefaultMap extends AbstractMap
         0 => 'application/vnd.3m.post-it-notes',
       ),
     ),
+    'pxd' =>
+    array (
+      't' =>
+      array (
+        0 => 'text/x-cython',
+      ),
+    ),
+    'pxi' =>
+    array (
+      't' =>
+      array (
+        0 => 'text/x-cython',
+      ),
+    ),
+    'pxr' =>
+    array (
+      't' =>
+      array (
+        0 => 'image/x-pxr',
+      ),
+    ),
     'py' =>
     array (
       't' =>
       array (
         0 => 'text/x-python3',
-        1 => 'text/x-python',
+        1 => 'text/x-python2',
+        2 => 'text/x-python',
       ),
     ),
-    'py3' =>
+    'py2' =>
     array (
       't' =>
       array (
-        0 => 'text/x-python3',
+        0 => 'text/x-python2',
       ),
     ),
-    'py3x' =>
+    'py3' =>
     array (
       't' =>
       array (
@@ -21719,7 +22171,7 @@ class DefaultMap extends AbstractMap
     array (
       't' =>
       array (
-        0 => 'text/x-python',
+        0 => 'text/x-cython',
       ),
     ),
     'qam' =>
@@ -21734,6 +22186,13 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/vnd.intu.qbo',
+      ),
+    ),
+    'qbrew' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/x-qbrew',
       ),
     ),
     'qcow' =>
@@ -21821,6 +22280,13 @@ class DefaultMap extends AbstractMap
         0 => 'application/vnd.publishare-delta-tree',
       ),
     ),
+    'qpw' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/x-quattropro',
+      ),
+    ),
     'qs' =>
     array (
       't' =>
@@ -21899,6 +22365,13 @@ class DefaultMap extends AbstractMap
       ),
     ),
     'qxl' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/vnd.quark.quarkxpress',
+      ),
+    ),
+    'qxp' =>
     array (
       't' =>
       array (
@@ -22307,6 +22780,13 @@ class DefaultMap extends AbstractMap
         0 => 'image/x-panasonic-rw2',
       ),
     ),
+    'rz' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/x-rzip',
+      ),
+    ),
     's' =>
     array (
       't' =>
@@ -22452,6 +22932,13 @@ class DefaultMap extends AbstractMap
         0 => 'text/x-scss',
       ),
     ),
+    'sct' =>
+    array (
+      't' =>
+      array (
+        0 => 'image/x-sct',
+      ),
+    ),
     'scurl' =>
     array (
       't' =>
@@ -22464,6 +22951,7 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/vnd.stardivision.draw',
+        1 => 'application/x-stardraw',
       ),
     ),
     'sdc' =>
@@ -22471,6 +22959,7 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/vnd.stardivision.calc',
+        1 => 'application/x-starcalc',
       ),
     ),
     'sdd' =>
@@ -22478,6 +22967,7 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/vnd.stardivision.impress',
+        1 => 'application/x-starimpress',
       ),
     ),
     'sdkd' =>
@@ -22494,19 +22984,27 @@ class DefaultMap extends AbstractMap
         0 => 'application/vnd.solent.sdkm+xml',
       ),
     ),
+    'sdm' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/vnd.stardivision.mail',
+      ),
+    ),
     'sdp' =>
     array (
       't' =>
       array (
         0 => 'application/sdp',
-        1 => 'application/vnd.stardivision.impress',
+        1 => 'application/vnd.stardivision.impress-packed',
       ),
     ),
     'sds' =>
     array (
       't' =>
       array (
-        0 => 'application/vnd.stardivision.chart',
+        0 => 'application/x-starchart',
+        1 => 'application/vnd.stardivision.chart',
       ),
     ),
     'sdw' =>
@@ -22514,6 +23012,7 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/vnd.stardivision.writer',
+        1 => 'application/x-starwriter',
       ),
     ),
     'see' =>
@@ -22599,6 +23098,7 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/vnd.spotfire.sfs',
+        1 => 'application/vnd.squashfs',
       ),
     ),
     'sfv' =>
@@ -22648,7 +23148,8 @@ class DefaultMap extends AbstractMap
     array (
       't' =>
       array (
-        0 => 'application/vnd.stardivision.writer',
+        0 => 'application/x-starwriter-global',
+        1 => 'application/vnd.stardivision.writer-global',
       ),
     ),
     'sgm' =>
@@ -22861,7 +23362,7 @@ class DefaultMap extends AbstractMap
     array (
       't' =>
       array (
-        0 => 'text/spreadsheet',
+        0 => 'application/x-sylk',
       ),
     ),
     'slt' =>
@@ -22896,7 +23397,7 @@ class DefaultMap extends AbstractMap
     array (
       't' =>
       array (
-        0 => 'application/vnd.stardivision.mail',
+        0 => 'application/x-starmail',
         1 => 'application/x-genesis-rom',
       ),
     ),
@@ -22905,6 +23406,7 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/vnd.stardivision.math',
+        1 => 'application/x-starmath',
       ),
     ),
     'smi' =>
@@ -23067,6 +23569,13 @@ class DefaultMap extends AbstractMap
         3 => 'audio/x-speex',
       ),
     ),
+    'sqfs' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/vnd.squashfs',
+      ),
+    ),
     'sql' =>
     array (
       't' =>
@@ -23090,6 +23599,13 @@ class DefaultMap extends AbstractMap
       ),
     ),
     'sqsh' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/vnd.squashfs',
+      ),
+    ),
+    'squashfs' =>
     array (
       't' =>
       array (
@@ -23208,6 +23724,13 @@ class DefaultMap extends AbstractMap
         0 => 'application/vnd.sun.xml.draw.template',
       ),
     ),
+    'step' =>
+    array (
+      't' =>
+      array (
+        0 => 'model/step',
+      ),
+    ),
     'stf' =>
     array (
       't' =>
@@ -23242,6 +23765,13 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'audio/x-stm',
+      ),
+    ),
+    'stp' =>
+    array (
+      't' =>
+      array (
+        0 => 'model/step',
       ),
     ),
     'str' =>
@@ -23442,7 +23972,7 @@ class DefaultMap extends AbstractMap
     array (
       't' =>
       array (
-        0 => 'text/spreadsheet',
+        0 => 'application/x-sylk',
       ),
     ),
     'sys' =>
@@ -23563,6 +24093,13 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/x-tzo',
+      ),
+    ),
+    'tar.rz' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/x-rzip-compressed-tar',
       ),
     ),
     'tar.xz' =>
@@ -23890,12 +24427,19 @@ class DefaultMap extends AbstractMap
         0 => 'application/x-msterminal',
       ),
     ),
+    'trz' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/x-rzip-compressed-tar',
+      ),
+    ),
     'ts' =>
     array (
       't' =>
       array (
-        0 => 'text/vnd.trolltech.linguist',
-        1 => 'video/mp2t',
+        0 => 'video/mp2t',
+        1 => 'text/vnd.trolltech.linguist',
       ),
     ),
     'tscn' =>
@@ -24579,6 +25123,7 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/vnd.stardivision.writer',
+        1 => 'application/x-starwriter',
       ),
     ),
     'vox' =>
@@ -25280,6 +25825,13 @@ class DefaultMap extends AbstractMap
         0 => 'image/x-compressed-xcf',
       ),
     ),
+    'xci' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/x-nintendo-switch-xci',
+      ),
+    ),
     'xdf' =>
     array (
       't' =>
@@ -25885,6 +26437,27 @@ class DefaultMap extends AbstractMap
         0 => 'application/zlib',
       ),
     ),
+    123 =>
+    array (
+      't' =>
+      array (
+        0 => 'application/vnd.lotus-1-2-3',
+      ),
+    ),
+    602 =>
+    array (
+      't' =>
+      array (
+        0 => 'application/x-t602',
+      ),
+    ),
+    669 =>
+    array (
+      't' =>
+      array (
+        0 => 'audio/x-mod',
+      ),
+    ),
   ),
   'a' =>
   array (
@@ -25935,13 +26508,6 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/vnd.dbf',
-      ),
-    ),
-    'application/docbook+xml' =>
-    array (
-      't' =>
-      array (
-        0 => 'application/x-docbook+xml',
       ),
     ),
     'application/emf' =>
@@ -26105,6 +26671,13 @@ class DefaultMap extends AbstractMap
         0 => 'application/vnd.ms-powerpoint',
       ),
     ),
+    'application/prs.wavefront-obj' =>
+    array (
+      't' =>
+      array (
+        0 => 'model/obj',
+      ),
+    ),
     'application/smil' =>
     array (
       't' =>
@@ -26179,7 +26752,14 @@ class DefaultMap extends AbstractMap
     array (
       't' =>
       array (
-        0 => 'application/x-docbook+xml',
+        0 => 'application/docbook+xml',
+      ),
+    ),
+    'application/vnd.oasis.opendocument.database' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/vnd.oasis.opendocument.base',
       ),
     ),
     'application/vnd.rn-realmedia-vbr' =>
@@ -26196,18 +26776,11 @@ class DefaultMap extends AbstractMap
         0 => 'application/sdp',
       ),
     ),
-    'application/vnd.stardivision.writer-global' =>
-    array (
-      't' =>
-      array (
-        0 => 'application/vnd.stardivision.writer',
-      ),
-    ),
     'application/vnd.sun.xml.base' =>
     array (
       't' =>
       array (
-        0 => 'application/vnd.oasis.opendocument.database',
+        0 => 'application/vnd.oasis.opendocument.base',
       ),
     ),
     'application/vnd.truedoc' =>
@@ -26362,6 +26935,13 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/vnd.debian.binary-package',
+      ),
+    ),
+    'application/x-docbook+xml' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/docbook+xml',
       ),
     ),
     'application/x-emf' =>
@@ -26644,6 +27224,13 @@ class DefaultMap extends AbstractMap
         0 => 'application/msword',
       ),
     ),
+    'application/x-nx-xci' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/x-nintendo-switch-xci',
+      ),
+    ),
     'application/x-ogg' =>
     array (
       't' =>
@@ -26656,6 +27243,13 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/vnd.palm',
+      ),
+    ),
+    'application/x-parquet' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/vnd.apache.parquet',
       ),
     ),
     'application/x-pcap' =>
@@ -27477,6 +28071,13 @@ class DefaultMap extends AbstractMap
         0 => 'application/fits',
       ),
     ),
+    'image/x-fpx' =>
+    array (
+      't' =>
+      array (
+        0 => 'image/vnd.fpx',
+      ),
+    ),
     'image/x-icb' =>
     array (
       't' =>
@@ -27678,6 +28279,13 @@ class DefaultMap extends AbstractMap
       't' =>
       array (
         0 => 'application/rtf',
+      ),
+    ),
+    'text/spreadsheet' =>
+    array (
+      't' =>
+      array (
+        0 => 'application/x-sylk',
       ),
     ),
     'text/vbs' =>

@@ -1,0 +1,3 @@
+skip node delete stop:
+  title: 'Skip the node deletion stop'
+  description: 'Users can delete nodes regardsless of entity usage'

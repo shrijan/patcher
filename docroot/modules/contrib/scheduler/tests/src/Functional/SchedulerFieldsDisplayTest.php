@@ -27,7 +27,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
    *
    * This test covers hook_form_alter() and _scheduler_entity_type_form_alter().
    *
-   * @dataProvider dataEntityTypeForm()
+   * @dataProvider dataEntityTypeForm
    */
   public function testEntityTypeForm($entityTypeId, $bundle, $operation) {
     $this->drupalLogin($this->adminUser);
@@ -51,8 +51,8 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
    * @return array
    *   Each row has values: [entity type id, bundle id, operation].
    */
-  public function dataEntityTypeForm() {
-    $types = $this->dataStandardEntityTypes();
+  public static function dataEntityTypeForm() {
+    $types = self::dataStandardEntityTypes();
     $data = [];
     foreach ($types as $key => $values) {
       $data["$key-1"] = array_merge($values, ['add first']);
@@ -67,7 +67,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
    *
    * This test covers scheduler_entity_extra_field_info().
    *
-   * @dataProvider dataStandardEntityTypes()
+   * @dataProvider dataStandardEntityTypes
    */
   public function testManageFormDisplay($entityTypeId, $bundle) {
     // Give adminUser the permissions to use the field_ui 'manage form display'
@@ -97,7 +97,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
    *
    * This test covers hook_form_alter() and _scheduler_entity_form_alter().
    *
-   * @dataProvider dataStandardEntityTypes()
+   * @dataProvider dataStandardEntityTypes
    */
   public function testVerticalTabOrFieldset($entityTypeId, $bundle) {
     $this->drupalLogin($this->adminUser);
@@ -210,7 +210,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
    *
    * This test covers _scheduler_entity_form_alter().
    *
-   * @dataProvider dataStandardEntityTypes()
+   * @dataProvider dataStandardEntityTypes
    */
   public function testDisabledFields($entityTypeId, $bundle) {
     $this->drupalLogin($this->schedulerUser);
@@ -256,7 +256,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
   /**
    * Test the option to hide the seconds on the time input fields.
    *
-   * @dataProvider dataStandardEntityTypes()
+   * @dataProvider dataStandardEntityTypes
    */
   public function testHideSeconds($entityTypeId, $bundle) {
     $this->drupalLogin($this->schedulerUser);

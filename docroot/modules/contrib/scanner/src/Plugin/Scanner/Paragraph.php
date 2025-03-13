@@ -2,6 +2,7 @@
 
 namespace Drupal\scanner\Plugin\Scanner;
 
+use Drupal\Core\Logger\LoggerChannelTrait;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
@@ -14,6 +15,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  */
 class Paragraph extends Entity {
 
+  use LoggerChannelTrait;
   use StringTranslationTrait;
 
   /**
@@ -23,7 +25,7 @@ class Paragraph extends Entity {
     $title_collect = [];
     [, $bundle, $fieldname] = explode(':', $field);
 
-    $query = \Drupal::entityQuery('paragraph');
+    $query = $this->entityTypeManager->getStorage('paragraph')->getQuery();
     $query->condition('type', $bundle);
     if ($values['published']) {
       $query->condition('status', 1);
@@ -38,7 +40,7 @@ class Paragraph extends Entity {
 
     if (!empty($entities)) {
       // Load the paragraph(s) which match the criteria.
-      $paragraphs = \Drupal::entityTypeManager()->getStorage('paragraph')->loadMultiple($entities);
+      $paragraphs = $this->entityTypeManager->getStorage('paragraph')->loadMultiple($entities);
       // Iterate over matched paragraphs to extract information that will be
       // rendered in the results.
       foreach ($paragraphs as $paragraph) {
@@ -117,7 +119,7 @@ class Paragraph extends Entity {
     [$entityType, $bundle, $fieldname] = explode(':', $field);
     $data = $undo_data;
 
-    $query = \Drupal::entityQuery($entityType);
+    $query = $this->entityTypeManager->getStorage($entityType)->getQuery();
     $query->condition('type', $bundle);
     if ($values['published']) {
       $query->condition('status', 1);
@@ -130,7 +132,7 @@ class Paragraph extends Entity {
 
     $entities = $query->execute();
 
-    $paragraphs = \Drupal::entityTypeManager()->getStorage('paragraph')->loadMultiple($entities);
+    $paragraphs = $this->entityTypeManager->getStorage('paragraph')->loadMultiple($entities);
     foreach ($paragraphs as $pid => $paragraph) {
       $paraField = $paragraph->get($fieldname);
       $fieldType = $paraField->getFieldDefinition()->getType();
@@ -147,7 +149,7 @@ class Paragraph extends Entity {
         $paragraph->save();
         $data["paragraph:$pid"]['new_vid'] = $paragraph->getRevisionId();
         $processed = $this->handleParentRelationship($paragraph, $values, $data);
-        if ($processed == FALSE) {
+        if (!$processed) {
           // We couldn't handle the relationship for some reason so we move on
           // to the next paragraph.
           continue;
@@ -163,7 +165,7 @@ class Paragraph extends Entity {
         $paragraph->save();
         $data["paragraph:$pid"]['new_vid'] = $paragraph->getRevisionId();
         $processed = $this->handleParentRelationship($paragraph, $values, $data);
-        if ($processed == FALSE) {
+        if (!$processed) {
           // We couldn't handle the relationship for some reason so we move on
           // to the next paragraph.
           continue;
@@ -178,7 +180,7 @@ class Paragraph extends Entity {
    */
   public function undo(array $data) {
     // Load the specified paragraph revision.
-    $paraRevision = \Drupal::entityTypeManager()->getStorage('paragraph')->loadRevision($data['old_vid']);
+    $paraRevision = $this->entityTypeManager->getStorage('paragraph')->loadRevision($data['old_vid']);
     $paraRevision->setNewRevision(TRUE);
     // Set this revision as the current/default revision.
     $paraRevision->isDefaultRevision(TRUE);
@@ -196,8 +198,8 @@ class Paragraph extends Entity {
    *   An array containing the revision id's for the entities being processed.
    *
    * @return bool
-   *   A boolean which denotes whether or not we were able to process the parent
-   *   entitiy(s).
+   *   A boolean which denotes whether we were able to process the parent
+   *   entity(s).
    */
   protected function handleParentRelationship($paragraph, array $values, array &$data) {
     $pid = $paragraph->id();
@@ -215,7 +217,7 @@ class Paragraph extends Entity {
       // Orphaned paragraphs cause issues so we skip them (and their
       // relationships).
       if ($index < 0) {
-        \Drupal::logger('scanner')->notice('Unable to find the delta for this paragraph in the parent entity\'s field (id: @id).', ['@id' => $pid]);
+        $this->getLogger('scanner')->notice('Unable to find the delta for this paragraph in the parent entity\'s field (id: @id).', ['@id' => $pid]);
         return $isProcessed;
       }
       if (!isset($data["node:$id"]['new_vid'])) {
@@ -250,7 +252,7 @@ class Paragraph extends Entity {
       // Orphaned paragraphs cause issues so we skip them (and their
       // relationships).
       if ($index < 0) {
-        \Drupal::logger('scanner')->notice('Unable to find the delta for this paragraph in the parent entity\'s field (id: @id).', ['@id' => $pid]);
+        $this->getLogger('scanner')->notice('Unable to find the delta for this paragraph in the parent entity\'s field (id: @id).', ['@id' => $pid]);
         return $isProcessed;
       }
       // Handle parent entity.
@@ -272,8 +274,8 @@ class Paragraph extends Entity {
       $index = $this->getMultiValueIndex($grandParentEntity->$grandParentField->getValue(), $id);
       // Orphaned paragraphs can cause issues so we skip them.
       if ($index < 0) {
-        \Drupal::logger('scanner')->notice('Unable to find the delta for this paragraph in the parent entity\'s field (id: @id).', ['@id' => $id]);
-        return $isProcessed;
+        $this->getLogger('scanner')->notice('Unable to find the delta for this paragraph in the parent entity\'s field (id: @id).', ['@id' => $id]);
+        return FALSE;
       }
       if (!isset($data["node:$grandParentId"]['new_vid'])) {
         $data["node:$grandParentId"]['old_vid'] = $grandParentEntity->getRevisionId();
@@ -290,12 +292,11 @@ class Paragraph extends Entity {
       ]);
       $grandParentEntity->save();
       $data["node:$grandParentId"]['new_vid'] = $grandParentEntity->getRevisionId();
-      $isProcessed = TRUE;
-      return $isProcessed;
+      return TRUE;
     }
     else {
       // Something we didn't expect.
-      return $isProcessed;
+      return FALSE;
     }
   }
 

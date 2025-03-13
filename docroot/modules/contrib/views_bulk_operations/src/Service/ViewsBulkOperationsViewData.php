@@ -11,9 +11,9 @@ use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Views;
 use Drupal\views_bulk_operations\Form\ViewsBulkOperationsFormTrait;
-use Drupal\views_bulk_operations\ViewsBulkOperationsEvent;
 use Drupal\views_bulk_operations\ViewEntityDataEvent;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Drupal\views_bulk_operations\ViewsBulkOperationsEvent;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Gets Views data needed by VBO.
@@ -23,19 +23,9 @@ class ViewsBulkOperationsViewData implements ViewsBulkOperationsViewDataInterfac
   use ViewsBulkOperationsFormTrait;
 
   /**
-   * Event dispatcher service.
-   */
-  protected EventDispatcherInterface $eventDispatcher;
-
-  /**
-   * Pager manager service.
-   */
-  protected PagerManagerInterface $pagerManager;
-
-  /**
    * The current view.
    */
-  protected ViewExecutable $view;
+  protected ?ViewExecutable $view = NULL;
 
   /**
    * The display handler.
@@ -77,17 +67,23 @@ class ViewsBulkOperationsViewData implements ViewsBulkOperationsViewDataInterfac
    *   Pager manager service.
    */
   public function __construct(
-    EventDispatcherInterface $eventDispatcher,
-    PagerManagerInterface $pagerManager
-  ) {
-    $this->eventDispatcher = $eventDispatcher;
-    $this->pagerManager = $pagerManager;
-  }
+    protected readonly EventDispatcherInterface $eventDispatcher,
+    protected readonly PagerManagerInterface $pagerManager,
+  ) {}
 
   /**
    * {@inheritdoc}
    */
   public function init(ViewExecutable $view, DisplayPluginBase $display, $relationship): void {
+    // Don't reinitialize if we're working on the same view.
+    if (
+      $this->view !== NULL &&
+      $this->view->id() === $view->id() &&
+      $this->view->current_display === $view->current_display
+    ) {
+      return;
+    }
+
     $this->view = $view;
     $this->displayHandler = $display;
     $this->relationship = $relationship;

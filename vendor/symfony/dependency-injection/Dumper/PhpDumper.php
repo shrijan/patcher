@@ -44,7 +44,6 @@ use Symfony\Component\DependencyInjection\TypedReference;
 use Symfony\Component\DependencyInjection\Variable;
 use Symfony\Component\ErrorHandler\DebugClassLoader;
 use Symfony\Component\ExpressionLanguage\Expression;
-use Symfony\Component\HttpKernel\Kernel;
 
 /**
  * PhpDumper dumps a service container as a PHP class.
@@ -342,7 +341,7 @@ EOF;
 
 use Symfony\Component\DependencyInjection\Dumper\Preloader;
 
-if (in_array(PHP_SAPI, ['cli', 'phpdbg'], true)) {
+if (in_array(PHP_SAPI, ['cli', 'phpdbg', 'embed'], true)) {
     return;
 }
 
@@ -354,7 +353,7 @@ $preloadedFiles
 EOF;
 
                 foreach ($this->preload as $class) {
-                    if (!$class || str_contains($class, '$') || \in_array($class, ['int', 'float', 'string', 'bool', 'resource', 'object', 'array', 'null', 'callable', 'iterable', 'mixed', 'void'], true)) {
+                    if (!$class || str_contains($class, '$') || \in_array($class, ['int', 'float', 'string', 'bool', 'resource', 'object', 'array', 'null', 'callable', 'iterable', 'mixed', 'void', 'never'], true)) {
                         continue;
                     }
                     if (!(class_exists($class, false) || interface_exists($class, false) || trait_exists($class, false)) || (new \ReflectionClass($class))->isUserDefined()) {
@@ -390,6 +389,7 @@ return new \\Container{$hash}\\{$options['class']}([
     'container.build_hash' => '$hash',
     'container.build_id' => '$id',
     'container.build_time' => $time,
+    'container.runtime_mode' => \\in_array(\\PHP_SAPI, ['cli', 'phpdbg', 'embed'], true) ? 'web=0' : 'web=1',
 ], __DIR__.\\DIRECTORY_SEPARATOR.'Container{$hash}');
 
 EOF;
@@ -572,7 +572,7 @@ EOF;
         $proxyClasses = [];
         $alreadyGenerated = [];
         $definitions = $this->container->getDefinitions();
-        $strip = '' === $this->docStar && method_exists(Kernel::class, 'stripComments');
+        $strip = '' === $this->docStar;
         $proxyDumper = $this->getProxyDumper();
         ksort($definitions);
         foreach ($definitions as $id => $definition) {
@@ -621,10 +621,12 @@ EOF;
 
             if ($strip) {
                 $proxyCode = "<?php\n".$proxyCode;
-                $proxyCode = substr(Kernel::stripComments($proxyCode), 5);
+                $proxyCode = substr(self::stripComments($proxyCode), 5);
             }
 
-            $proxyClass = explode(' ', $this->inlineRequires ? substr($proxyCode, \strlen($code)) : $proxyCode, 3)[1];
+            $proxyClass = $this->inlineRequires ? substr($proxyCode, \strlen($code)) : $proxyCode;
+            $i = strpos($proxyClass, 'class');
+            $proxyClass = substr($proxyClass, 6 + $i, strpos($proxyClass, ' ', 7 + $i) - $i - 6);
 
             if ($this->asFiles || $this->namespace) {
                 $proxyCode .= "\nif (!\\class_exists('$proxyClass', false)) {\n    \\class_alias(__NAMESPACE__.'\\\\$proxyClass', '$proxyClass', false);\n}\n";
@@ -844,8 +846,7 @@ EOF;
         if ($class = $definition->getClass()) {
             $class = $class instanceof Parameter ? '%'.$class.'%' : $this->container->resolveEnvPlaceholders($class);
             $return[] = sprintf(str_starts_with($class, '%') ? '@return object A %1$s instance' : '@return \%s', ltrim($class, '\\'));
-        } elseif ($definition->getFactory()) {
-            $factory = $definition->getFactory();
+        } elseif ($factory = $definition->getFactory()) {
             if (\is_string($factory) && !str_starts_with($factory, '@=')) {
                 $return[] = sprintf('@return object An instance returned by %s()', $factory);
             } elseif (\is_array($factory) && (\is_string($factory[0]) || $factory[0] instanceof Definition || $factory[0] instanceof Reference)) {
@@ -1168,9 +1169,7 @@ EOTXT
             $arguments[] = (\is_string($i) ? $i.': ' : '').$this->dumpValue($value);
         }
 
-        if (null !== $definition->getFactory()) {
-            $callable = $definition->getFactory();
-
+        if ($callable = $definition->getFactory()) {
             if ('current' === $callable && [0] === array_keys($definition->getArguments()) && \is_array($value) && [0] === array_keys($value)) {
                 return $return.$this->dumpValue($value[0]).$tail;
             }
@@ -1593,7 +1592,7 @@ EOF;
             $export = $this->exportParameters([$value], '', 12, $hasEnum);
             $export = explode('0 => ', substr(rtrim($export, " ]\n"), 2, -1), 2);
 
-            if ($hasEnum || preg_match("/\\\$container->(?:getEnv\('(?:[-.\w\\\\]*+:)*+\w++'\)|targetDir\.'')/", $export[1])) {
+            if ($hasEnum || preg_match("/\\\$container->(?:getEnv\('(?:[-.\w\\\\]*+:)*+\w*+'\)|targetDir\.'')/", $export[1])) {
                 $dynamicPhp[$key] = sprintf('%s%s => %s,', $export[0], $this->export($key), $export[1]);
                 $this->dynamicParameters[$key] = true;
             } else {
@@ -1640,7 +1639,7 @@ EOF;
 
     public function getParameterBag(): ParameterBagInterface
     {
-        if (null === $this->parameterBag) {
+        if (!isset($this->parameterBag)) {
             $parameters = $this->parameters;
             foreach ($this->loadedDynamicParameters as $name => $loaded) {
                 $parameters[$name] = $loaded ? $this->dynamicParameters[$name] : $this->getDynamicParameter($name);
@@ -2183,6 +2182,12 @@ EOF;
             if ($edge->isLazy() || !$value instanceof Definition || !$value->isShared()) {
                 return false;
             }
+
+            // When the source node is a proxy or ghost, it will construct its references only when the node itself is initialized.
+            // Since the node can be cloned before being fully initialized, we do not know how often its references are used.
+            if ($this->getProxyDumper()->isProxyCandidate($value)) {
+                return false;
+            }
             $ids[$edge->getSourceNode()->getId()] = true;
         }
 
@@ -2291,7 +2296,6 @@ EOF;
     private function getClasses(Definition $definition, string $id): array
     {
         $classes = [];
-        $resolve = $this->container->getParameterBag()->resolveValue(...);
 
         while ($definition instanceof Definition) {
             foreach ($definition->getTag($this->preloadTags[0]) as $tag) {
@@ -2303,24 +2307,24 @@ EOF;
             }
 
             if ($class = $definition->getClass()) {
-                $classes[] = trim($resolve($class), '\\');
+                $classes[] = trim($class, '\\');
             }
             $factory = $definition->getFactory();
 
-            if (!\is_array($factory)) {
-                $factory = [$factory];
+            if (\is_string($factory) && !str_starts_with($factory, '@=') && str_contains($factory, '::')) {
+                $factory = explode('::', $factory);
             }
 
-            if (\is_string($factory[0])) {
-                $factory[0] = $resolve($factory[0]);
+            if (!\is_array($factory)) {
+                $definition = $factory;
+                continue;
+            }
 
-                if (false !== $i = strrpos($factory[0], '::')) {
-                    $factory[0] = substr($factory[0], 0, $i);
-                }
+            $definition = $factory[0] ?? null;
+
+            if (\is_string($definition)) {
                 $classes[] = trim($factory[0], '\\');
             }
-
-            $definition = $factory[0];
         }
 
         return $classes;
@@ -2339,5 +2343,66 @@ EOF;
         }
 
         return $this->getProxyDumper()->isProxyCandidate($definition, $asGhostObject, $id) ? $definition : null;
+    }
+
+    /**
+     * Removes comments from a PHP source string.
+     *
+     * We don't use the PHP php_strip_whitespace() function
+     * as we want the content to be readable and well-formatted.
+     */
+    private static function stripComments(string $source): string
+    {
+        if (!\function_exists('token_get_all')) {
+            return $source;
+        }
+
+        $rawChunk = '';
+        $output = '';
+        $tokens = token_get_all($source);
+        $ignoreSpace = false;
+        for ($i = 0; isset($tokens[$i]); ++$i) {
+            $token = $tokens[$i];
+            if (!isset($token[1]) || 'b"' === $token) {
+                $rawChunk .= $token;
+            } elseif (\T_START_HEREDOC === $token[0]) {
+                $output .= $rawChunk.$token[1];
+                do {
+                    $token = $tokens[++$i];
+                    $output .= isset($token[1]) && 'b"' !== $token ? $token[1] : $token;
+                } while (\T_END_HEREDOC !== $token[0]);
+                $rawChunk = '';
+            } elseif (\T_WHITESPACE === $token[0]) {
+                if ($ignoreSpace) {
+                    $ignoreSpace = false;
+
+                    continue;
+                }
+
+                // replace multiple new lines with a single newline
+                $rawChunk .= preg_replace(['/\n{2,}/S'], "\n", $token[1]);
+            } elseif (\in_array($token[0], [\T_COMMENT, \T_DOC_COMMENT])) {
+                if (!\in_array($rawChunk[\strlen($rawChunk) - 1], [' ', "\n", "\r", "\t"], true)) {
+                    $rawChunk .= ' ';
+                }
+                $ignoreSpace = true;
+            } else {
+                $rawChunk .= $token[1];
+
+                // The PHP-open tag already has a new-line
+                if (\T_OPEN_TAG === $token[0]) {
+                    $ignoreSpace = true;
+                } else {
+                    $ignoreSpace = false;
+                }
+            }
+        }
+
+        $output .= $rawChunk;
+
+        unset($tokens, $rawChunk);
+        gc_mem_caches();
+
+        return $output;
     }
 }

@@ -1,0 +1,5 @@
+ps.report:
+  title: 'Paragraphs Stats Report'
+  description: 'View Paragraphs Stats Report'
+  parent: system.admin_reports
+  route_name: ps.report

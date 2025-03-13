@@ -1,5 +1,5 @@
 enabled: true
-# Default behaviour: block unchecked files.
+# Default behavior: block unchecked files.
 outage_action: 0
 overridden_schemes: []
 # Default scan mode: Daemon (over TCP/IP).

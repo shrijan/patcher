@@ -2,8 +2,8 @@
 
 namespace Drupal\scanner\Plugin;
 
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 
 /**
  * Plugin for ScannerPluginInterface.
@@ -44,7 +44,7 @@ interface ScannerPluginInterface extends PluginInspectionInterface, ContainerFac
    * Performs the undo operation.
    *
    * @param array $data
-   *   An array containing the old and new revision id for the enttiy.
+   *   An array containing the old and new revision id for the entity.
    */
   public function undo(array $data);
 

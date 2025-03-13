@@ -1,0 +1,34 @@
+diff --git docroot/modules/contrib/media_file_delete/src/Form/MediaDeleteForm.php docroot/modules/contrib/media_file_delete/src/Form/MediaDeleteForm.php
+index 3c752e0..fda2617 100644
+--- docroot/modules/contrib/media_file_delete/src/Form/MediaDeleteForm.php
++++ docroot/modules/contrib/media_file_delete/src/Form/MediaDeleteForm.php
+@@ -67,18 +67,15 @@ class MediaDeleteForm extends ContentEntityDeleteForm {
+         ],
+       ];
+     }
+-
+-    $config = $this->configFactory()->get('media_file_delete.settings');
+-
+     return $build + [
+       'also_delete_file' => [
+         '#type' => 'checkbox',
+-        '#default_value' => $config->get('delete_file_default'),
+-        '#title' => $this->t('Also delete the associated file?'),
++        '#default_value' => TRUE,
++        '#title' => $this->t(''),
+         '#description' => $this->t('After deleting the media item, this will also remove the associated file %file from the file system.', [
+           '%file' => $file->getFilename(),
+         ]),
+-        '#access' => !$config->get('disable_delete_control'),
++        '#access' => FALSE,
+       ],
+     ];
+   }
+@@ -112,5 +109,4 @@ class MediaDeleteForm extends ContentEntityDeleteForm {
+       ]));
+     }
+   }
+-
+-}
++}
+\ No newline at end of file

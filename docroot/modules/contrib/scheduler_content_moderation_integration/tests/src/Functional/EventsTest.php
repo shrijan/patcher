@@ -12,7 +12,7 @@ class EventsTest extends SchedulerContentModerationBrowserTestBase {
   /**
    * Tests the PUBLISH_IMMEDIATELY Scheduler event subscriber.
    *
-   * @dataProvider dataEntityTypes()
+   * @dataProvider dataEntityTypes
    */
   public function testEvents($entityTypeId, $bundle) {
     $this->drupalLogin($entityTypeId == 'media' ? $this->schedulerMediaUser : $this->schedulerUser);
@@ -38,12 +38,12 @@ class EventsTest extends SchedulerContentModerationBrowserTestBase {
     $this->submitForm($edit, 'Save');
     $entity = $this->getEntityByTitle($entityTypeId, $title);
 
-    // Check that the entity is immediatly published and the moderation state
+    // Check that the entity is immediately published and the moderation state
     // has been updated to 'published'.
     $this->assertTrue($entity->isPublished(), 'The entity is published.');
     $this->assertEquals('published', $entity->moderation_state->value, 'The entity moderation state is published');
 
-    // Repeat the process for editing the exitsing entity. First reset the
+    // Repeat the process for editing the existing entity. First reset the
     // moderation state to 'draft' and set the entity status to unpublished.
     $entity->moderation_state->value = 'draft';
     // $entity->set('status', FALSE);
@@ -60,7 +60,7 @@ class EventsTest extends SchedulerContentModerationBrowserTestBase {
     $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
     $this->submitForm($edit, 'Save');
 
-    // Check that after editing, the entity is immediatly published and the
+    // Check that after editing, the entity is immediately published and the
     // moderation state has been updated to 'published'.
     $entity = $storage->load($entity->id());
     $this->assertTrue($entity->isPublished(), 'The entity is published.');

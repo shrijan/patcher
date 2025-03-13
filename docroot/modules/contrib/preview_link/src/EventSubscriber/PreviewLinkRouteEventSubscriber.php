@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link\EventSubscriber;
 
@@ -89,8 +89,9 @@ class PreviewLinkRouteEventSubscriber implements EventSubscriberInterface {
   public static function getSubscribedEvents(): array {
     // Needs to be higher than ExceptionLoggingSubscriber::onError (priority 50)
     // so exception is not logged. Larger numbers are earlier:
-    $events[KernelEvents::EXCEPTION][] = ['onException', 51];
-    return $events;
+    return [
+      KernelEvents::EXCEPTION => [['onException', 51]],
+    ];
   }
 
 }

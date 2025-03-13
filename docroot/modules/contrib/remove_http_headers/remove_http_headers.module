@@ -33,9 +33,6 @@ function remove_http_headers_page_attachments_alter(array &$attachments): void {
 
 /**
  * Implements hook_help().
- *
- * @return string|void
- *   The help page markup.
  */
 function remove_http_headers_help(string $route_name, RouteMatchInterface $route_match) {
   if ($route_name === 'help.page.remove_http_headers') {

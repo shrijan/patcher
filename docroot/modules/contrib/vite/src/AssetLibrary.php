@@ -23,9 +23,9 @@ class AssetLibrary {
 
   use StringTranslationTrait;
 
-  const DEFAULT_VITE_DEV_SERVER_URL = 'http://localhost:5173';
+  const string DEFAULT_VITE_DEV_SERVER_URL = 'http://localhost:5173';
 
-  const DEFAULT_MANIFEST_LOOKUP_PATHS = [
+  const array DEFAULT_MANIFEST_LOOKUP_PATHS = [
     'dist/manifest.json',
     'dist/.vite/manifest.json',
   ];
@@ -88,11 +88,10 @@ class AssetLibrary {
    * Returns base url used in rewriting library for dist.
    */
   private function getBaseUrl(): string {
-    $baseUrl = $this->getViteSetting('baseUrl');
-    if (empty($baseUrl) || !is_string($baseUrl)) {
-      $baseUrl = $this->getViteSettingFromLibraryConfig('baseUrl');
-    }
-    if (empty($baseUrl) || !is_string($baseUrl)) {
+    $baseUrl = $this->resolveViteSetting('baseUrl');
+
+    // Fallback.
+    if (!is_string($baseUrl)) {
       $baseUrl = '/' . $this->getExtensionBasePath() . '/dist/';
     }
     return $baseUrl;
@@ -111,25 +110,18 @@ class AssetLibrary {
    * Returns relative vite manifest path.
    */
   private function getManifestRelativePath(): string {
-    // Check if manifest path is overridden in settings.
-    $manifestPath = $this->getViteSetting('manifest');
+    // Get configured value.
+    $manifestPath = $this->resolveViteSetting('manifest');
     if (is_string($manifestPath)) {
       return $manifestPath;
     }
-
-    // Check if manifest path is explicitly provided in library definition.
-    $manifestPath = $this->getViteSettingFromLibraryConfig('manifest');
-    if (is_string($manifestPath)) {
-      return $manifestPath;
-    }
-
+    // Or fallback to hardcoded defaults.
     // Check if manifest is present in one of the default locations.
     foreach (self::DEFAULT_MANIFEST_LOOKUP_PATHS as $path) {
       if (file_exists($this->appRoot . '/' . $this->getExtensionBasePath() . '/' . $path)) {
         return $path;
       }
     }
-
     // Return last default manifest lookup path.
     return self::DEFAULT_MANIFEST_LOOKUP_PATHS[array_key_last(self::DEFAULT_MANIFEST_LOOKUP_PATHS)];
   }
@@ -151,37 +143,53 @@ class AssetLibrary {
    * Checks if library should be managed by vite.
    */
   public function shouldBeManagedByVite(): bool {
+    $libraryTypeSpecificSetting = $this->isSdc() ? 'enableInAllComponents' : 'enableInAllLibraries';
 
-    // Check if vite is enabled for this library in site settings.
-    $enabledInSettings = $this->getViteSetting('enabled');
-    if (!is_bool($enabledInSettings)) {
-      $enabledInSettings = FALSE;
+    $enabled = FALSE;
+
+    // Check global defaults for all libraries.
+    $globalDefault = $this->getDefaultFromSettings('enabled');
+    if (is_bool($globalDefault)) {
+      $enabled = $globalDefault;
     }
 
-    // Check if vite is enabled for this library in extension definition.
-    $enabledInExtensionDefinition = FALSE;
-    $setting = 'enableInAllLibraries';
-    if ($this->isSdc()) {
-      $setting = 'enableInAllComponents';
-    }
-    $enabledInExtensionDefinition = $this->getViteSettingFromExtensionDefinition($setting);
-    if (!is_bool($enabledInExtensionDefinition)) {
-      $enabledInExtensionDefinition = FALSE;
+    // Check global defaults for library type.
+    $globalDefaultForLibraryType = $this->getDefaultFromSettings($libraryTypeSpecificSetting);
+    if (is_bool($globalDefaultForLibraryType)) {
+      $enabled = $globalDefaultForLibraryType;
     }
 
-    // Check if vite is enabled for this library in library definition.
-    $enabledInLibraryDefinition = isset($this->library['vite'])
-      && $this->library['vite'] !== FALSE
-      && (!isset($this->library['vite']['enabled']) || $this->library['vite']['enabled'] === TRUE);
+    // Check extension defaults for all libraries.
+    $extensionDefault = $this->getViteSettingFromExtensionDefinition('enabled');
+    if (is_bool($extensionDefault)) {
+      $enabled = $extensionDefault;
+    }
 
-    return $enabledInSettings || $enabledInExtensionDefinition || $enabledInLibraryDefinition;
+    // Check extension defaults for library type.
+    $extensionDefaultForLibraryType = $this->getViteSettingFromExtensionDefinition($libraryTypeSpecificSetting);
+    if (is_bool($extensionDefaultForLibraryType)) {
+      $enabled = $extensionDefaultForLibraryType;
+    }
+
+    // Check library specific settings.
+    $enabledInLibraryDefinition = $this->getViteSettingFromLibraryConfig('enabled');
+    if (is_bool($enabledInLibraryDefinition)) {
+      $enabled = $enabledInLibraryDefinition;
+    }
+
+    // Check overrides.
+    $override = $this->getOverrideFromSettings('enabled');
+    if (is_bool($override)) {
+      $enabled = $override;
+    }
+
+    return $enabled;
   }
 
   /**
    * Returns vite setting from extension definition.
    */
-  private function getViteSettingFromExtensionDefinition(string $setting): bool|string|null {
-
+  private function getViteSettingFromExtensionDefinition(string $setting): mixed {
     // Get extension definition.
     $extensionDefinition = [];
     if ($this->modules->exists($this->extension)) {
@@ -192,31 +200,41 @@ class AssetLibrary {
     }
 
     // Check if extension definition has vite settings.
-    if (
-      !isset($extensionDefinition['vite'])
-      || !is_array($extensionDefinition['vite'])
-    ) {
+    if (!isset($extensionDefinition['vite'])) {
       return NULL;
     }
-
+    // Special case for handling `vite: true/false`.
+    if ($setting === 'enabled' && is_bool($extensionDefinition['vite'])) {
+      return $extensionDefinition['vite'];
+    }
     // Check if setting is present in extension definition.
-    if (!isset($extensionDefinition['vite'][$setting])) {
+    if (!is_array($extensionDefinition['vite']) || !isset($extensionDefinition['vite'][$setting])) {
       return NULL;
     }
 
     // Return setting value.
-    $value = $extensionDefinition['vite'][$setting];
-    if (!is_bool($value)) {
-      $value = strval($value);
-    }
-    return $value;
+    return $extensionDefinition['vite'][$setting];
+  }
+
+  /**
+   * Returns dev dependencies.
+   */
+  public function getDevDependencies(): array {
+    return $this->library['vite']['devDependencies'] ?? [];
+  }
+
+  /**
+   * Returns dev dependencies.
+   */
+  public function getDevDependencies(): array {
+    return $this->library['vite']['devDependencies'] ?? [];
   }
 
   /**
    * Determines if vite dev server or dist build should serve library assets.
    */
   public function shouldUseDevServer(): bool {
-    $useDevServer = $this->getViteSetting('useDevServer');
+    $useDevServer = $this->resolveViteSetting('useDevServer');
     if ($useDevServer === NULL || $useDevServer === 'auto') {
       try {
         $acceptableStatuses = [
@@ -240,14 +258,13 @@ class AssetLibrary {
    * Returns base url of vite dev server for the library.
    */
   public function getDevServerBaseUrl(): string {
-    $baseUrl = $this->getViteSetting('devServerUrl');
-    if (!is_string($baseUrl) || !UrlHelper::isValid($baseUrl)) {
-      $baseUrl = $this->getViteSettingFromLibraryConfig('devServerUrl');
+    // Get configured value.
+    $devServerUrl = $this->resolveViteSetting('devServerUrl');
+    // Or fallback to hardcoded value.
+    if (!is_string($devServerUrl) || !UrlHelper::isValid($devServerUrl)) {
+      $devServerUrl = self::DEFAULT_VITE_DEV_SERVER_URL;
     }
-    if (!is_string($baseUrl) || !UrlHelper::isValid($baseUrl)) {
-      $baseUrl = self::DEFAULT_VITE_DEV_SERVER_URL;
-    }
-    return $baseUrl;
+    return $devServerUrl;
   }
 
   /**
@@ -258,29 +275,75 @@ class AssetLibrary {
   }
 
   /**
-   * Returns vite setting for the library or NULL.
+   * Get vite setting defaults from site settings.
    */
-  private function getViteSetting(string $setting): mixed {
-    $settings = Settings::get('vite', []);
-    if (!is_array($settings)) {
-      return NULL;
-    }
-
+  private function getDefaultFromSettings(string $setting): mixed {
+    $settings = $this->getViteSettings();
     $value = NULL;
 
-    // Global settings.
+    // Global defaults.
     if (isset($settings[$setting])) {
       $value = $settings[$setting];
     }
 
-    // Extension specific settings.
+    return $value;
+  }
+
+  /**
+   * Get vite setting override from site settings.
+   */
+  private function getOverrideFromSettings(string $setting): mixed {
+    $settings = $this->getViteSettings();
+    $value = NULL;
+
+    // Extension specific overrides.
     if (isset($settings['overrides'][$this->extension][$setting])) {
       $value = $settings['overrides'][$this->extension][$setting];
     }
 
-    // Library specific settings.
+    // Library specific overrides.
     if (isset($settings['overrides'][$this->extension . '/' . $this->libraryId][$setting])) {
       $value = $settings['overrides'][$this->extension . '/' . $this->libraryId][$setting];
+    }
+
+    return $value;
+  }
+
+  /**
+   * Get vite settings from site settings.
+   */
+  private function getViteSettings(): array {
+    $settings = Settings::get('vite', []);
+    if (!is_array($settings)) {
+      return [];
+    }
+
+    return $settings;
+  }
+
+  /**
+   * Resolve vite settings from defaults, library config and overrides.
+   */
+  private function resolveViteSetting(string $setting): mixed {
+    // Global defaults.
+    $value = $this->getDefaultFromSettings($setting);
+
+    // Extension definition overrides.
+    $extensionOverride = $this->getViteSettingFromExtensionDefinition($setting);
+    if (!is_null($extensionOverride)) {
+      $value = $extensionOverride;
+    }
+
+    // Library definition overrides.
+    $libraryOverride = $this->getViteSettingFromLibraryConfig($setting);
+    if (!is_null($libraryOverride)) {
+      $value = $libraryOverride;
+    }
+
+    // Overrides.
+    $override = $this->getOverrideFromSettings($setting);
+    if (!is_null($override)) {
+      $value = $override;
     }
 
     return $value;
@@ -290,14 +353,20 @@ class AssetLibrary {
    * Returns vite library config for the library or NULL.
    */
   private function getViteSettingFromLibraryConfig(string $setting): mixed {
-    if (!isset($this->library['vite']) || !is_array($this->library['vite'])) {
+    // Check if library has vite settings.
+    if (!isset($this->library['vite'])) {
       return NULL;
     }
-    $value = NULL;
-    if (!empty($this->library['vite'][$setting])) {
-      $value = $this->library['vite'][$setting];
+    // Special case for handling `vite: true/false`.
+    if ($setting === 'enabled' && is_bool($this->library['vite'])) {
+      return $this->library['vite'];
     }
-    return $value;
+    // Check if setting is present in library config.
+    if (!is_array($this->library['vite']) || !isset($this->library['vite'][$setting])) {
+      return NULL;
+    }
+    // Return setting value.
+    return $this->library['vite'][$setting];
   }
 
   /**

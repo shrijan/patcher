@@ -2,12 +2,12 @@
 
 namespace Drupal\geolocation_google_maps\Plugin\geolocation\Geocoder;
 
+use Drupal\Component\Serialization\Json;
+use Drupal\Core\Render\BubbleableMetadata;
+use Drupal\geolocation\KeyProvider;
+use Drupal\geolocation_google_maps\GoogleGeocoderBase;
 use Drupal\geolocation_google_maps\Plugin\geolocation\MapProvider\GoogleMaps;
 use GuzzleHttp\Exception\RequestException;
-use Drupal\Component\Serialization\Json;
-use Drupal\geolocation_google_maps\GoogleGeocoderBase;
-use Drupal\geolocation\KeyProvider;
-use Drupal\Core\Render\BubbleableMetadata;
 
 /**
  * Provides the Google Geocoding API.
@@ -142,7 +142,7 @@ class GoogleGeocodingAPI extends GoogleGeocoderBase {
         ->getBody());
     }
     catch (RequestException $e) {
-      watchdog_exception('geolocation', $e);
+      \Drupal::logger('geolocation')->warning($e->getMessage());
       return FALSE;
     }
 
@@ -204,7 +204,7 @@ class GoogleGeocodingAPI extends GoogleGeocoderBase {
       $result = Json::decode(\Drupal::httpClient()->request('GET', $request_url)->getBody());
     }
     catch (RequestException $e) {
-      watchdog_exception('geolocation', $e);
+      \Drupal::logger('geolocation')->warning($e->getMessage());
       return FALSE;
     }
 

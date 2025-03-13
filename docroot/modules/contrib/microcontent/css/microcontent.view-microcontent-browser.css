@@ -1,0 +1,99 @@
+/**
+ * @microcontent.view-microcontent-browser.css
+ */
+
+.view-microcontent-browser .pager {
+  padding: 20px;
+}
+
+.view-microcontent-browser .view-content {
+  display: flex;
+  overflow: hidden;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.view-microcontent-browser .views-row {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 1em;
+  transition: 0.2s;
+  border: 2px solid #b8b8b8;
+}
+
+@media screen and (min-width: 37.5em) {
+  /* 600px */
+  .view-microcontent-browser .views-row {
+    width: 33%;
+  }
+}
+
+.view-microcontent-browser .views-row .field--label-inline {
+  display: flex;
+}
+
+.view-microcontent-browser .views-row .field--label-inline .field__label {
+  width: 33.333%;
+  text-align: left;
+}
+
+.view-microcontent-browser .views-row .field--label-inline:nth-of-type(1) {
+  margin-top: 1em;
+}
+
+.view-microcontent-browser .views-row .field--label-inline .field__item {
+  text-align: left;
+}
+
+@media screen and (min-width: 62.5em) {
+  /* 1000px */
+  .view-microcontent-browser .views-row {
+    width: 25%;
+  }
+}
+
+.view-microcontent-browser .views-row.checked {
+  border: 2px solid #37802f;
+}
+
+.view-microcontent-browser .views-row img {
+  width: 100%;
+  height: auto;
+  vertical-align: bottom;
+}
+
+.view-microcontent-browser .views-row img::selection {
+  background: transparent;
+}
+
+.view-microcontent-browser .views-row .views-field-entity-browser-select {
+  position: absolute !important;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  width: 1px;
+  height: 1px;
+}
+
+.view-microcontent-browser .views-row::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  content: " ";
+  -webkit-transition: all 0.2s;
+  transition: all 0.2s;
+  background: transparent url("../images/check.svg") no-repeat center center;
+  background-size: 0;
+}
+
+.view-microcontent-browser .views-row.checked::after {
+  background-size: 80px 80px;
+}
+
+input[type="submit"][name="filter"] {
+  margin-top: 30px;
+  margin-left: 10px;
+}

@@ -6,8 +6,8 @@ use PHP_CodeSniffer\Files\File;
 use function array_key_exists;
 use function array_merge;
 use function count;
+use const T_ANON_CLASS;
 use const T_ARRAY;
-use const T_ARRAY_HINT;
 use const T_BREAK;
 use const T_CALLABLE;
 use const T_CLASS;
@@ -50,7 +50,9 @@ use const T_STRING;
 use const T_THROW;
 use const T_TRAIT;
 use const T_TRUE;
+use const T_TYPE_CLOSE_PARENTHESIS;
 use const T_TYPE_INTERSECTION;
+use const T_TYPE_OPEN_PARENTHESIS;
 use const T_TYPE_UNION;
 use const T_VAR;
 use const T_WHITESPACE;
@@ -62,13 +64,13 @@ class TokenHelper
 {
 
 	/** @var array<int, (int|string)> */
-	public static $arrayTokenCodes = [
+	public static array $arrayTokenCodes = [
 		T_ARRAY,
 		T_OPEN_SHORT_ARRAY,
 	];
 
 	/** @var array<int, (int|string)> */
-	public static $typeKeywordTokenCodes = [
+	public static array $typeKeywordTokenCodes = [
 		T_CLASS,
 		T_TRAIT,
 		T_INTERFACE,
@@ -76,7 +78,16 @@ class TokenHelper
 	];
 
 	/** @var array<int, (int|string)> */
-	public static $ineffectiveTokenCodes = [
+	public static array $typeWithAnonymousClassKeywordTokenCodes = [
+		T_CLASS,
+		T_ANON_CLASS,
+		T_TRAIT,
+		T_INTERFACE,
+		T_ENUM,
+	];
+
+	/** @var array<int, (int|string)> */
+	public static array $ineffectiveTokenCodes = [
 		T_WHITESPACE,
 		T_COMMENT,
 		T_DOC_COMMENT,
@@ -94,7 +105,7 @@ class TokenHelper
 	];
 
 	/** @var array<int, (int|string)> */
-	public static $annotationTokenCodes = [
+	public static array $annotationTokenCodes = [
 		T_DOC_COMMENT_TAG,
 		T_PHPCS_DISABLE,
 		T_PHPCS_ENABLE,
@@ -104,7 +115,7 @@ class TokenHelper
 	];
 
 	/** @var array<int, (int|string)> */
-	public static $inlineCommentTokenCodes = [
+	public static array $inlineCommentTokenCodes = [
 		T_COMMENT,
 		T_PHPCS_DISABLE,
 		T_PHPCS_ENABLE,
@@ -114,7 +125,7 @@ class TokenHelper
 	];
 
 	/** @var array<int, (int|string)> */
-	public static $earlyExitTokenCodes = [
+	public static array $earlyExitTokenCodes = [
 		T_RETURN,
 		T_CONTINUE,
 		T_BREAK,
@@ -123,14 +134,14 @@ class TokenHelper
 	];
 
 	/** @var array<int, (int|string)> */
-	public static $functionTokenCodes = [
+	public static array $functionTokenCodes = [
 		T_FUNCTION,
 		T_CLOSURE,
 		T_FN,
 	];
 
 	/** @var array<int, (int|string)> */
-	public static $propertyModifiersTokenCodes = [
+	public static array $propertyModifiersTokenCodes = [
 		T_VAR,
 		T_PUBLIC,
 		T_PROTECTED,
@@ -415,7 +426,7 @@ class TokenHelper
 			$phpcsFile,
 			[T_WHITESPACE, T_DOC_COMMENT_WHITESPACE],
 			$phpcsFile->eolChar,
-			$pointer
+			$pointer,
 		);
 		if ($newLinePointerOnPreviousLine === null) {
 			return null;
@@ -425,7 +436,7 @@ class TokenHelper
 			$phpcsFile,
 			[T_WHITESPACE, T_DOC_COMMENT_WHITESPACE],
 			$phpcsFile->eolChar,
-			$newLinePointerOnPreviousLine - 1
+			$newLinePointerOnPreviousLine - 1,
 		);
 		if ($newLinePointerBeforePreviousLine === null) {
 			return null;
@@ -492,12 +503,11 @@ class TokenHelper
 				[
 					T_SELF,
 					T_PARENT,
-					T_ARRAY_HINT,
 					T_CALLABLE,
 					T_FALSE,
 					T_TRUE,
 					T_NULL,
-				]
+				],
 			);
 		}
 
@@ -514,7 +524,7 @@ class TokenHelper
 		if ($typeHintTokenCodes === null) {
 			$typeHintTokenCodes = array_merge(
 				self::getOnlyTypeHintTokenCodes(),
-				[T_TYPE_UNION, T_TYPE_INTERSECTION]
+				[T_TYPE_UNION, T_TYPE_INTERSECTION, T_TYPE_OPEN_PARENTHESIS, T_TYPE_CLOSE_PARENTHESIS],
 			);
 		}
 

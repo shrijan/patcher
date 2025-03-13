@@ -31,12 +31,12 @@
    * @param {HTMLElement} context Context
    */
   Drupal.geolocation.geocoder.googlePlacesAPI.attach = function (context) {
-    var autocomplete = $('input.geolocation-geocoder-address', context);
+    var autocomplete = $(once('geolocation-geocoder-autocomplete', 'input.geolocation-geocoder-address', context));
     if (!autocomplete.length) {
       return;
     }
 
-    $(once('geolocation-geocoder-autocomplete', autocomplete)).autocomplete({
+    autocomplete.autocomplete({
       autoFocus: true,
       minLength: minLength,
       source: function (request, response) {
@@ -44,6 +44,9 @@
         var componentRestrictions = {};
         if (typeof drupalSettings.geolocation.geocoder.google_places_api.componentRestrictions !== 'undefined') {
           componentRestrictions = drupalSettings.geolocation.geocoder.google_places_api.componentRestrictions;
+          if (componentRestrictions.country !== undefined && !$.isArray(componentRestrictions.country)) {
+            componentRestrictions.country = componentRestrictions.country.split(',');
+          }
         }
 
         Drupal.geolocation.geocoder.googlePlacesAPI.autocompleteService.getPlacePredictions(

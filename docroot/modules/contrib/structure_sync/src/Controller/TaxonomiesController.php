@@ -496,7 +496,7 @@ class TaxonomiesController extends ControllerBase {
 
     drupal_flush_all_caches();
 
-    StructureSyncHelper::logMessage('Succesfully flushed caches');
+    StructureSyncHelper::logMessage('Successfully flushed caches');
 
     $context['finished'] = 1;
   }

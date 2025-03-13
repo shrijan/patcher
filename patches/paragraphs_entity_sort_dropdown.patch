@@ -1,0 +1,19 @@
+diff --git docroot/modules/contrib/paragraphs/src/Plugin/Field/FieldWidget/ParagraphsWidget.php docroot/modules/contrib/paragraphs/src/Plugin/Field/FieldWidget/ParagraphsWidget.php
+index 5e31eed..172d865 100644
+--- docroot/modules/contrib/paragraphs/src/Plugin/Field/FieldWidget/ParagraphsWidget.php
++++ docroot/modules/contrib/paragraphs/src/Plugin/Field/FieldWidget/ParagraphsWidget.php
+@@ -1587,11 +1587,13 @@ class ParagraphsWidget extends WidgetBase {
+     // sort children first.
+     foreach (Element::children($elements, TRUE) as $child) {
+       // Clone the element as an operation.
+-      $operations[$child] = ['title' => $elements[$child]];
++      $value = (string) $elements[$child]['#value'];
++      $operations[$value] = ['title' => $elements[$child]];
+ 
+       // Flag the original element as printed so it doesn't render twice.
+       $elements[$child]['#printed'] = TRUE;
+     }
++    uksort($operations, 'strcasecmp');
+ 
+     $build['operations'] = [
+       '#type' => 'paragraph_operations',

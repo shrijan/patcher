@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link\Access;
 
@@ -52,7 +52,7 @@ class PreviewLinkCanonicalRerouteAccessCheck implements AccessInterface {
    * @throws \Drupal\preview_link\Exception\PreviewLinkRerouteException
    *   When a claimed token grants access to entity for this route match.
    */
-  public function access(Request $request = NULL): AccessResultInterface {
+  public function access(?Request $request = NULL): AccessResultInterface {
     $cacheability = (new CacheableMetadata())
       ->addCacheContexts(['route']);
 
@@ -61,7 +61,7 @@ class PreviewLinkCanonicalRerouteAccessCheck implements AccessInterface {
     $routeMatch = $this->routeMatch->getMasterRouteMatch();
     $route = $routeMatch->getRouteObject();
 
-    $entityParameterName = $route ? $route->getRequirement('_access_preview_link_canonical_rerouter') : NULL;
+    $entityParameterName = $route?->getRequirement('_access_preview_link_canonical_rerouter');
     if (!isset($entityParameterName)) {
       // If the requirement doesnt exist then the master request isn't the
       // canonical route, its probably simulated from something like menu or
@@ -69,7 +69,7 @@ class PreviewLinkCanonicalRerouteAccessCheck implements AccessInterface {
       return AccessResult::allowed()->addCacheableDependency($cacheability);
     }
 
-    if (!$request) {
+    if ($request === NULL) {
       return AccessResult::allowed()->addCacheableDependency($cacheability);
     }
 
@@ -86,7 +86,7 @@ class PreviewLinkCanonicalRerouteAccessCheck implements AccessInterface {
     $cacheability->addCacheContexts(['session']);
     $collection = $this->privateTempStoreFactory->get('preview_link');
     $claimedTokens = $collection->get('keys') ?? [];
-    if (!$claimedTokens) {
+    if (count($claimedTokens) === 0) {
       // Session has no claimed tokens.
       return AccessResult::allowed()->addCacheableDependency($cacheability);
     }

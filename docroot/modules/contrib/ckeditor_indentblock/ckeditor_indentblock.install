@@ -29,7 +29,7 @@ function ckeditor_indentblock_requirements($phase) {
       $directories[] = "$profile_path/libraries/";
     }
 
-    // Search for Indentblock plugin URL including the default URL;
+    // Search for Indentblock plugin URL including the default URL.
     $plugin_url = 'libraries/indentblock/plugin.js';
     foreach ($directories as $dir) {
       if (file_exists(DRUPAL_ROOT . '/' . $dir . 'indentblock/plugin.js')) {
@@ -58,7 +58,7 @@ function ckeditor_indentblock_requirements($phase) {
     }
   }
   // Indentblock functionality is included in core CKEditor5.
-  else if (($phase == 'install' || $phase == 'runtime') && \Drupal::moduleHandler()->moduleExists('ckeditor5')) {
+  elseif (($phase == 'install' || $phase == 'runtime') && \Drupal::moduleHandler()->moduleExists('ckeditor5')) {
     $requirements['indentblock'] = [
       'title' => t('CKEditor IndentBlock'),
       'value' => t('Plugin functionality included in CKEditor 5.'),

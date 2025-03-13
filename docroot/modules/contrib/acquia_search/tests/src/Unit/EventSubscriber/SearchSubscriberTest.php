@@ -9,7 +9,6 @@ use Drupal\acquia_search\Client\Solarium\Endpoint;
 use Drupal\acquia_search\EventSubscriber\SearchSubscriber;
 use Drupal\acquia_search\Helper\Flood;
 use Drupal\Component\Datetime\Time;
-use Drupal\Core\Cache\MemoryBackend;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Http\ClientFactory;
 use Drupal\Core\Lock\LockBackendInterface;
@@ -20,6 +19,8 @@ use GuzzleHttp\Client;
 use Psr\Log\LoggerInterface;
 use Solarium\Core\Client\Request;
 use Solarium\Core\Event\PreExecuteRequest;
+use Solarium\Plugin\NoWaitForResponseRequest;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -69,7 +70,7 @@ class SearchSubscriberTest extends UnitTestCase {
 
     $client_factory = $this->createMock(ClientFactory::class);
     $client_factory->method('fromOptions')->willReturn($this->createMock(Client::class));
-    $cache_default = new MemoryBackend();
+    $cache_default = $this->getMockBuilder('Drupal\Core\Cache\MemoryBackend')->disableOriginalConstructor()->getMock();
     $datetime_time = new Time(new RequestStack());
     $lock = $this->createMock(LockBackendInterface::class);
 
@@ -105,11 +106,26 @@ class SearchSubscriberTest extends UnitTestCase {
    */
   public function testMissingCookie(): void {
     $request = $this->createMock(Request::class);
+    $event_name = PreExecuteRequest::class;
     $request
       ->method('getHandler')
       ->willReturn('handler');
+
+    if (class_exists(NoWaitForResponseRequest::class)) {
+      $search_subscriber = $this->createMock(NoWaitForResponseRequest::class);
+    }
+    else {
+      $search_subscriber = $this->searchSubscriber;
+    }
+    $event_dispatcher = $this->createMock(EventDispatcherInterface::class);
+    $event_dispatcher
+      ->expects($this->any())
+      ->method('getListeners')
+      ->willReturn([
+        [$search_subscriber, 'preExecuteRequest'],
+      ]);
     $event = new PreExecuteRequest($request, $this->createMock(Endpoint::class));
-    $this->searchSubscriber->preExecuteRequest($event);
+    $this->searchSubscriber->preExecuteRequest($event, $event_name, $event_dispatcher);
     $resp = $event->getResponse();
     self::assertNotNull($resp);
     self::assertEquals(401, $resp->getStatusCode());

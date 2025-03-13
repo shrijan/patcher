@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link\Plugin\Validation\Constraint;
 
@@ -26,12 +26,13 @@ class PreviewLinkEntitiesUniqueConstraintValidator extends ConstraintValidator {
       assert($item instanceof DynamicEntityReferenceItem);
       $entity = $item->entity;
       $hash = $item->target_type . '|' . $item->target_id;
-      if (($duplicateDelta = array_search($hash, $entities, TRUE)) !== FALSE) {
+      $duplicateDelta = array_search($hash, $entities, TRUE);
+      if ($duplicateDelta !== FALSE) {
         $this->context
           ->buildViolation($constraint->multipleReferences)
-          ->setParameter('%entity_type', $entity ? $entity->getEntityType()->getSingularLabel() : $item->target_type)
-          ->setParameter('%other_delta', $duplicateDelta + 1)
-          ->atPath($delta)
+          ->setParameter('%entity_type', $entity !== NULL ? $entity->getEntityType()->getSingularLabel() : $item->target_type)
+          ->setParameter('%other_delta', (string) ($duplicateDelta + 1))
+          ->atPath((string) $delta)
           ->addViolation();
       }
       else {

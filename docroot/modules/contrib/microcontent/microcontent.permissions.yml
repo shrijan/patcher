@@ -1,0 +1,19 @@
+administer microcontent types:
+  title: Administer micro-content types
+  description: Add, update and delete micro-content types
+  restrict access: true
+
+administer microcontent:
+  title: Administer micro-content
+  restrict access: true
+
+view unpublished microcontent:
+  title: View unpublished micro-content
+  description: View the unpublished micro-content
+
+access microcontent overview:
+  title: 'Access micro-content overview'
+  description: 'View the micro-content overview page.'
+
+permission_callbacks:
+  - \Drupal\microcontent\Access\MicroContentPermissions::getPermissions

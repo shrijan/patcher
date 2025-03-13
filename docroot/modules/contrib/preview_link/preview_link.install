@@ -1,11 +1,6 @@
 <?php
 
-declare(strict_types = 1);
-
-/**
- * @file
- * Install file.
- */
+declare(strict_types=1);
 
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -103,6 +98,7 @@ function preview_link_update_8205(array &$sandbox): TranslatableMarkup {
   if (!$storage instanceof PreviewLinkStorageInterface) {
     return \t('The entity type is not using the default storage class.');
   }
+  /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $tableMapping */
   $tableMapping = $storage->getTableMapping();
   $step_size = Settings::get('entity_update_batch_size', 50);
 
@@ -120,7 +116,7 @@ function preview_link_update_8205(array &$sandbox): TranslatableMarkup {
     ->range(0, $step_size)
     ->execute()
     ->fetchAll();
-  if ($previewLinks) {
+  if (count($previewLinks) > 0) {
     $insert = $database->insert($tableMapping->getFieldTableName('entities'));
     $insert->fields([
       'bundle',

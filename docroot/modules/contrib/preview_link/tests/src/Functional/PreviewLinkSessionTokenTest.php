@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\Tests\preview_link\Functional;
 
@@ -8,7 +8,6 @@ use Drupal\Core\Url;
 use Drupal\entity_test\Entity\EntityTestMulRevPub;
 use Drupal\entity_test\Entity\EntityTestRevPub;
 use Drupal\preview_link\Entity\PreviewLink;
-use Drupal\preview_link_test_time\TimeMachine;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Tests\system\Functional\Cache\AssertPageCacheContextsAndTagsTrait;
 use Drupal\user\RoleInterface;
@@ -44,8 +43,8 @@ final class PreviewLinkSessionTokenTest extends BrowserTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
+    /** @var \Drupal\preview_link_test_time\TimeMachine $timeMachine */
     $timeMachine = \Drupal::service('datetime.time');
-    assert($timeMachine instanceof TimeMachine);
     $currentTime = new \DateTime('14 May 2014 14:00:00');
     $timeMachine->setTime($currentTime);
 
@@ -90,7 +89,7 @@ final class PreviewLinkSessionTokenTest extends BrowserTestBase {
       'preview_token' => $previewLink->getToken(),
     ]);
     $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->addressEquals($previewLinkUrl2);
+    $this->assertSession()->addressEquals($previewLinkUrl2->setAbsolute()->toString());
     $this->assertCacheContext('session');
     $this->assertSession()->pageTextContains('You are viewing this page because a preview link granted you access. Click here to remove token.');
 
@@ -98,7 +97,7 @@ final class PreviewLinkSessionTokenTest extends BrowserTestBase {
     $this->drupalGet($entity1->toUrl());
     $this->assertSession()->statusCodeEquals(200);
     $this->assertCacheContext('session');
-    $this->assertSession()->addressEquals($previewLinkUrl1);
+    $this->assertSession()->addressEquals($previewLinkUrl1->setAbsolute()->toString());
     $this->assertSession()->pageTextContains('You are viewing this page because a preview link granted you access. Click here to remove token.');
 
     // Each canonical page now inaccessible after removing session tokens.
@@ -113,7 +112,7 @@ final class PreviewLinkSessionTokenTest extends BrowserTestBase {
     $logger = \Drupal::service('logger.preview_link_test');
     $messages = array_map(function ($log): string {
       [1 => $message, 2 => $messagePlaceholders] = $log;
-      return empty($messagePlaceholders) ? $message : strtr($message, $messagePlaceholders);
+      return count($messagePlaceholders) === 0 ? $message : strtr($message, $messagePlaceholders);
     }, $logger->getLogs());
     $channels = array_map(function ($log): ?string {
       return $log[3]['channel'] ?? NULL;
@@ -150,7 +149,7 @@ final class PreviewLinkSessionTokenTest extends BrowserTestBase {
     // Should redirect to preview link.
     $this->drupalGet($entity->toUrl());
     $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->addressEquals($previewLinkUrl);
+    $this->assertSession()->addressEquals($previewLinkUrl->setAbsolute()->toString());
 
     // Remove session tokens.
     $this->drupalGet(Url::fromRoute('preview_link.session_tokens.remove'));
@@ -165,7 +164,7 @@ final class PreviewLinkSessionTokenTest extends BrowserTestBase {
     // Should redirect to preview link again.
     $this->drupalGet($entity->toUrl());
     $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->addressEquals($previewLinkUrl);
+    $this->assertSession()->addressEquals($previewLinkUrl->setAbsolute()->toString());
   }
 
   /**
@@ -277,7 +276,7 @@ final class PreviewLinkSessionTokenTest extends BrowserTestBase {
 
     $editUrl = $claimedEntity->toUrl('edit-form');
     $this->drupalGet($editUrl);
-    $this->assertSession()->addressEquals($editUrl->toString());
+    $this->assertSession()->addressEquals($editUrl->setAbsolute()->toString());
   }
 
   /**

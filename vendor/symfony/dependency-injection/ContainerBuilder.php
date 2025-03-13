@@ -117,7 +117,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     private array $vendors;
 
     /**
-     * @var string[] the list of paths in vendor directories
+     * @var array<string, bool> the cache for paths being in vendor directories
      */
     private array $pathsInVendor = [];
 
@@ -360,7 +360,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
                 $resource = new ClassExistenceResource($class, false);
                 $classReflector = $resource->isFresh(0) ? false : new \ReflectionClass($class);
             } else {
-                $classReflector = class_exists($class) ? new \ReflectionClass($class) : false;
+                $classReflector = class_exists($class) || interface_exists($class, false) ? new \ReflectionClass($class) : false;
             }
         } catch (\ReflectionException $e) {
             if ($throw) {
@@ -1382,13 +1382,21 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function registerAliasForArgument(string $id, string $type, ?string $name = null): Alias
     {
-        $name = (new Target($name ?? $id))->name;
+        $parsedName = (new Target($name ??= $id))->getParsedName();
 
-        if (!preg_match('/^[a-zA-Z_\x7f-\xff]/', $name)) {
-            throw new InvalidArgumentException(sprintf('Invalid argument name "%s" for service "%s": the first character must be a letter.', $name, $id));
+        if (!preg_match('/^[a-zA-Z_\x7f-\xff]/', $parsedName)) {
+            if ($id !== $name) {
+                $id = sprintf(' for service "%s"', $id);
+            }
+
+            throw new InvalidArgumentException(sprintf('Invalid argument name "%s"'.$id.': the first character must be a letter.', $name));
         }
 
-        return $this->setAlias($type.' $'.$name, $id);
+        if ($parsedName !== $name) {
+            $this->setAlias('.'.$type.' $'.$name, $type.' $'.$parsedName);
+        }
+
+        return $this->setAlias($type.' $'.$parsedName, $id);
     }
 
     /**

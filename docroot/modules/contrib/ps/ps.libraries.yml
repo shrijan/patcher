@@ -1,0 +1,4 @@
+ps.styles:
+  css:
+    theme:
+      css/ps.styles.css: {}

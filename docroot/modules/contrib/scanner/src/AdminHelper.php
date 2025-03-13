@@ -2,10 +2,12 @@
 
 namespace Drupal\scanner;
 
+use Drupal\Core\Entity\ContentEntityStorageInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\RevisionLogInterface;
 
 /**
- * Shared logic for use in the mdoule.
+ * Shared logic for use in the module.
  */
 class AdminHelper {
 
@@ -87,6 +89,7 @@ class AdminHelper {
       $lang = $langcode;
     }
     $latestRevisionResult = \Drupal::entityTypeManager()->getStorage('node')->getQuery()
+      ->accessCheck(FALSE)
       ->latestRevision()
       ->condition('nid', $nid, '=')
       ->execute();

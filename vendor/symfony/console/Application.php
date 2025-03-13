@@ -79,6 +79,7 @@ class Application implements ResetInterface
     private string $version;
     private ?CommandLoaderInterface $commandLoader = null;
     private bool $catchExceptions = true;
+    private bool $catchErrors = false;
     private bool $autoExit = true;
     private InputDefinition $definition;
     private HelperSet $helperSet;
@@ -168,12 +169,15 @@ class Application implements ResetInterface
             }
         }
 
-        $this->configureIO($input, $output);
-
         try {
+            $this->configureIO($input, $output);
+
             $exitCode = $this->doRun($input, $output);
-        } catch (\Exception $e) {
-            if (!$this->catchExceptions) {
+        } catch (\Throwable $e) {
+            if ($e instanceof \Exception && !$this->catchExceptions) {
+                throw $e;
+            }
+            if (!$e instanceof \Exception && !$this->catchErrors) {
                 throw $e;
             }
 
@@ -425,6 +429,14 @@ class Application implements ResetInterface
     public function setCatchExceptions(bool $boolean)
     {
         $this->catchExceptions = $boolean;
+    }
+
+    /**
+     * Sets whether to catch errors or not during commands execution.
+     */
+    public function setCatchErrors(bool $catchErrors = true): void
+    {
+        $this->catchErrors = $catchErrors;
     }
 
     /**
@@ -863,7 +875,7 @@ class Application implements ResetInterface
             }
 
             if (str_contains($message, "@anonymous\0")) {
-                $message = preg_replace_callback('/[a-zA-Z_\x7f-\xff][\\\\a-zA-Z0-9_\x7f-\xff]*+@anonymous\x00.*?\.php(?:0x?|:[0-9]++\$)[0-9a-fA-F]++/', fn ($m) => class_exists($m[0], false) ? (get_parent_class($m[0]) ?: key(class_implements($m[0])) ?: 'class').'@anonymous' : $m[0], $message);
+                $message = preg_replace_callback('/[a-zA-Z_\x7f-\xff][\\\\a-zA-Z0-9_\x7f-\xff]*+@anonymous\x00.*?\.php(?:0x?|:[0-9]++\$)?[0-9a-fA-F]++/', fn ($m) => class_exists($m[0], false) ? (get_parent_class($m[0]) ?: key(class_implements($m[0])) ?: 'class').'@anonymous' : $m[0], $message);
             }
 
             $width = $this->terminal->getWidth() ? $this->terminal->getWidth() - 1 : \PHP_INT_MAX;
@@ -1034,7 +1046,10 @@ class Application implements ResetInterface
                         }
 
                         if (false !== $exitCode) {
-                            exit($exitCode);
+                            $event = new ConsoleTerminateEvent($command, $event->getInput(), $event->getOutput(), $exitCode, $signal);
+                            $this->dispatcher->dispatch($event, ConsoleEvents::TERMINATE);
+
+                            exit($event->getExitCode());
                         }
                     });
                 }

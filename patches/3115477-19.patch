@@ -1,0 +1,43 @@
+diff --git a/media_entity_file_replace.module b/media_entity_file_replace.module
+index 658a705..6271fda 100644
+--- a/media_entity_file_replace.module
++++ b/media_entity_file_replace.module
+@@ -8,6 +8,7 @@
+ declare(strict_types=1);
+ 
+ use Drupal\Component\Utility\DeprecationHelper;
++use Drupal\Core\Entity\EntityInterface;
+ use Drupal\Core\File\FileExists;
+ use Drupal\Core\File\FileSystemInterface;
+ use Drupal\Core\Form\FormStateInterface;
+@@ -207,6 +208,30 @@ function media_entity_file_replace_form_media_form_alter(&$form, FormStateInterf
+   }
+ }
+ 
++/**
++ * Implements hook_entity_update().
++ *
++ * Invalidates file cache tags when a file entity type is updated or replaced.
++ */
++function media_entity_file_replace_file_update(EntityInterface $entity) {
++  $type = $entity->getEntityTypeId();
++  if ($type != 'file') {
++    return;
++  }
++
++  if (\Drupal::hasService('cache_tags.invalidator')) {
++    $invalidator = \Drupal::service('cache_tags.invalidator');
++    $invalidator->invalidateTags(['file:' . $entity->id()]);
++    $url = \Drupal::service('file_url_generator')->generateAbsoluteString($entity->getFileUri());
++
++    $clearUrls = [];
++    $clearUrls[] = 'url:' . $url;
++
++    $invalidator->invalidateTags($clearUrls);
++  }
++
++}
++
+ /**
+  * Custom process callback on file widget to disable remove/upload buttons.
+  *

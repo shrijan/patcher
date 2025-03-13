@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * @file
+ * Install file for Linky.
+ */
+
+/**
+ * Implements hook_update_last_removed().
+ */
+function linky_update_last_removed(): int {
+  return 8102;
+}
+
+/**
+ * Disable linky_revision_ui if it's installed.
+ */
+function linky_update_10101(): void {
+  if (\Drupal::moduleHandler()->moduleExists('linky_revision_ui')) {
+    \Drupal::service('module_installer')->uninstall(['linky_revision_ui']);
+  }
+}

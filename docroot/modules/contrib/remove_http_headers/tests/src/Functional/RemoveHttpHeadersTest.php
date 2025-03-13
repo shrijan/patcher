@@ -98,7 +98,7 @@ class RemoveHttpHeadersTest extends BrowserTestBase {
       );
     }
 
-    // Default behaviour is to include meta name=Generator.
+    // Default behavior is to include meta name=Generator.
     $this->assertSession()->responseContains(static::GENERATOR_METATAG_MARKUP);
   }
 

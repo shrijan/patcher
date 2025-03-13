@@ -1,0 +1,11 @@
+services:
+  ps.service:
+    class: Drupal\ps\ParagraphsStats
+    arguments:
+      - '@config.factory'
+      - '@entity_field.manager'
+      - '@entity_type.manager'
+      - '@path.current'
+      - '@path_alias.manager'
+      - '@pager.manager'
+      - '@database'

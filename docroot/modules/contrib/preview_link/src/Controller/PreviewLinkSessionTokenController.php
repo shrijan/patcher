@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link\Controller;
 
@@ -53,7 +53,7 @@ class PreviewLinkSessionTokenController extends ControllerBase {
    */
   public function removeTokens(): Response {
     $collection = $this->privateTempStoreFactory->get('preview_link');
-    $hasKeys = !empty($collection->get('keys'));
+    $hasKeys = $collection->get('keys') !== NULL;
     $collection->delete('keys');
     if ($hasKeys) {
       $this->messenger->addMessage($this->t('Removed preview link tokens.'));

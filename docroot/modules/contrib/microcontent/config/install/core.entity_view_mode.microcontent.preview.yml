@@ -1,0 +1,10 @@
+uuid: 8aba5360-4497-4f86-9b26-808cac07de22
+langcode: en
+status: true
+dependencies:
+  module:
+    - microcontent
+id: microcontent.preview
+label: Preview
+targetEntityType: microcontent
+cache: true

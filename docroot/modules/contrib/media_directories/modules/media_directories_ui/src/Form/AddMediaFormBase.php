@@ -234,16 +234,16 @@ abstract class AddMediaFormBase extends FormBase {
     $source_field = $media_type->getSource()->getConfiguration()['source_field'];
     $field_config = $this->entityTypeManager->getStorage('field_config')->load('media.' . $media_type->id() . '.' . $source_field);
     if ($field_config->getSetting('max_resolution') || $field_config->getSetting('min_resolution')) {
-      $upload_validators['file_validate_is_image'] = [];
-      $upload_validators['file_validate_image_resolution'] = [
-        $field_config->getSetting('max_resolution'),
-        $field_config->getSetting('min_resolution'),
+      $upload_validators['FileIsImage'] = [];
+      $upload_validators['FileImageDimensions'] = [
+        'maxDimensions' => $field_config->getSetting('max_resolution'),
+        'minDimensions' => $field_config->getSetting('min_resolution'),
       ];
     }
 
-    if (!isset($upload_validators['file_validate_size'])) {
+    if (!isset($upload_validators['FileSizeLimit'])) {
       $max_filesize = Environment::getUploadMaxSize();
-      $upload_validators['file_validate_size'] = [$max_filesize];
+      $upload_validators['FileSizeLimit'] = ['fileLimit' => $max_filesize];
     }
 
     return $upload_validators;

@@ -11,7 +11,6 @@ use function array_merge;
 use function in_array;
 use const T_CLOSE_PARENTHESIS;
 use const T_COMMA;
-use const T_FN;
 use const T_ISSET;
 use const T_OPEN_PARENTHESIS;
 use const T_PARENT;
@@ -25,8 +24,7 @@ class RequireTrailingCommaInCallSniff implements Sniff
 
 	public const CODE_MISSING_TRAILING_COMMA = 'MissingTrailingComma';
 
-	/** @var bool|null */
-	public $enable = null;
+	public ?bool $enable = null;
 
 	/**
 	 * @return array<int, (int|string)>
@@ -61,9 +59,9 @@ class RequireTrailingCommaInCallSniff implements Sniff
 			$tokens[$pointerBeforeParenthesisOpener]['code'],
 			array_merge(
 				TokenHelper::getOnlyNameTokenCodes(),
-				[T_VARIABLE, T_ISSET, T_UNSET, T_CLOSE_PARENTHESIS, T_SELF, T_STATIC, T_PARENT]
+				[T_VARIABLE, T_ISSET, T_UNSET, T_CLOSE_PARENTHESIS, T_SELF, T_STATIC, T_PARENT],
 			),
-			true
+			true,
 		)) {
 			return;
 		}
@@ -83,13 +81,6 @@ class RequireTrailingCommaInCallSniff implements Sniff
 			return;
 		}
 
-		if (
-			array_key_exists('scope_condition', $tokens[$pointerBeforeParenthesisCloser])
-			&& $tokens[$tokens[$pointerBeforeParenthesisCloser]['scope_condition']]['code'] === T_FN
-		) {
-			return;
-		}
-
 		if ($tokens[$pointerBeforeParenthesisCloser]['code'] === T_COMMA) {
 			return;
 		}
@@ -97,7 +88,7 @@ class RequireTrailingCommaInCallSniff implements Sniff
 		$fix = $phpcsFile->addFixableError(
 			'Multi-line function calls must have a trailing comma after the last parameter.',
 			$pointerBeforeParenthesisCloser,
-			self::CODE_MISSING_TRAILING_COMMA
+			self::CODE_MISSING_TRAILING_COMMA,
 		);
 
 		if (!$fix) {

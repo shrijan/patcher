@@ -71,7 +71,7 @@ class Linkit extends Plugin {
               this.set('entitySubstitution', null);
             }
 
-            event.target.value = item.path;
+            linkFormView.urlInputView.fieldView.set('value', item.path);
             selected = true;
             return false;
           },
@@ -79,11 +79,6 @@ class Linkit extends Plugin {
             selected = false;
           },
           closeHandler: (event) => {
-            if (!selected) {
-              this.set('entityType', null);
-              this.set('entityUuid', null);
-              this.set('entitySubstitution', null);
-            }
             selected = false;
           },
         },
@@ -99,11 +94,19 @@ class Linkit extends Plugin {
     const linkFormView = editor.plugins.get('LinkUI').formView;
     const linkCommand = editor.commands.get('link');
 
+    // Only selections from autocomplete set converter attributes.
+    const linkit = editor.plugins.get('Linkit');
+    linkFormView.urlInputView.fieldView.element.addEventListener('input', function (evt) {
+      linkit.set('entityType', null);
+      linkit.set('entityUuid', null);
+      linkit.set('entitySubstitution', null);
+    });
+
     this.listenTo(linkFormView, 'submit', () => {
       const values = {
-        'data-entity-type': this.entityType,
-        'data-entity-uuid': this.entityUuid,
-        'data-entity-substitution': this.entitySubstitution,
+        'linkDataEntityType': this.entityType,
+        'linkDataEntityUuid': this.entityUuid,
+        'linkDataEntitySubstitution': this.entitySubstitution,
       }
       // Stop the execution of the link command caused by closing the form.
       // Inject the extra attribute value. The highest priority listener here
@@ -129,9 +132,9 @@ class Linkit extends Plugin {
     const editor = this.editor;
     const linkCommand = editor.commands.get('link');
 
-    this.bind('entityType').to(linkCommand, 'data-entity-type');
-    this.bind('entityUuid').to(linkCommand, 'data-entity-uuid');
-    this.bind('entitySubstitution').to(linkCommand, 'data-entity-substitution');
+    this.bind('entityType').to(linkCommand, 'linkDataEntityType');
+    this.bind('entityUuid').to(linkCommand, 'linkDataEntityUuid');
+    this.bind('entitySubstitution').to(linkCommand, 'linkDataEntitySubstitution');
   }
 
   /**

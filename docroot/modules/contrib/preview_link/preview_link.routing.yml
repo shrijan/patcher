@@ -1,3 +1,12 @@
+preview_link.settings:
+  path: '/admin/config/content/preview_link'
+  defaults:
+    _form: '\Drupal\preview_link\Form\PreviewLinkSettingsForm'
+    _title: 'Preview link settings'
+    _description: 'Manage Preview link settings.'
+  requirements:
+    _permission: 'administer preview link settings'
+
 preview_link.session_tokens.remove:
   path: '/preview-link/session-tokens/remove'
   defaults:

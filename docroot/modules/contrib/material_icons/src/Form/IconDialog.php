@@ -107,7 +107,7 @@ class IconDialog extends FormBase {
     $form['classes'] = [
       '#title' => $this->t('Additional Classes'),
       '#type' => 'textfield',
-      '#description' => $this->t('For example, veritical alignment classes: <em>align-text-top</em>'),
+      '#description' => $this->t('For example, vertical alignment classes: <em>align-text-top</em>'),
     ];
 
     $form['actions'] = ['#type' => 'actions'];

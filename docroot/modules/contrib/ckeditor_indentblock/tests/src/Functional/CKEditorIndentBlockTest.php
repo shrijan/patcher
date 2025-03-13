@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\ckeditor_indentblock\Functional;
 
-use Composer\Semver\Semver;
 use Drupal\Tests\BrowserTestBase;
 
 /**
@@ -23,26 +22,13 @@ final class CKEditorIndentBlockTest extends BrowserTestBase {
    * {@inheritdoc}
    */
   protected static $modules = [
+    'ckeditor5',
     'ckeditor_indentblock',
     'editor',
     'filter',
     'file',
     'field',
   ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    $use_ck5 = Semver::satisfies(\Drupal::VERSION, '>=10');
-    if ($use_ck5) {
-      self::$modules[] = 'ckeditor5';
-    }
-    else {
-      self::$modules[] = 'ckeditor';
-    }
-    parent::setUp();
-  }
 
   /**
    * Test module installation.

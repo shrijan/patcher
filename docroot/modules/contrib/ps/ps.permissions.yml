@@ -1,0 +1,8 @@
+access paragraphs stats report:
+  title: 'Access Paragraphs Stats reports'
+  description: 'View access to paragraphs stats reports.'
+  restrict access: true
+administer paragraphs stats configuration:
+  title: 'Administer Paragraphs Stats configuration'
+  description: 'Administer configurations of paragraphs stats reports.'
+  restrict access: true

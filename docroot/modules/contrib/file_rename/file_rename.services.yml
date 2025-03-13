@@ -1,0 +1,5 @@
+services:
+  access_check.file_rename.rename:
+    class: Drupal\file_rename\Access\FileRenameAccessCheck
+    tags:
+      - { name: access_check, applies_to: _file_rename_access }

@@ -1,0 +1,20 @@
+--- username_enumeration_prevention.module
++++ username_enumeration_prevention.module
+@@ -61,8 +61,15 @@
+ 
+   $form_state->set('username_enumeration_prevention_blocked', !empty($form_state->getErrors()));
+ 
+-  // Clear errors so they are not displayed to the end-user.
+-  $form_state->clearErrors();
++  // Clear name field error so it is not displayed to the end-user.
++  $form_errors = $form_state->getErrors();
++  if (isset($form_errors['name'])) {
++    $form_state->clearErrors();
++    unset($form_errors['name']);
++    foreach ($form_errors as $name => $error_message) {
++      $form_state->setErrorByName($name, $error_message);
++    }
++  }
+ }
+ 
+ /**

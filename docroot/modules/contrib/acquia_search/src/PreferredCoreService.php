@@ -113,7 +113,10 @@ class PreferredCoreService {
   public function getAvailableCores() {
     // When there was an Acquia Search API failure, or we are able to connect,
     // however no cores were found return an empty array.
-    $cores = $this->acquiaSearchApiClient->getSearchIndexes();
+    $cores = drupal_static('acquia_search_available_cores');
+    if ($cores === NULL) {
+      $cores = $this->acquiaSearchApiClient->getSearchIndexes();
+    }
     if (empty($cores)) {
       return [];
     }
@@ -210,16 +213,7 @@ class PreferredCoreService {
   public function getListOfPossibleCores() {
     $possible_core_ids = [];
     $event = new AcquiaPossibleCoresEvent($this->serverId, $possible_core_ids);
-
-    // phpcs:ignore
-    // @todo Remove when support for Drupal 9.2 dropped.
-    if (version_compare(\Drupal::VERSION, '9.3', '>=')) {
-      $this->dispatcher->dispatch($event, AcquiaSearchEvents::GET_POSSIBLE_CORES);
-    }
-    else {
-      // @phpstan-ignore-next-line
-      $this->dispatcher->dispatch(AcquiaSearchEvents::GET_POSSIBLE_CORES, $event);
-    }
+    $this->dispatcher->dispatch($event, AcquiaSearchEvents::GET_POSSIBLE_CORES);
     $this->coreReadonly = $event->isReadOnly();
     $possible_cores = $original_possible_cores = $event->getPossibleCores();
     $deprecated_message = 'This hook is deprecated in acquia_search:3.1.0 and is removed from acquia_search:4.0.0. Please use the "acquia_search.acquia_search_get_possible_cores" event instead.';

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link;
 
@@ -17,53 +17,26 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Responds to entity hooks/events.
  */
-class PreviewLinkEntityHooks implements ContainerInjectionInterface {
-
-  /**
-   * Preview link access check.
-   *
-   * @var \Drupal\preview_link\Access\PreviewLinkAccessCheck
-   */
-  protected $accessCheck;
-
-  /**
-   * Provides service tasks for hooks.
-   *
-   * @var \Drupal\preview_link\PreviewLinkHookHelper
-   */
-  protected $hookHelper;
-
-  /**
-   * Current route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
+final class PreviewLinkEntityHooks implements ContainerInjectionInterface {
 
   /**
    * Constructs a new PreviewLinkEntityHooks.
-   *
-   * @param \Drupal\preview_link\Access\PreviewLinkAccessCheck $accessCheck
-   *   Preview link access check.
-   * @param \Drupal\preview_link\PreviewLinkHookHelper $hookHelper
-   *   Provides service tasks for hooks.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
-   *   Current route match.
    */
-  public function __construct(PreviewLinkAccessCheck $accessCheck, PreviewLinkHookHelper $hookHelper, RouteMatchInterface $routeMatch) {
-    $this->accessCheck = $accessCheck;
-    $this->hookHelper = $hookHelper;
-    $this->routeMatch = $routeMatch;
+  public function __construct(
+    protected PreviewLinkAccessCheck $accessCheck,
+    protected PreviewLinkHookHelper $hookHelper,
+    protected RouteMatchInterface $routeMatch,
+  ) {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): self {
     return new static(
       $container->get('access_check.preview_link'),
       $container->get('preview_link.hook_helper'),
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
     );
   }
 
@@ -82,12 +55,12 @@ class PreviewLinkEntityHooks implements ContainerInjectionInterface {
     }
 
     $currentRoute = $this->routeMatch->getRouteObject();
-    if (!$currentRoute) {
+    if ($currentRoute === NULL) {
       // In cli contexts, there may be no route.
       return $neutral;
     }
     $entityParameterName = $currentRoute->getOption('preview_link.entity_type_id');
-    if (!$entityParameterName) {
+    if ($entityParameterName === NULL) {
       return $neutral;
     }
 

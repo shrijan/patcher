@@ -1,0 +1,10 @@
+entity-browser:
+  css:
+    theme:
+      css/microcontent.view-microcontent-browser.css: {}
+  js:
+    js/microcontent.view-microcontent-browser.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/once

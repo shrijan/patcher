@@ -6,4 +6,4 @@ headers_to_remove:
 dependencies:
   enforced:
     module:
-    - 'remove_http_headers'
+      - 'remove_http_headers'

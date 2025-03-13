@@ -36,7 +36,14 @@ function config_ignore_update_8301() {
  */
 function config_ignore_update_8302() {
   $config = \Drupal::configFactory()->getEditable('config_ignore.settings');
-  $object = new ConfigIgnoreConfig('simple', $config->get('ignored_config_entities'));
+  $existing = $config->get('mode');
+  if ($existing) {
+    if (!in_array($existing, ['simple', 'intermediate', 'advanced'])) {
+      throw new UnexpectedValueException(sprintf('The mode of the config ignore settings is set but not an expected value: %s', (string) $existing));
+    }
+    return;
+  }
+  $object = new ConfigIgnoreConfig('simple', $config->get('ignored_config_entities') ?? []);
   // Save the config with the mode set and the settings sorted.
   $config->set('mode', 'simple');
   $config->set('ignored_config_entities', $object->getFormated('simple'));

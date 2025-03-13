@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Drupal\Tests\sophron\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\sophron_guesser\SophronMimeTypeGuesser;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for Sophron guesser.
@@ -13,6 +16,8 @@ use Drupal\KernelTests\KernelTestBase;
  *
  * @group sophron
  */
+#[CoversClass(SophronMimeTypeGuesser::class)]
+#[Group('sophron')]
 class SophronGuesserTest extends KernelTestBase {
 
   /**
@@ -29,15 +34,19 @@ class SophronGuesserTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::guessMimeType
+   * Tests guesser not installed.
+   *
+   * @legacy-covers ::guessMimeType
    */
   public function testGuesserNotInstalled(): void {
     $guesser = \Drupal::service('file.mime_type.guesser.extension');
-    $this->assertEquals('application/octet-stream', $guesser->guessMimeType('fake.jp2'));
+    $this->assertNull($guesser->guessMimeType('fake.jp2'));
   }
 
   /**
-   * @covers ::guessMimeType
+   * Tests guesser installed.
+   *
+   * @legacy-covers ::guessMimeType
    */
   public function testGuesserInstalled(): void {
     \Drupal::service('module_installer')->install(['sophron_guesser']);
@@ -46,17 +55,19 @@ class SophronGuesserTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::guessMimeType
+   * Tests guesser install and uninstall.
+   *
+   * @legacy-covers ::guessMimeType
    */
   public function testGuesserInstallUninstall(): void {
     $guesser = \Drupal::service('file.mime_type.guesser.extension');
-    $this->assertEquals('application/octet-stream', $guesser->guessMimeType('fake.jp2'));
+    $this->assertNull($guesser->guessMimeType('fake.jp2'));
     \Drupal::service('module_installer')->install(['sophron_guesser']);
     $guesser = \Drupal::service('file.mime_type.guesser.extension');
     $this->assertEquals('image/jp2', $guesser->guessMimeType('fake.jp2'));
     \Drupal::service('module_installer')->uninstall(['sophron_guesser']);
     $guesser = \Drupal::service('file.mime_type.guesser.extension');
-    $this->assertEquals('application/octet-stream', $guesser->guessMimeType('fake.jp2'));
+    $this->assertNull($guesser->guessMimeType('fake.jp2'));
   }
 
   /**
@@ -66,6 +77,8 @@ class SophronGuesserTest extends KernelTestBase {
    * \Drupal\KernelTests\Core\File\MimeTypeTest::testFileMimeTypeDetection.
    */
   public function testFileMimeTypeDetection(): void {
+    \Drupal::service('module_installer')->install(['sophron_guesser']);
+
     $prefixes = ['public://', 'private://', 'temporary://', 'dummy-remote://'];
 
     $test_case = [
@@ -76,9 +89,15 @@ class SophronGuesserTest extends KernelTestBase {
       'test.jar.jpg' => 'image/jpeg',
       'test.jpg.jar' => 'application/java-archive',
       'test.pcf.Z' => 'application/x-font',
-      'pcf.z' => 'application/octet-stream',
+      'pcf.z' => 'application/x-compress',
       'jar' => 'application/octet-stream',
       'some.junk' => 'application/octet-stream',
+      'foo.file_test_1' => 'application/octet-stream',
+      'foo.file_test_2' => 'application/octet-stream',
+      'foo.doc' => 'application/msword',
+      'test.ogg' => 'audio/ogg',
+      'foobar.0.zip' => 'application/zip',
+      'foobar..zip' => 'application/zip',
     ];
 
     $guesser = $this->container->get('file.mime_type.guesser');

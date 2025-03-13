@@ -2,14 +2,32 @@
 
 namespace Drupal\clamav\Scanner;
 
-use Drupal\file\FileInterface;
-use Drupal\clamav\ScannerInterface;
-use Drupal\clamav\Scanner;
 use Drupal\clamav\Config;
+use Drupal\clamav\Scanner;
+use Drupal\clamav\ScannerInterface;
+use Drupal\Core\Logger\LoggerChannelTrait;
+use Drupal\file\FileInterface;
 
+/**
+ * DaemonUnixSocket class for the ClamAV scanner instance.
+ */
 class DaemonUnixSocket implements ScannerInterface {
+
+  use LoggerChannelTrait;
+
+  /**
+   * File variable.
+   *
+   * @var string
+   */
   protected $_file;
   protected $_unix_socket;
+
+  /**
+   * Virus name variable.
+   *
+   * @var string
+   */
   protected $_virus_name = '';
 
   /**
@@ -29,7 +47,7 @@ class DaemonUnixSocket implements ScannerInterface {
 
     // Abort if the ClamAV server is unavailable.
     if (!$scanner_handler) {
-      \Drupal::logger('Clam AV')->warning('Unable to connect to ClamAV daemon on unix socket @unix_socket', array('@unix_socket' => $this->_unix_socket));
+      $this->getLogger('clamav')->warning('Unable to connect to ClamAV daemon on unix socket @unix_socket', ['@unix_socket' => $this->_unix_socket]);
       return Scanner::FILE_IS_UNCHECKED;
     }
 
@@ -47,7 +65,7 @@ class DaemonUnixSocket implements ScannerInterface {
 
     fclose($scanner_handler);
 
-    if (preg_match('/^stream: OK$/', $response)) {
+    if ($response == 'stream: OK') {
       $result = Scanner::FILE_IS_CLEAN;
     }
     elseif (preg_match('/^stream: (.*) FOUND$/', $response, $matches)) {
@@ -75,7 +93,7 @@ class DaemonUnixSocket implements ScannerInterface {
   public function version() {
     $handler = @fsockopen("unix://{$this->_unix_socket}", 0);
     if (!$handler) {
-      \Drupal::logger('Clam AV')->warning('Unable to connect to ClamAV daemon on unix socket @unix_socket', array('@unix_socket' => $this->_unix_socket));
+      \Drupal::logger('Clam AV')->warning('Unable to connect to ClamAV daemon on unix socket @unix_socket', ['@unix_socket' => $this->_unix_socket]);
       return NULL;
     }
 
@@ -84,4 +102,5 @@ class DaemonUnixSocket implements ScannerInterface {
     fclose($handler);
     return $content;
   }
+
 }

@@ -1,0 +1,26 @@
+diff --git a/src/Form/IconDialog.php b/src/Form/IconDialog.php
+index 87ecfc0..1077929 100644
+--- a/src/Form/IconDialog.php
++++ b/src/Form/IconDialog.php
+@@ -107,7 +107,7 @@ class IconDialog extends FormBase {
+     $form['classes'] = [
+       '#title' => $this->t('Additional Classes'),
+       '#type' => 'textfield',
+-      '#description' => $this->t('For example, veritical alignment classes: <em>align-text-top</em>'),
++      '#description' => $this->t('For example, vertical alignment classes: <em>align-text-top</em>'),
+     ];
+ 
+     $form['actions'] = ['#type' => 'actions'];
+diff --git a/src/Plugin/Field/FieldWidget/MaterialIcons.php b/src/Plugin/Field/FieldWidget/MaterialIcons.php
+index 0c5b748..c11c73b 100644
+--- a/src/Plugin/Field/FieldWidget/MaterialIcons.php
++++ b/src/Plugin/Field/FieldWidget/MaterialIcons.php
+@@ -163,7 +163,7 @@ class MaterialIcons extends WidgetBase implements ContainerFactoryPluginInterfac
+         '#title' => $this->t('Additional Classes'),
+         '#type' => 'textfield',
+         '#default_value' => $items[$delta]->get('classes')->getValue(),
+-        '#description' => $this->t('For example, veritical alignment classes: <em>align-text-top</em>'),
++        '#description' => $this->t('For example, vertical alignment classes: <em>align-text-top</em>'),
+       ];
+     }
+ 

@@ -1,0 +1,12 @@
+name: 'Entity Usage Delete Stop'
+type: module
+description: 'Addon for Entity Usage module that allows to prohibit deletion of used nodes.'
+core_version_requirement: ^8 || ^9 || ^10 || ^11
+package: Other
+dependencies:
+  - drupal:entity_usage
+
+# Information added by Drupal.org packaging script on 2024-08-24
+version: '1.0.3'
+project: 'entity_usage_node_delete_stop'
+datestamp: 1724513543

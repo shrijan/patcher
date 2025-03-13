@@ -1,0 +1,17 @@
+entity.microcontent_type.collection:
+  title: 'Micro-content types'
+  route_name: entity.microcontent_type.collection
+  description: 'List micro-content types'
+  parent: system.admin_structure
+
+entity.microcontent_type.add_form:
+  route_name: entity.microcontent_type.add_form
+  title: "Add micro-content type"
+  description: "Create a new micro-content type"
+  parent: entity.microcontent_type.collection
+
+entity.microcontent.collection:
+  title: 'Micro-Content'
+  route_name: entity.microcontent.collection
+  description: 'List micro-content'
+  parent: system.admin_content

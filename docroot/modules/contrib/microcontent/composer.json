@@ -1,0 +1,21 @@
+{
+  "name": "drupal/microcontent",
+  "type": "drupal-module",
+  "description": "Provides a lightweight reusable content-entity and type that supports fields, revisions and translation.",
+  "keywords": [
+    "Drupal"
+  ],
+  "license": "GPL-2.0-or-later",
+  "homepage": "https://www.drupal.org/project/microcontent",
+  "minimum-stability": "dev",
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/microcontent",
+    "source": "https://git.drupalcode.org/project/microcontent"
+  },
+  "require": {
+      "php": ">=8.0"
+  },
+  "require-dev": {
+    "drupal/backfill_formatter": "*"
+  }
+}

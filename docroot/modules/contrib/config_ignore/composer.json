@@ -20,7 +20,7 @@
     "issues": "http://drupal.org/project/config_ignore",
     "source": "https://git.drupalcode.org/project/config_ignore"
   },
-  "license": "GPL-2.0+",
+  "license": "GPL-2.0-or-later",
   "minimum-stability": "dev",
   "require-dev": {
     "drupal/config_filter": "^1.8||^2.2",

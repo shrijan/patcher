@@ -2,11 +2,11 @@
 
 namespace Drupal\scanner\Plugin\Scanner;
 
-use Drupal\Core\Database\Query\SelectInterface;
-use Drupal\Core\Entity\Query\QueryInterface;
-use Drupal\Core\Entity\Query\Sql\Query;
-use Drupal\scanner\Plugin\ScannerPluginBase;
 use Drupal\Component\Plugin\Exception\PluginException;
+use Drupal\Core\Entity\Query\QueryInterface;
+use Drupal\Core\Logger\LoggerChannelTrait;
+use Drupal\Core\Messenger\MessengerTrait;
+use Drupal\scanner\Plugin\ScannerPluginBase;
 
 /**
  * A generic Scanner plugin for handling entities.
@@ -18,6 +18,9 @@ use Drupal\Component\Plugin\Exception\PluginException;
  */
 class Entity extends ScannerPluginBase {
 
+  use LoggerChannelTrait;
+  use MessengerTrait;
+
   /**
    * The scanner regular expression.
    *
@@ -26,7 +29,7 @@ class Entity extends ScannerPluginBase {
   protected $scannerRegexChars = '.\/+*?[^]$() {}=!<>|:';
 
   /**
-   * Performs the serach operation for the given string/expression.
+   * Performs the search operation for the given string/expression.
    *
    * @param string $field
    *   The field with the matching string (formatted as type:bundle:field).
@@ -51,8 +54,8 @@ class Entity extends ScannerPluginBase {
     catch (PluginException $e) {
       // The instance could not be found so fail gracefully and let the user
       // know.
-      \Drupal::logger('scanner')->error($e->getMessage());
-      \Drupal::messenger()->addError($this->t('An error occured @e:', ['@e' => $e->getMessage()]));
+      $this->getLogger('scanner')->error($e->getMessage());
+      $this->messenger()->addError($this->t('An error occurred @e:', ['@e' => $e->getMessage()]));
     }
 
     // Perform the search on the current field.
@@ -75,7 +78,7 @@ class Entity extends ScannerPluginBase {
    *   An array containing the data.
    *
    * @return array
-   *   An array containing the revisoion ids of the affected entities.
+   *   An array containing the revision ids of the affected entities.
    */
   public function replace($field, array $values, array $undo_data) {
     $data = [];
@@ -87,8 +90,8 @@ class Entity extends ScannerPluginBase {
     catch (PluginException $e) {
       // The instance could not be found so fail gracefully and let the user
       // know.
-      \Drupal::logger('scanner')->error($e->getMessage());
-      \Drupal::messenger()->addError('An error occured: ' . $e->getMessage());
+      $this->getLogger('scanner')->error($e->getMessage());
+      $this->messenger()->addError('An error occurred: ' . $e->getMessage());
     }
 
     // Perform the replace on the current field and save results.
@@ -116,8 +119,8 @@ class Entity extends ScannerPluginBase {
         $plugin->undo($value);
       }
       catch (PluginException $e) {
-        \Drupal::logger('scanner')->error($e->getMessage());
-        \Drupal::messenger()->addError('An error occured: ' . $e->getMessage());
+        $this->getLogger('scanner')->error($e->getMessage());
+        $this->messenger()->addError('An error occurred: ' . $e->getMessage());
       }
     }
   }
@@ -128,12 +131,11 @@ class Entity extends ScannerPluginBase {
    * @param string $search
    *   The string that is to be searched for.
    * @param bool $mode
-   *   The boolean that indicated whether or not the search should be case
-   *   sensitive.
+   *   The boolean that indicated whether the search should be case-sensitive.
    * @param bool $wholeword
    *   The boolean that indicates whether the search should be word bounded.
    * @param bool $regex
-   *   The boolean that indicates whether or not the search term is a regular
+   *   The boolean that indicates whether the search term is a regular
    *   expression.
    * @param string $preceded
    *   The string for preceded expression.
@@ -163,8 +165,7 @@ class Entity extends ScannerPluginBase {
       $followed_php = '(?=' . $followed . ')';
     }
 
-    /** @var \Drupal\scanner\WordBoundariesHelper $word_boundaries_helper */
-    $word_boundaries_helper = \Drupal::service('scanner.word_boundaries_helper');
+    $word_boundaries_helper = $this->scannerHelper;
     if ($word_boundaries_helper->whichToUse() === 'icu') {
       $word_boundary_prefix = $word_boundary_suffix = "\\b";
     }
@@ -267,43 +268,6 @@ class Entity extends ScannerPluginBase {
     else {
       $query->condition($fieldname, $condition['condition'], $condition['operator'], $langcode);
     }
-  }
-
-  /**
-   * Adds a WHERE condition using the REGEXP_LIKE() function.
-   *
-   * @param \Drupal\Core\Database\Query\SelectInterface $query
-   *   The query to modify.
-   */
-  public static function addRegexpLikeCondition(SelectInterface $query) {
-    [
-      'entity_type_id' => $entity_type_id,
-      'fieldname' => $fieldname,
-      'langcode' => $langcode,
-      'mode' => $mode,
-      'pattern' => $pattern,
-    ] = $query->getMetaData('scanner_search_regexp_like');
-
-    $entity_query = \Drupal::entityQuery($entity_type_id);
-    // It will only work with an SQL entity query.
-    if (!$entity_query instanceof Query) {
-      return;
-    }
-
-    // Use the entity query helper to add the field to $query.
-    $tables = $entity_query->getTables($query);
-    $field = $tables->addField($fieldname, 'INNER', $langcode);
-
-    $connection = \Drupal::database();
-    // Escape the field name on Drupal 9+.
-    // https://www.drupal.org/node/2986894
-    $field = $connection->escapeField($field);
-
-    // Add the conditional expression.
-    $query->where("REGEXP_LIKE($field, :pattern, :match_type)", [
-      ':match_type' => $mode ? 'c' : 'i',
-      ':pattern' => $pattern,
-    ]);
   }
 
 }

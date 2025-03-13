@@ -2,9 +2,8 @@
 
 /**
  * @file
- * Adds a hook for attaching a css file with indentation information to each page.
+ * Adds a hook for attaching a css file with indentation to each page.
  */
-
 
 /**
  * Implements hook_page_attachments().

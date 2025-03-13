@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link\Plugin\Derivative;
 
@@ -16,7 +16,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Preview link task generation.
  */
-class PreviewLinkTasks extends DeriverBase implements ContainerDeriverInterface {
+final class PreviewLinkTasks extends DeriverBase implements ContainerDeriverInterface {
 
   use StringTranslationTrait;
 
@@ -41,7 +41,7 @@ class PreviewLinkTasks extends DeriverBase implements ContainerDeriverInterface 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): self {
     return new static(
       $base_plugin_id,
       $container->get('entity_type.manager'),

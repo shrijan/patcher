@@ -3,8 +3,8 @@
 namespace Drupal\Tests\scheduler_rules_integration\Functional;
 
 use Drupal\Core\Logger\RfcLogLevel;
-use Drupal\rules\Context\ContextConfig;
 use Drupal\Tests\scheduler\Functional\SchedulerBrowserTestBase;
+use Drupal\rules\Context\ContextConfig;
 
 /**
  * Tests the six actions that Scheduler provides for use in Rules module.
@@ -50,7 +50,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
   /**
    * Tests the actions which set and remove the 'Publish On' date.
    *
-   * @dataProvider dataStandardEntityTypes()
+   * @dataProvider dataStandardEntityTypes
    */
   public function testPublishOnActions($entityTypeId, $enabledBundle) {
     $nonEnabledBundle = $this->entityTypeObject($entityTypeId, 'non-enabled')->id();
@@ -132,7 +132,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->drupalGet($this->entityAddUrl($entityTypeId, $enabledBundle));
     $this->submitForm(["{$titleField}[0][value]" => $title], 'Save');
     $entity = $this->getEntityByTitle($entityTypeId, $title);
-    $this->assertSession()->pageTextContains(sprintf('%s is scheduled to be published %s', $title, $publish_on_formatted));
+    $assert->pageTextContains(sprintf('%s is scheduled to be published %s', $title, $publish_on_formatted));
 
     // Check that rule 1 is triggered and rule 2 is not. Check that a publishing
     // date has been set and the status is now unpublished.
@@ -245,7 +245,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
   /**
    * Tests the actions which set and remove the 'Unpublish On' date.
    *
-   * @dataProvider dataStandardEntityTypes()
+   * @dataProvider dataStandardEntityTypes
    */
   public function testUnpublishOnActions($entityTypeId, $enabledBundle) {
     $nonEnabledBundle = $this->entityTypeObject($entityTypeId, 'non-enabled')->id();
@@ -327,7 +327,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->drupalGet($this->entityAddUrl($entityTypeId, $enabledBundle));
     $this->submitForm(["{$titleField}[0][value]" => $title], 'Save');
     $entity = $this->getEntityByTitle($entityTypeId, $title);
-    $this->assertSession()->pageTextContains(sprintf('%s is scheduled to be unpublished %s', $title, $unpublish_on_formatted));
+    $assert->pageTextContains(sprintf('%s is scheduled to be unpublished %s', $title, $unpublish_on_formatted));
 
     // Check that rule 3 is triggered and rule 4 is not. Check that a publishing
     // date has been set and the status is now unpublished.

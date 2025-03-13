@@ -34,8 +34,8 @@
  *   would be unnecessary.
  *
  * - Deliberate storage of a virus.
- *   Some organisations have a business need to store infected files. Security
- *   researchers, anti-virus organisations, and many others have a genuine
+ *   Some organizations have a business need to store infected files. Security
+ *   researchers, anti-virus organizations, and many others have a genuine
  *   requirement to allow an infected file to be saved, although they may also
  *   require other parts of the site to be protected.
  *
@@ -60,7 +60,7 @@
 function hook_clamav_file_is_scannable(Drupal\file\FileInterface $file) {
   // Don't scan image files.
   if ($mime_type = $file->getMimeType()) {
-    if (strpos($mime_type, '/') && list($classification) = explode('/', $mime_type)) {
+    if (strpos($mime_type, '/') && [$classification] = explode('/', $mime_type)) {
       if ($classification == 'image') {
         return Scanner::FILE_IS_NOT_SCANNABLE;
       }

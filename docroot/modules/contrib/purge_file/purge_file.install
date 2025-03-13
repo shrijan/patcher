@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Report purge file works correctly.
+ */
+
+/**
  * Implements hook_requirements().
  */
 function purge_file_requirements($phase) {

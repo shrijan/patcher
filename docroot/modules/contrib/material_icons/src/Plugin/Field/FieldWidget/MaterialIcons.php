@@ -62,10 +62,10 @@ class MaterialIcons extends WidgetBase implements ContainerFactoryPluginInterfac
    */
   public static function defaultSettings() {
     return [
-      'allow_style' => TRUE,
-      'default_style' => '',
-      'allow_classes' => TRUE,
-    ] + parent::defaultSettings();
+        'allow_style' => TRUE,
+        'default_style' => '',
+        'allow_classes' => TRUE,
+      ] + parent::defaultSettings();
   }
 
   /**
@@ -163,7 +163,7 @@ class MaterialIcons extends WidgetBase implements ContainerFactoryPluginInterfac
         '#title' => $this->t('Additional Classes'),
         '#type' => 'textfield',
         '#default_value' => $items[$delta]->get('classes')->getValue(),
-        '#description' => $this->t('For example, veritical alignment classes: <em>align-text-top</em>'),
+        '#description' => $this->t('For example, vertical alignment classes: <em>align-text-top</em>'),
       ];
     }
 
@@ -179,20 +179,25 @@ class MaterialIcons extends WidgetBase implements ContainerFactoryPluginInterfac
    * @return array
    */
   public function handleIconStyleUpdated(array &$form, FormStateInterface $form_state) {
-    return $this->getFormIconField($form, $form_state);
-  }
 
-  /**
-   * Gets the underlying field name of the triggering element.
-   * @param array $form
-   *   The form where the settings form is being included in.
-   * @param FormStateInterface $form_state
-   *   The form state of the (entire) configuration form.
-   * @return array|Null
-   */
-  private function getFormIconField(array $form, FormStateInterface $form_state):array|Null {
     $parents = $this->getFormStateStructure($form_state);
-    return (!is_null($parents)) ? $form[$parents[3]][$parents[2]][$parents[1]]['icon'] : NULL;
+
+    // Traverse the form values to find the edited element.
+    $element = $form;
+    while (is_array($parents) && count($parents) > 1) {
+      // Get the next key in the array.
+      $parent_key = array_pop($parents);
+      // If the key exists in the form values, limit form values to that child's.
+      if (isset($element[$parent_key])) {
+        $element = $element[$parent_key];
+      }
+      // If we run into an unexpected key exit the loop.
+      else {
+        exit;
+      }
+    }
+
+    return $element['icon'];
   }
 
   /**
@@ -202,8 +207,51 @@ class MaterialIcons extends WidgetBase implements ContainerFactoryPluginInterfac
    * @return string|Null
    */
   private function getFormStateFontFamily(FormStateInterface $form_state):string|Null {
+    return $this->getEditedFieldValues($form_state)['family'] ?? NULL;
+  }
+
+  /**
+   * Gets the selected value of the edited icon field.
+   * @param FormStateInterface $form_state
+   *   The form state of the (entire) configuration form.
+   * @return array|Null
+   */
+  private function getEditedFieldValues(FormStateInterface $form_state):array|Null {
+
+    // Get variables we'll need to locate the font family selection.
     $parents = $this->getFormStateStructure($form_state);
-    return (!is_null($parents)) ? $form_state->getValue($parents[3])[$parents[1]]['family'] : NULL;
+    $form_values = $form_state->getValues();
+
+    // No font family value if the triggering element has no parents.
+    if (is_null($parents)) {
+      return NULL;
+    }
+
+    // Traverse the form values.
+    while (is_array($parents) && count($parents) > 1) {
+      // Get the next key in the array.
+      $parent_key = array_pop($parents);
+      // Widget keys exist in form structure but not in form values.
+      if ($parent_key == 'widget') {
+        continue;
+      }
+      // If the key exists in the form values, limit form values to that child's.
+      if (isset($form_values[$parent_key])) {
+        $form_values = $form_values[$parent_key];
+      }
+      // If we run into an unexpected key exit the loop.
+      else {
+        exit;
+      }
+    }
+
+    // Expected type is array, only return array or null.
+    if (is_array($form_values)) {
+      return $form_values;
+    } else {
+      return NULL;
+    }
+
   }
 
   /**

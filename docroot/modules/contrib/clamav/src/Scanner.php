@@ -2,10 +2,11 @@
 
 namespace Drupal\clamav;
 
-use Drupal\Core\File\FileSystem;
+use Drupal\clamav\Scanner\DaemonUnixSocket;
+use Drupal\clamav\Scanner\DaemonTCPIP;
+use Drupal\clamav\Scanner\Executable;
 use Drupal\Core\StreamWrapper\StreamWrapperInterface;
 use Drupal\file\FileInterface;
-use Drupal\clamav\Config;
 
 /**
  * Service class for the ClamAV scanner instance.
@@ -26,10 +27,14 @@ class Scanner {
   const FILE_SCANNABLE_IGNORE = NULL;
 
 
-  // Instance of a scanner class, implementing ScannerInterface.
+  /**
+   * Instance of a scanner class, implementing ScannerInterface.
+   */
   protected $scanner = NULL;
 
-  // ClamAV configuration.
+  /**
+   * ClamAV configuration.
+   */
   protected $config = NULL;
 
   /**
@@ -38,20 +43,20 @@ class Scanner {
    * @param object $config
    *   An instance of \Drupal\clamav\Config.
    */
-  public function __construct(\Drupal\clamav\Config $config) {
+  public function __construct(Config $config) {
     $this->config = $config;
 
     switch ($config->scan_mode()) {
       case Config::MODE_EXECUTABLE:
-        $this->scanner = new Scanner\Executable($this->config);
+        $this->scanner = new Executable($this->config);
         break;
 
       case Config::MODE_DAEMON:
-        $this->scanner = new Scanner\DaemonTCPIP($this->config);
+        $this->scanner = new DaemonTCPIP($this->config);
         break;
 
       case Config::MODE_UNIX_SOCKET:
-        $this->scanner = new Scanner\DaemonUnixSocket($this->config);
+        $this->scanner = new DaemonUnixSocket($this->config);
         break;
     }
   }
@@ -59,7 +64,7 @@ class Scanner {
   /**
    * Check whether the anti-virus checks are enabled.
    *
-   * @return boolean
+   * @return bool
    *   TRUE if files should be scanned.
    */
   public function isEnabled() {
@@ -69,8 +74,8 @@ class Scanner {
   /**
    * Check whether files that have not been scanned can be uploaded.
    *
-   * @return boolean
-   *    TRUE if unchecked files are permitted.
+   * @return bool
+   *   TRUE if unchecked files are permitted.
    */
   public function allowUncheckedFiles() {
     return $this->config->outage_action() == Config::OUTAGE_ALLOW_UNCHECKED;
@@ -79,13 +84,12 @@ class Scanner {
   /**
    * Check whether files that have not been scanned can be uploaded.
    *
-   * @return boolean
-   *    TRUE if unchecked files are permitted.
+   * @return bool
+   *   TRUE if unchecked files are permitted.
    */
   public function isVerboseModeEnabled() {
     return $this->config->verbosity();
   }
-
 
   /**
    * Check whether a specific file should be scanned by ClamAV.
@@ -94,24 +98,24 @@ class Scanner {
    * - Image files
    * - Large files that might take a long time to scan
    * - Files uploaded by trusted administrators
-   * - Viruses, intended to be deliberately uploaded to a virus database
+   * - Viruses, intended to be deliberately uploaded to a virus database.
    *
    * Files can be excluded from the scans by implementing
    * hook_clamav_file_is_scannable().
    *
-   * @see hook_clamav_file_is_scannable().
+   * @see hook_clamav_file_is_scannable()
    *
-   * @return boolean
-   *    TRUE if a file should be scanned by the anti-virus service.
+   * @return bool
+   *   TRUE if a file should be scanned by the anti-virus service.
    */
   public function isScannable(FileInterface $file) {
     // Check whether this stream-wrapper scheme is scannable.
-      if (!empty($file->destination)) {
-        $scheme = \Drupal::service('stream_wrapper_manager')->getScheme($file->destination);
-      }
-      else {
-        $scheme = \Drupal::service('stream_wrapper_manager')->getScheme($file->getFileUri());
-      }
+    if (!empty($file->destination)) {
+      $scheme = \Drupal::service('stream_wrapper_manager')->getScheme($file->destination);
+    }
+    else {
+      $scheme = \Drupal::service('stream_wrapper_manager')->getScheme($file->getFileUri());
+    }
     $scannable = self::isSchemeScannable($scheme);
 
     // Iterate each module implementing hook_clamav_file_is_scannable().
@@ -121,15 +125,15 @@ class Scanner {
     if (method_exists(\Drupal::moduleHandler(), 'invokeAllWith')) {
       \Drupal::moduleHandler()->invokeAllWith($hook, function (callable $hook, string $module) use ($file, &$scannable) {
           $result = $hook($file);
-          if ($result !== self::FILE_SCANNABLE_IGNORE) {
-            $scannable = $result;
-          }
-        });
+        if ($result !== self::FILE_SCANNABLE_IGNORE) {
+          $scannable = $result;
+        }
+      });
     }
     else {
       // BC for Drupal < 9.4.
       foreach (\Drupal::moduleHandler()->getImplementations($hook) as $module) {
-        $result = \Drupal::moduleHandler()->invoke($module, $hook, array($file));
+        $result = \Drupal::moduleHandler()->invoke($module, $hook, [$file]);
         if ($result !== self::FILE_SCANNABLE_IGNORE) {
           $scannable = $result;
         }
@@ -138,7 +142,6 @@ class Scanner {
 
     return $scannable;
   }
-
 
   /**
    * Scan a file for viruses.
@@ -165,10 +168,10 @@ class Scanner {
 
     // Prepare to log results.
     $verbose_mode = $this->config->verbosity();
-    $replacements = array(
+    $replacements = [
       '%filename'  => $file->getFileUri(),
       '%virusname' => $this->scanner->virus_name(),
-    );
+    ];
 
     switch ($result) {
       // Log every infected file.
@@ -215,9 +218,9 @@ class Scanner {
    *
    * @param string $scheme
    *   The machine name of a stream-wrapper scheme, such as "public", or
-   *   "youtube".
+   *   "YouTube".
    *
-   * @return boolean
+   * @return bool
    *   TRUE if the scheme should be scanned.
    */
   public static function isSchemeScannable($scheme) {
@@ -237,4 +240,5 @@ class Scanner {
 
     return ($scheme_is_local xor $scheme_is_overridden);
   }
+
 }

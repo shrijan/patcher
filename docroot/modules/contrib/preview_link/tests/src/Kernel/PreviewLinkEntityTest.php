@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\Tests\preview_link\Kernel;
 
@@ -32,7 +32,7 @@ final class PreviewLinkEntityTest extends PreviewLinkBase {
   public function testGetEntities(): void {
     $previewLink = PreviewLink::create();
     $entity = EntityTestRevPub::create();
-    $previewLink->entities = [$entity];
+    $previewLink->entities->appendItem($entity);
     $this->assertCount(1, $previewLink->getEntities());
   }
 

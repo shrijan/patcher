@@ -122,8 +122,8 @@ class MenuLinksController extends ControllerBase {
    * When retrieving menu links using EntityTypeManager, they will be in order
    * of creation (sorted by id). However if menu links have been rearranged,
    * you can have a smaller id as a child of a greater id.
-   * Sorting the menu links array will ensure that childrens are created
-   * after their father.
+   * Sorting the menu links array will ensure that descendent links are created
+   * after their parents.
    */
   public function sortMenuLinks(array $unsortedMenuLinks, $menuName) {
     // Retrieve the full menu tree of $menuName.

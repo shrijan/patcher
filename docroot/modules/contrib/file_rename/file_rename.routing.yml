@@ -1,0 +1,20 @@
+entity.file.rename_form:
+  path: 'admin/content/files/rename/{file}'
+  defaults:
+    _entity_form: 'file.rename'
+    _title: 'Rename file'
+  requirements:
+    _permission: 'rename files'
+    _file_rename_access: '{file}'
+  options:
+    _admin_route: TRUE
+
+file_rename.settings:
+  path: '/admin/config/file_rename/settings'
+  defaults:
+    _form: '\Drupal\file_rename\Form\SettingsForm'
+    _title: 'File rename settings'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE

@@ -6,7 +6,7 @@ ckeditor.plugin.indentblock:
       type: boolean
       label: 'Enable'
 ckeditor5.plugin.ckeditor_indentblock_indent:
-  type: config_object
+  type: mapping
   label: 'CKEditor IndentBlock settings'
   mapping:
     enable:

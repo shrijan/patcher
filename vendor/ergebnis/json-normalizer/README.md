@@ -7,7 +7,6 @@
 [![Update](https://github.com/ergebnis/json-normalizer/workflows/Update/badge.svg)](https://github.com/ergebnis/json-normalizer/actions)
 
 [![Code Coverage](https://codecov.io/gh/ergebnis/json-normalizer/branch/main/graph/badge.svg)](https://codecov.io/gh/ergebnis/json-normalizer)
-[![Type Coverage](https://shepherd.dev/github/ergebnis/json-normalizer/coverage.svg)](https://shepherd.dev/github/ergebnis/json-normalizer)
 
 [![Latest Stable Version](https://poser.pugx.org/ergebnis/json-normalizer/v/stable)](https://packagist.org/packages/ergebnis/json-normalizer)
 [![Total Downloads](https://poser.pugx.org/ergebnis/json-normalizer/downloads)](https://packagist.org/packages/ergebnis/json-normalizer)
@@ -601,7 +600,6 @@ sections, the `Vendor\Composer\VersionConstraintNormalizer` will ensure that
    }
   ```
 
-
 - leading `v` prefixes in version constraints are removed
 
   ```diff
@@ -611,6 +609,20 @@ sections, the `Vendor\Composer\VersionConstraintNormalizer` will ensure that
   -    "foo/baz": "v1.3.7"
   +    "foo/bar": "^1.2",
   +    "foo/baz": "1.3.7"
+   }
+  ```
+
+- use of `x` or `X` for wildcards is replaced with `*`
+
+  ```diff
+   {
+     "require": {
+  -    "foo/bar": "1.x",
+  -    "foo/baz": "2.3.X",
+  -    "foo/qux": "x"
+  +    "foo/bar": "^1.0",
+  +    "foo/baz": "~2.3.0",
+  +    "foo/qux": "*"
    }
   ```
 

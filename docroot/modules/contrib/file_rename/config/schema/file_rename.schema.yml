@@ -1,0 +1,7 @@
+file_rename.settings:
+  type: config_object
+  label: 'File Rename settings'
+  mapping:
+    always_show_widget_link:
+      type: boolean
+      label: 'Display "Rename" link on all file fields.'

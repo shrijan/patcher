@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link\Access;
 
@@ -35,8 +35,8 @@ class PreviewLinkSessionExistsAccessCheck implements AccessInterface {
    * @return \Drupal\Core\Access\AccessResultInterface
    *   Whether the user has a session.
    */
-  public function access(Request $request = NULL): AccessResultInterface {
-    return AccessResult::allowedIf($request ? $this->sessionConfiguration->hasSession($request) : FALSE)
+  public function access(?Request $request = NULL): AccessResultInterface {
+    return AccessResult::allowedIf($request !== NULL ? $this->sessionConfiguration->hasSession($request) : FALSE)
       ->addCacheContexts(['session.exists']);
   }
 

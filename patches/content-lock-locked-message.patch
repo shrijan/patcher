@@ -1,0 +1,30 @@
+diff --git a/src/ContentLock/ContentLock.php b/src/ContentLock/ContentLock.php
+index a0b0a80..e1f4a97 100644
+--- a/src/ContentLock/ContentLock.php
++++ b/src/ContentLock/ContentLock.php
+@@ -420,10 +420,10 @@ class ContentLock extends ServiceProviderBase {
+ 
+       if ($this->verbose() && !$quiet) {
+         if ($translation_lock) {
+-          $this->messenger->addStatus($this->t('This content translation is now locked against simultaneous editing. This content translation will remain locked if you navigate away from this page without saving or unlocking it.'));
++          $this->messenger->addStatus($this->t('This content translation is now locked against simultaneous editing. This content translation will remain locked for 1 hour if you navigate away from this page without saving or unlocking it.  <a href="../../manage-my-content-locks">Manage my content locks</a>'));
+         }
+         else {
+-          $this->messenger->addStatus($this->t('This content is now locked against simultaneous editing. This content will remain locked if you navigate away from this page without saving or unlocking it.'));
++          $this->messenger->addStatus($this->t('This content is now locked against simultaneous editing. This content will remain locked for 1 hour if you navigate away from this page without saving or unlocking it. <a href="../../manage-my-content-locks">Manage my content locks</a>'));
+         }
+       }
+       // Post locking hook.
+@@ -473,10 +473,10 @@ class ContentLock extends ServiceProviderBase {
+         // Locked by current user.
+         if ($this->verbose() && !$quiet) {
+           if ($translation_lock) {
+-            $this->messenger->addStatus($this->t('This content translation is now locked by you against simultaneous editing. This content translation will remain locked if you navigate away from this page without saving or unlocking it.'));
++            $this->messenger->addStatus($this->t('This content translation is now locked by you against simultaneous editing. This content translation will remain locked for 1 hour if you navigate away from this page without saving or unlocking it.  <a href="../../manage-my-content-locks">Manage my content locks</a>'));
+           }
+           else {
+-            $this->messenger->addStatus($this->t('This content is now locked by you against simultaneous editing. This content will remain locked if you navigate away from this page without saving or unlocking it.'));
++            $this->messenger->addStatus($this->t('This content is now locked by you against simultaneous editing. This content will remain locked for 1 hour if you navigate away from this page without saving or unlocking it.  <a href="../../manage-my-content-locks">Manage my content locks</a>'));
+           }
+         }
+ 

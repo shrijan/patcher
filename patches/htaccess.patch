@@ -1,0 +1,56 @@
+Subject: [PATCH] commit original htaccess file
+---
+Index: docroot/.htaccess
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/docroot/.htaccess b/docroot/.htaccess
+--- a/docroot/.htaccess	(revision 0986a80d27bcc51e6aeb03e19e221ec16ba2ebf0)
++++ b/docroot/.htaccess	(date 1726810981352)
+@@ -38,6 +38,11 @@
+   # Cache all files for 1 year after access.
+   ExpiresDefault "access plus 1 year"
+
++  # Rapid Start document cache length.
++  <FilesMatch "\.(pdf|xls|xlsx|csv|docx|doc|zip)$">
++    ExpiresDefault "access plus 3 hours"
++  </FilesMatch>
++
+   <FilesMatch \.php$>
+     # Do not allow PHP scripts to be cached unless they explicitly send cache
+     # headers themselves. Otherwise all scripts would have to overwrite the
+@@ -59,7 +64,10 @@
+ # Various rewrite rules.
+ <IfModule mod_rewrite.c>
+   RewriteEngine on
+-
++
++  RewriteCond %{HTTPS} off
++  RewriteCond %{HTTP:X-Forwarded-Proto} !https
++  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+   # Set "protossl" to "s" if we were accessed via https://.  This is used later
+   # if you enable "www." stripping or enforcement, in order to ensure that
+   # you don't bounce between http and https.
+@@ -102,7 +110,11 @@
+   # uncomment the following:
+   # RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+   # RewriteRule ^ http%{ENV:protossl}://%1%{REQUEST_URI} [L,R=301]
+-
++  RewriteCond %{ENV:AH_SITE_ENVIRONMENT} prod [NC] # only prod
++  RewriteCond %{HTTP_HOST} !\.acquia-sites\.com [NC]
++  RewriteCond %{HTTP_HOST} .
++  RewriteCond %{HTTP_HOST} !^www\. [NC]
++  RewriteRule ^ http%{ENV:protossl}://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+   # Modify the RewriteBase if you are using Drupal in a subdirectory or in a
+   # VirtualDocumentRoot and the rewrite rules are not working properly.
+   # For example if your site is at http://example.com/drupal uncomment and
+@@ -137,6 +149,8 @@
+   RewriteCond %{REQUEST_URI} !/core/[^/]*\.php$
+   # Allow access to test-specific PHP files:
+   RewriteCond %{REQUEST_URI} !/core/modules/system/tests/https?\.php
++  # Allow access to simplesaml paths
++  RewriteCond %{REQUEST_URI} !^/simplesaml
+   # Allow access to Statistics module's custom front controller.
+   # Copy and adapt this rule to directly execute PHP files in contributed or
+   # custom modules or to run another PHP application in the same directory.

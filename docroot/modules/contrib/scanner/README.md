@@ -75,7 +75,7 @@ for further details.
   necessary. It is possible to control which roles can administer the module --
   e.g., determine which fields can be scanned and modify defaults -- and which
   roles can use the module. This is is useful if, for example, only people with
-  a "site admininistrator" role to control the module's settings, but allow
+  a "site administrator" role to control the module's settings, but allow
   people with the "content manager" role to be able to perform search and
   replace actions.
 

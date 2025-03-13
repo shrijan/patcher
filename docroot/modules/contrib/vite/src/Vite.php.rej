@@ -1,0 +1,46 @@
+--- src/Vite.php
++++ src/Vite.php
+@@ -71,6 +71,31 @@
+         continue;
+       }
+       $libraries[$libraryId] = $this->rewriteLibrary($assetLibrary);
++      if ($assetLibrary->shouldUseDevServer()) {
++        $this->rewriteDevDependencies($libraries, $assetLibrary);
++      }
++    }
++  }
++
++  /**
++   * Rewrite the dev dependencies for the given asset library entry.
++   *
++   * @param array $libraries
++   *   The array of libraries to modify.
++   * @param AssetLibrary $assetLibrary
++   *   The asset library to retrieve dev dependencies and base URL from.
++   */
++  private function rewriteDevDependencies(array &$libraries, AssetLibrary $assetLibrary): void {
++    foreach ($assetLibrary->getDevDependencies() as $fullDependency) {
++      // Split the dependency name on slash to remove the module part.
++      $dependencyParts = explode('/', $fullDependency);
++      $dependency = end($dependencyParts);
++      if (isset($libraries[$dependency])) {
++        // Modify the library to add an attribute.
++        foreach ($libraries[$dependency]['js'] as $path => $options) {
++          $libraries[$dependency]['js'][$path]['attributes']['data-vite-dev-server'] = $assetLibrary->getDevServerBaseUrl();
++        }
++      }
+     }
+   }
+ 
+@@ -201,7 +226,11 @@
+         $options['attributes'] = $attributes;
+         $newPath = $devServerBaseUrl . '/' . ltrim($path, '/');
+         $library['js'][$newPath] = $options;
++        if (!empty($assetLibrary->getDevDependencies())) {
++          $library['dependencies'] = array_merge($library['dependencies'], $assetLibrary->getDevDependencies());
++        }
+       }
++
+     }
+     return $library;
+   }

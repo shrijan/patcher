@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link\Access;
 
@@ -17,9 +17,6 @@ class PreviewLinkAccessCheck implements AccessInterface {
 
   /**
    * PreviewLinkAccessCheck constructor.
-   *
-   * @param \Drupal\preview_link\PreviewLinkHostInterface $previewLinkHost
-   *   Preview link host service.
    */
   public function __construct(
     protected PreviewLinkHostInterface $previewLinkHost,
@@ -27,26 +24,19 @@ class PreviewLinkAccessCheck implements AccessInterface {
   }
 
   /**
-   * Checks access to the node add page for the node type.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface|null $entity
-   *   The entity.
-   * @param string|null $preview_token
-   *   The preview token.
-   *
-   * @return \Drupal\Core\Access\AccessResult
-   *   A \Drupal\Core\Access\AccessInterface value.
+   * Checks access to the preview link.
    */
-  public function access(EntityInterface $entity = NULL, string $preview_token = NULL): AccessResultInterface {
+  public function access(?EntityInterface $entity = NULL, ?string $preview_token = NULL): AccessResultInterface {
     $neutral = AccessResult::neutral()
       ->addCacheableDependency($entity)
       ->addCacheContexts(['preview_link_route']);
     if (!$preview_token || !$entity) {
       return $neutral;
     }
+    $account = \Drupal::currentUser();
 
     // If we can't find a valid preview link then ignore this.
-    if (!$this->previewLinkHost->hasPreviewLinks($entity)) {
+    if (!$this->previewLinkHost->hasPreviewLinks($entity) or !($account->isAuthenticated())) {
       return $neutral->setReason('This entity does not have a preview link.');
     }
 

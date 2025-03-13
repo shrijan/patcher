@@ -8,16 +8,13 @@ use FileEye\MimeMap\Map\MimeMapInterface;
 use FileEye\MimeMap\MapHandler;
 use FileEye\MimeMap\MappingException;
 use FileEye\MimeMap\Type;
+use PHPUnit\Framework\Attributes\BackupStaticProperties;
+use PHPUnit\Framework\Attributes\DataProvider;
 
-/**
- * @backupStaticAttributes enabled
- */
+#[BackupStaticProperties(true)]
 class MapHandlerTest extends MimeMapTestBase
 {
-    /**
-     * @var MimeMapInterface
-     */
-    protected $map;
+    protected readonly MimeMapInterface $map;
 
     public function setUp(): void
     {
@@ -151,21 +148,21 @@ class MapHandlerTest extends MimeMapTestBase
     public function testGetExtensionTypesAfterTypeWithAliasRemoval(): void
     {
         $this->expectException(MappingException::class);
-        $this->expectExceptionMessage("No MIME type mapped to extension md");
-        $this->assertTrue($this->map->hasAlias('text/x-markdown'));
-        $this->assertTrue($this->map->removeType('text/markdown'));
-        $this->assertFalse($this->map->hasAlias('text/x-markdown'));
-        $types = (new Extension('MD'))->getTypes();
+        $this->expectExceptionMessage("No MIME type mapped to extension lyx");
+        $this->assertTrue($this->map->hasAlias('text/x-lyx'));
+        $this->assertTrue($this->map->removeType('application/x-lyx'));
+        $this->assertFalse($this->map->hasAlias('text/x-lyx'));
+        $types = (new Extension('LYX'))->getTypes();
     }
 
     public function testGetExtensionDefaultTypeAfterTypeWithAliasRemoval(): void
     {
         $this->expectException(MappingException::class);
-        $this->expectExceptionMessage("No MIME type mapped to extension md");
-        $this->assertTrue($this->map->hasAlias('text/x-markdown'));
-        $this->assertTrue($this->map->removeType('text/markdown'));
-        $this->assertFalse($this->map->hasAlias('text/x-markdown'));
-        $defaultType = (new Extension('md'))->getDefaultType();
+        $this->expectExceptionMessage("No MIME type mapped to extension lyx");
+        $this->assertTrue($this->map->hasAlias('text/x-lyx'));
+        $this->assertTrue($this->map->removeType('application/x-lyx'));
+        $this->assertFalse($this->map->hasAlias('text/x-lyx'));
+        $defaultType = (new Extension('lyx'))->getDefaultType();
     }
 
     public function testHasType(): void
@@ -361,9 +358,7 @@ class MapHandlerTest extends MimeMapTestBase
         ];
     }
 
-    /**
-     * @dataProvider malformedTypeProvider
-     */
+    #[DataProvider('malformedTypeProvider')]
     public function testAddMalformedTypeExtensionMapping(string $type): void
     {
         $this->expectException(MalformedTypeException::class);

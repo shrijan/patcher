@@ -1,0 +1,19 @@
+# Linky menu items definition
+entity.linky.collection:
+  title: 'Managed links'
+  route_name: entity.linky.collection
+  description: 'View managed link entities'
+  parent: system.admin_content
+  weight: 100
+
+entity.linky.admin:
+  title: 'Linky'
+  parent: system.admin_structure
+  description: 'Manage linky display.'
+  route_name: entity.linky.admin
+
+linky.settings:
+  title: 'Linky'
+  route_name: linky.settings
+  description: 'Manage Linky settings'
+  parent: system.admin_config_content

@@ -1,0 +1,82 @@
+<?php
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\Entity\NodeType;
+use Drupal\node\NodeTypeInterface;
+use Drupal\node\Form\NodeDeleteForm;
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ *
+ * Attach third party setting to node type forms using entity builder callback
+ * to set third party setting finally
+ */
+function entity_usage_node_delete_stop_form_node_type_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $config = \Drupal::config('entity_usage.settings');
+  if ($delete_warning = $config->get('delete_warning_message_entity_types')) {
+    if (in_array('node', $delete_warning)) {
+      $node_type = $form_state->getFormObject()->getEntity();
+      if ($node_type instanceof NodeType) {
+        $form['entity_usage_node_delete_stop'] = [
+          '#type' => 'details',
+          '#title' => t('Entity Usage Node Delete Settings'),
+          '#group' => 'additional_settings',
+        ];
+        $form['entity_usage_node_delete_stop']['prohibit_deletion'] = [
+          '#type' => 'checkbox',
+          '#title' => t('Do not allow deletion of used nodes of this type.'),
+          '#description' => t('depends on the Entity Usage module'),
+          '#default_value' => $node_type->getThirdPartySetting('entity_usage_node_delete_stop', 'prohibit_deletion', 0),
+        ];
+        $form['#entity_builders'][] = 'entity_usage_node_delete_stop_entity_builder';
+      }
+    }
+  }
+}
+
+/**
+ * Entity builder for setting third party setting.
+ *
+ * @param $entity_type
+ * @param \Drupal\node\NodeTypeInterface $type
+ * @param $form
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ */
+function entity_usage_node_delete_stop_entity_builder($entity_type, NodeTypeInterface $type, &$form, FormStateInterface $form_state) {
+  if ($form_state->getValue('prohibit_deletion') === 1) {
+    $type->setThirdPartySetting('entity_usage_node_delete_stop', 'prohibit_deletion', 1);
+    return;
+  }
+  $type->unsetThirdPartySetting('entity_usage_node_delete_stop', 'prohibit_deletion');
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ *
+ * Hooking in node confirm form targeting node delete form
+ * disabling delete button if third party setting says so
+ */
+function entity_usage_node_delete_stop_form_node_confirm_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $node_delete_form = $form_state->getFormObject();
+  if ($node_delete_form instanceof NodeDeleteForm) {
+    $config = \Drupal::config('entity_usage.settings');
+    if ($delete_warning = $config->get('delete_warning_message_entity_types')) {
+      if (in_array('node', $delete_warning)) {
+        /* @var \Drupal\node\NodeInterface $node */
+        $node = $node_delete_form->getEntity();
+        /* @var \Drupal\node\NodeTypeInterface $node_type */
+        $node_type = Drupal::entityTypeManager()
+          ->getStorage('node_type')
+          ->load($node->bundle());
+        if ($node_type->getThirdPartySetting('entity_usage_node_delete_stop', 'prohibit_deletion')) {
+          if (isset($form['entity_usage_delete_warning'])) {
+            if (!Drupal::currentUser()->hasPermission('skip node delete stop')) {
+              $form['entity_usage_delete_warning']['#message_list']['error'][] = t('Deletion is disabled until all usages are removed.');
+              $form['actions']['submit']['#disabled'] = TRUE;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

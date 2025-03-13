@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link_test_time;
 
@@ -15,11 +15,11 @@ class TimeMachine implements TimeInterface {
   /**
    * TimeMachine constructor.
    *
-   * @param \Drupal\Core\State\StateInterface $state
+   * @param \Closure $state
    *   State.
    */
   public function __construct(
-    protected StateInterface $state,
+    protected \Closure $state,
   ) {
   }
 
@@ -61,7 +61,7 @@ class TimeMachine implements TimeInterface {
     if ($dateTime instanceof \DateTime) {
       $dateTime = \DateTimeImmutable::createFromMutable($dateTime);
     }
-    $this->state->set('preview_link_test_time_machine', $dateTime);
+    $this->getState()->set('preview_link_test_time_machine', $dateTime);
   }
 
   /**
@@ -74,11 +74,20 @@ class TimeMachine implements TimeInterface {
    *   When date time was not set.
    */
   protected function getTime(): \DateTimeImmutable {
-    $dateTime = $this->state->get('preview_link_test_time_machine');
+    $dateTime = $this->getState()->get('preview_link_test_time_machine');
     if (!isset($dateTime)) {
-      throw new \LogicException('Current date time not set.');
+      return new \DateTimeImmutable();
     }
     return $dateTime;
+  }
+
+  /**
+   * Get the service from the closure.
+   *
+   * @return \Drupal\Core\State\StateInterface
+   */
+  public function getState(): StateInterface {
+    return ($this->state)();
   }
 
 }

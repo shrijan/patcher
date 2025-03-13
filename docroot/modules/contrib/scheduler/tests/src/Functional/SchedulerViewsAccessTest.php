@@ -96,7 +96,7 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
   /**
    * Tests the scheduled content tab on the user page.
    *
-   * @dataProvider dataViewScheduledContentUser()
+   * @dataProvider dataViewScheduledContentUser
    */
   public function testViewScheduledContentUser($entityTypeId, $bundle) {
     $this->createScheduledItems($entityTypeId, $bundle);
@@ -165,6 +165,20 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
     $assert->pageTextNotContains("$entityTypeId created by Scheduler Editor for unpublishing");
     $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for publishing");
     $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for unpublishing");
+
+    // Access the scheduled tab for the admin user, and check for the 'empty'
+    // text. This verifies that the uid argument plugin is working. In 10.2 the
+    // user id shown, but from 10.3+ the user entity is returned so the view
+    // displays the user name instead.
+    $this->drupalGet("user/{$this->adminUser->id()}/$url_end");
+    $assert->statusCodeEquals(200);
+    if (version_compare(\Drupal::VERSION, '10.3', '>=')) {
+      $assert->pageTextMatches("/No scheduled (content|media) for user {$this->adminUser->getDisplayName()}/");
+    }
+    else {
+      $assert->pageTextMatches("/No scheduled (content|media) for user {$this->adminUser->id()}/");
+    }
+
   }
 
   /**
@@ -176,8 +190,8 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
    * @return array
    *   Each array item has the values: [entity type id, bundle id].
    */
-  public function dataViewScheduledContentUser() {
-    $data = $this->dataStandardEntityTypes();
+  public static function dataViewScheduledContentUser() {
+    $data = self::dataStandardEntityTypes();
     unset($data['#commerce_product']);
     unset($data['#taxonomy_term']);
     return $data;
@@ -186,7 +200,7 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
   /**
    * Tests the scheduled content overview.
    *
-   * @dataProvider dataStandardEntityTypes()
+   * @dataProvider dataStandardEntityTypes
    */
   public function testViewScheduledContentOverview($entityTypeId, $bundle) {
     $this->createScheduledItems($entityTypeId, $bundle);

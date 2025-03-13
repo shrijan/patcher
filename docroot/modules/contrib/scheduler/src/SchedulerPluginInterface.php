@@ -32,20 +32,20 @@ interface SchedulerPluginInterface {
   public function entityType();
 
   /**
-   * Get the name of the "type" field for the entity.
-   *
-   * @return string
-   *   The name of the type/bundle field for this entity type.
-   */
-  public function typeFieldName();
-
-  /**
    * Get module dependency.
    *
    * @return string
    *   The name of the required module.
    */
   public function dependency();
+
+  /**
+   * Get the name of the "type" field for the entity.
+   *
+   * @return string
+   *   The name of the type/bundle field for this entity type.
+   */
+  public function typeFieldName();
 
   /**
    * Get the id of the Devel Generate form for this entity type. Optional.
@@ -135,8 +135,8 @@ interface SchedulerPluginInterface {
    * is the 'default' display mode and this is always supported. If there are no
    * other supported modes then this function does not need to be implemented in
    * the plugin. However if additional form display modes are provided by other
-   * modules and Scheduler has been updated to support these modes for editting
-   * the entity, then the plugin implementaion of this function should return
+   * modules and Scheduler has been updated to support these modes for editing
+   * the entity, then the plugin implementation of this function should return
    * all supported modes including 'default'. The implementation does not need
    * to check if the third-party module is actually available or enabled.
    *

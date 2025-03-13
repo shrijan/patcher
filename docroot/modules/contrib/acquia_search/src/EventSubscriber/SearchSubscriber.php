@@ -10,10 +10,13 @@ use Drupal\acquia_search\Helper\Flood;
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Solarium\Core\Client\Adapter\AdapterHelper;
+use Solarium\Core\Client\Request;
 use Solarium\Core\Client\Response;
 use Solarium\Core\Event\Events;
 use Solarium\Core\Plugin\AbstractPlugin;
 use Solarium\Exception\HttpException;
+use Solarium\Plugin\NoWaitForResponseRequest;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -98,10 +101,12 @@ class SearchSubscriber extends AbstractPlugin implements EventSubscriberInterfac
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
+    // HMAC Cookie injection has to fire before NoWaitForResponseRequest (pri 5)
+    // and after PostBigRequest (priority 10). Set priority to 9.
     return [
-      Events::PRE_EXECUTE_REQUEST => 'preExecuteRequest',
-      Events::POST_EXECUTE_REQUEST => 'postExecuteRequest',
+      Events::PRE_EXECUTE_REQUEST => ['preExecuteRequest', 9],
+      Events::POST_EXECUTE_REQUEST => ['postExecuteRequest', 9],
     ];
   }
 
@@ -110,13 +115,17 @@ class SearchSubscriber extends AbstractPlugin implements EventSubscriberInterfac
    *
    * @param \Solarium\Core\Event\PreExecuteRequest|\Drupal\search_api_solr\Solarium\EventDispatcher\EventProxy $event
    *   PreExecuteRequest event.
+   * @param string $event_name
+   *   Name of the event.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $dispatcher
+   *   The calling event dispatcher.
    */
-  public function preExecuteRequest($event) {
+  public function preExecuteRequest($event, string $event_name, EventDispatcherInterface $dispatcher) {
     /** @var \Solarium\Core\Event\PreExecuteRequest $event */
     /** @var \Solarium\Core\Client\Request $request */
     $request = $event->getRequest();
 
-    if (!$event->getEndpoint() instanceof AcquiaSearchEndpoint) {
+    if (!$event->getEndpoint() instanceof AcquiaSearchEndpoint || $event->getEndpoint()->getHost() === 'localhost') {
       return;
     }
 
@@ -128,7 +137,7 @@ class SearchSubscriber extends AbstractPlugin implements EventSubscriberInterfac
       $message = $this->t('Flood protection has blocked this Solr request. See more at <a href="@url">The Acquia Search flood control mechanism has blocked a Solr query due to API usage limits</a>', [
         '@url' => Flood::FLOOD_LIMIT_ARTICLE_URL,
       ]);
-      \Drupal::messenger()->addError($message);
+      \Drupal::logger('acquia_search')->error($message);
 
       // Build a static response which avoids a network request to Solr.
       $response = new Response((string) $message, ['HTTP/1.1 429 Too Many Requests']);
@@ -136,12 +145,28 @@ class SearchSubscriber extends AbstractPlugin implements EventSubscriberInterfac
       $event->stopPropagation();
       return;
     }
-    $request->addParam('request_id', uniqid(), TRUE);
+
+    // When 'NoWaitForResponseRequest' plugin exists we need to inject its
+    // altering data here to ensure hmac is calculated properly.
+    // @see \Solarium\Plugin\NoWaitForResponseRequest.
+    $event_subscribers = $dispatcher->getListeners($event_name);
+    foreach ($event_subscribers as $subscriber) {
+      if ($subscriber[0] instanceof NoWaitForResponseRequest) {
+        $charset = $request->getParam('ie') ?? 'utf-8';
+        $request->setMethod(Request::METHOD_POST);
+        $request->setContentType(Request::CONTENT_TYPE_APPLICATION_X_WWW_FORM_URLENCODED, ['charset' => $charset]);
+        $request->setRawData($request->getQueryString());
+        $request->clearParams();
+      }
+    }
+
     if ($request->getFileUpload()) {
       $helper = new AdapterHelper();
       $body = $helper->buildUploadBodyFromRequest($request);
       $request->setRawData($body);
     }
+
+    $request->addParam('request_id', uniqid(), TRUE);
 
     // If we're hosted on Acquia, and have an Acquia request ID,
     // append it to the request so that we map Solr queries to Acquia search
@@ -202,6 +227,11 @@ class SearchSubscriber extends AbstractPlugin implements EventSubscriberInterfac
     }
 
     if ($event->getRequest()->getHandler() == 'admin/ping') {
+      return;
+    }
+
+    // If the response is a 200 and empty, likely a NoWaitForResponseRequest.
+    if ($event->getResponse()->getBody() === '') {
       return;
     }
 

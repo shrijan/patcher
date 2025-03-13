@@ -6,7 +6,7 @@
 [![Code coverage](https://codecov.io/gh/slevomat/coding-standard/branch/master/graph/badge.svg)](https://codecov.io/gh/slevomat/coding-standard)
 ![PHPStan](https://img.shields.io/badge/style-level%207-brightgreen.svg?&label=phpstan)
 
-Slevomat Coding Standard for [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) provides sniffs that fall into three categories:
+Slevomat Coding Standard for [PHP_CodeSniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer) provides sniffs that fall into three categories:
 
 * Functional - improving the safety and behaviour of code
 * Cleaning - detecting dead code
@@ -178,6 +178,7 @@ Slevomat Coding Standard for [PHP_CodeSniffer](https://github.com/squizlabs/PHP_
  - [SlevomatCodingStandard.TypeHints.DeclareStrictTypes](doc/type-hints.md#slevomatcodingstandardtypehintsdeclarestricttypes-) 🔧
  - [SlevomatCodingStandard.TypeHints.DisallowArrayTypeHintSyntax](doc/type-hints.md#slevomatcodingstandardtypehintsdisallowarraytypehintsyntax-) 🔧
  - [SlevomatCodingStandard.TypeHints.DisallowMixedTypeHint](doc/type-hints.md#slevomatcodingstandardtypehintsdisallowmixedtypehint)
+ - [SlevomatCodingStandard.TypeHints.DNFTypeHintFormat](doc/type-hints.md#slevomatcodingstandardtypehintsdnftypehintformat-) 🔧
  - [SlevomatCodingStandard.TypeHints.LongTypeHints](doc/type-hints.md#slevomatcodingstandardtypehintslongtypehints-) 🔧
  - [SlevomatCodingStandard.TypeHints.NullTypeHintOnLastPosition](doc/type-hints.md#slevomatcodingstandardtypehintsnulltypehintonlastposition-) 🔧
  - [SlevomatCodingStandard.TypeHints.NullableTypeForNullDefaultValue](doc/type-hints.md#slevomatcodingstandardtypehintsnullabletypefornulldefaultvalue-) 🔧🚧
@@ -249,7 +250,7 @@ However it is not a recommended way to use Slevomat Coding Standard, because you
 
 ## Fixing errors automatically
 
-Sniffs in this standard marked by the 🔧 symbol support [automatic fixing of coding standard violations](https://github.com/squizlabs/PHP_CodeSniffer/wiki/Fixing-Errors-Automatically). To fix your code automatically, run phpcbf instead of phpcs:
+Sniffs in this standard marked by the 🔧 symbol support [automatic fixing of coding standard violations](https://github.com/PHPCSStandards/PHP_CodeSniffer/wiki/Fixing-Errors-Automatically). To fix your code automatically, run phpcbf instead of phpcs:
 
 ```
 vendor/bin/phpcbf --standard=ruleset.xml --extensions=php --tab-width=4 -sp src tests

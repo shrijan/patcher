@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\Tests\preview_link\Functional;
 
@@ -66,6 +66,13 @@ final class PreviewLinkTest extends BrowserTestBase {
         'node' => ['page'],
         'entity_test_revpub' => ['entity_test_revpub'],
       ])
+      ->save();
+    // Hard-set the date format so we don't fail if it changes in the future.
+    // This format is used in things like the reset date message checked in
+    // testReset.
+    \Drupal::configFactory()
+      ->getEditable('core.date_format.medium')
+      ->set('pattern', 'D, d/m/Y - H:i')
       ->save();
 
     /** @var \Drupal\preview_link_test_time\TimeMachine $timeMachine */
@@ -148,7 +155,7 @@ final class PreviewLinkTest extends BrowserTestBase {
     $timeMachine->setTime($currentTime);
     $this->submitForm([], 'Reset lifetime');
     // The date displayed here is in the users timezone, which is +10.
-    $this->assertSession()->pageTextContains('Preview link will now expire at Thu, 05/22/2014 - 06:00.');
+    $this->assertSession()->pageTextContains('Preview link will now expire at Thu, 22/05/2014 - 06:00.');
 
     // Reload preview link.
     $previewLink = PreviewLink::load($previewLink->id());

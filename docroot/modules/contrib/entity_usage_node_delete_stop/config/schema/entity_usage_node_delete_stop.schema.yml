@@ -1,0 +1,7 @@
+node.type.*.third_party.entity_usage_node_delete_stop:
+  type: mapping
+  label: 'Entity Usage Node Delete Stop'
+  mapping:
+    prohibit_deletion:
+      type: boolean
+      label: 'Prohibit deletion of nodes that are used anywhere else'

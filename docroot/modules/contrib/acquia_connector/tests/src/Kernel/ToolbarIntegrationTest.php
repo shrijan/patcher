@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Drupal\Tests\acquia_connector\Kernel;
 
 /**
+ * Test integration of connector with the Drupal Toolbar.
+ *
  * @group acquia_connector
  */
 final class ToolbarIntegrationTest extends AcquiaConnectorTestBase {
@@ -70,7 +72,7 @@ final class ToolbarIntegrationTest extends AcquiaConnectorTestBase {
    * @return \Generator
    *   The data.
    */
-  public function credentialData() {
+  public static function credentialData() {
     yield 'no credentials' => [
       '',
       '',

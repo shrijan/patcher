@@ -2,17 +2,17 @@
 
 namespace Drupal\scanner\Form;
 
+use Drupal\Component\Plugin\Exception\PluginException;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\TempStore\PrivateTempStoreFactory;
-use Drupal\scanner\Plugin\ScannerPluginManager;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Component\Plugin\Exception\PluginException;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Render\Renderer;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\TempStore\PrivateTempStoreFactory;
+use Drupal\scanner\Plugin\ScannerPluginManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Form for performing searching.
@@ -291,7 +291,7 @@ class ScannerForm extends FormBase {
       // The instance could not be found so fail gracefully and let the user
       // know.
       \Drupal::logger('scanner')->error($e->getMessage());
-      \Drupal::messenger()->addError(t('An error occured @e:', ['@e' => $e->getMessage()]));
+      \Drupal::messenger()->addError(t('An error occurred @e:', ['@e' => $e->getMessage()]));
     }
 
     $results = $plugin->search($field, $values);

@@ -13,7 +13,6 @@ use Drupal\acquia_search\PreferredCoreServiceFactory;
 use Drupal\Component\Datetime\Time;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\Php as PhpUuid;
-use Drupal\Core\Cache\MemoryBackend;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Http\ClientFactory;
 use Drupal\Core\Lock\LockBackendInterface;
@@ -54,11 +53,16 @@ final class PreferredCoreServiceTest extends AcquiaSearchTestCase {
     $lock->method('acquire')
       ->with('acquia_search_get_search_indexes')
       ->willReturn(TRUE);
+    $cache_default = $this->getMockBuilder('Drupal\Core\Cache\MemoryBackend')->disableOriginalConstructor()->getMock();
+
+    // Effectively disable the memory cache.
+    $cache_default->method('get')->willReturn(FALSE);
+
     return new AcquiaSearchApiClient(
       $this->createMock(LoggerChannelInterface::class),
       $subscription,
       $client_factory,
-      new MemoryBackend(),
+      $cache_default,
       new Time(new RequestStack()),
       $lock
     );
@@ -68,6 +72,7 @@ final class PreferredCoreServiceTest extends AcquiaSearchTestCase {
    * @dataProvider availableCoresData
    */
   public function testGetListOfAvailableCores(array $indexes, array $expected): void {
+    drupal_static_reset('acquia_search_available_cores');
     $client = new Client([
       'handler' => HandlerStack::create(
         new MockHandler([
@@ -194,7 +199,7 @@ final class PreferredCoreServiceTest extends AcquiaSearchTestCase {
     }
   }
 
-  public function availableCoresData() {
+  public static function availableCoresData() {
     yield [[], []];
     yield [
       [

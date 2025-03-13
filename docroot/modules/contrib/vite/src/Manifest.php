@@ -73,7 +73,7 @@ class Manifest {
   public function getStyles(string $chunk, bool $prependBaseUri = TRUE): array {
     if (
       !$this->chunkExists($chunk)
-      || empty($this->manifest[$chunk]['css'])
+      || !isset($this->manifest[$chunk]['css'])
       || !is_array($this->manifest[$chunk]['css'])
     ) {
       return [];
@@ -112,7 +112,7 @@ class Manifest {
   private function getChunkPropertyPaths(string $property, string $chunk, bool $prependBaseUri = TRUE): array {
     if (
       !$this->chunkExists($chunk)
-      || empty($this->manifest[$chunk][$property])
+      || !isset($this->manifest[$chunk][$property])
       || !is_array($this->manifest[$chunk][$property])
     ) {
       return [];

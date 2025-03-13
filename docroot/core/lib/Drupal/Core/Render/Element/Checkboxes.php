@@ -3,6 +3,7 @@
 namespace Drupal\Core\Render\Element;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Attribute\FormElement;
 
 /**
  * Provides a form element for a set of checkboxes.
@@ -15,12 +16,12 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * Usage example:
  * @code
- * $form['favorites']['colors'] = array(
+ * $form['favorites']['colors'] = [
  *   '#type' => 'checkboxes',
- *   '#options' => array('blue' => $this->t('Blue'), 'red' => $this->t('Red')),
+ *   '#options' => ['blue' => $this->t('Blue'), 'red' => $this->t('Red')],
  *   '#title' => $this->t('Which colors do you like?'),
  *   ...
- * );
+ * ];
  * @endcode
  *
  * Element properties may be set on single option items as follows.
@@ -31,10 +32,9 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @see \Drupal\Core\Render\Element\Radios
  * @see \Drupal\Core\Render\Element\Checkbox
- *
- * @FormElement("checkboxes")
  */
-class Checkboxes extends FormElement {
+#[FormElement('checkboxes')]
+class Checkboxes extends FormElementBase {
 
   use CompositeFormElementTrait;
 
@@ -61,7 +61,7 @@ class Checkboxes extends FormElement {
   public static function processCheckboxes(&$element, FormStateInterface $form_state, &$complete_form) {
     $value = is_array($element['#value']) ? $element['#value'] : [];
     $element['#tree'] = TRUE;
-    if (count($element['#options']) > 0) {
+    if (is_countable($element['#options']) && count($element['#options']) > 0) {
       if (!isset($element['#default_value']) || $element['#default_value'] == 0) {
         $element['#default_value'] = [];
       }

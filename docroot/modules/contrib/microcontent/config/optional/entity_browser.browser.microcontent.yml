@@ -1,0 +1,52 @@
+uuid: 784a102b-bc9b-4977-b75d-269365d6be53
+langcode: en
+status: true
+dependencies:
+  config:
+    - views.view.microcontent_browser
+  module:
+    - entity_browser_entity_form
+    - views
+name: microcontent
+label: Micro-content
+display: modal
+display_configuration:
+  width: '1200'
+  height: '800'
+  link_text: 'Select micro-content'
+  auto_open: false
+selection_display: no_display
+selection_display_configuration: {  }
+widget_selector: tabs
+widget_selector_configuration: {  }
+widgets:
+  f5997aac-db7e-46f2-9885-c9ffae81eace:
+    settings:
+      view: microcontent_browser
+      view_display: entity_browser_1
+      submit_text: 'Select micro-content'
+      auto_select: false
+    uuid: f5997aac-db7e-46f2-9885-c9ffae81eace
+    weight: 1
+    label: 'Choose existing'
+    id: view
+  5318112f-1a42-4148-98b3-4934f604f723:
+    settings:
+      entity_type: microcontent
+      bundle: __editor_bundle
+      form_mode: entity_browser
+      submit_text: 'Save micro-content'
+      target_bundles:
+        career_outcome: career_outcome
+        person_card: person_card
+        rating: rating
+        testimonial: testimonial
+      allowed_bundles:
+        career_outcome: career_outcome
+        person_card: person_card
+        rating: rating
+        testimonial: testimonial
+    uuid: 5318112f-1a42-4148-98b3-4934f604f723
+    weight: 2
+    label: 'Add new'
+    id: entity_form

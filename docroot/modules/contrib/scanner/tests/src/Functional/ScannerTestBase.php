@@ -3,7 +3,6 @@
 namespace Drupal\Tests\scanner\Functional;
 
 use Drupal\Component\Render\FormattableMarkup;
-use Drupal\Component\Utility\Html;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\Tests\BrowserTestBase;
@@ -47,23 +46,6 @@ abstract class ScannerTestBase extends BrowserTestBase {
 
     // Login.
     $this->drupalLogin($account);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function verbose($message, $title = NULL) {
-    // Handle arrays, objects, etc.
-    if (!is_string($message)) {
-      $message = "<pre>\n" . print_r($message, TRUE) . "\n</pre>\n";
-    }
-
-    // Optional title to go before the output.
-    if (!empty($title)) {
-      $title = '<h2>' . Html::escape($title) . "</h2>\n";
-    }
-
-    parent::verbose($title . $message);
   }
 
   /**
@@ -165,20 +147,6 @@ abstract class ScannerTestBase extends BrowserTestBase {
     ];
 
     return $this->createNode($args);
-  }
-
-  /**
-   * Prints out the debug information about the test database connection.
-   */
-  protected function debugDatabaseConnection() {
-    $connection = self::getDatabaseConnection();
-    $this->addWarning(var_export([
-      'database type' => $connection->databaseType(),
-      'database client version' => $connection->clientVersion(),
-      'database version' => $connection->version(),
-      'database is mariadb' => (method_exists($connection, 'isMariaDb') && $connection->isMariaDb()),
-      'database driver' => $connection->driver(),
-    ], TRUE));
   }
 
 }

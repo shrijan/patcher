@@ -7,6 +7,7 @@ namespace Drupal\Tests\acquia_connector\Kernel\Controller;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Logger\RfcLoggerTrait;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\Tests\acquia_connector\Kernel\AcquiaConnectorTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
@@ -20,6 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 final class AuthControllerTest extends AcquiaConnectorTestBase implements LoggerInterface {
 
   use UserCreationTrait;
+  use StringTranslationTrait;
   use RfcLoggerTrait;
 
   /**
@@ -68,9 +70,9 @@ final class AuthControllerTest extends AcquiaConnectorTestBase implements Logger
   }
 
   /**
-   * Tests the ::setup method.
+   * Tests the ::setup method while oauth is valid.
    */
-  public function testSetup(): void {
+  public function testSetupWithoauth(): void {
     $request = Request::create(
       Url::fromRoute('acquia_connector.setup_oauth')->toString()
     );
@@ -85,6 +87,56 @@ final class AuthControllerTest extends AcquiaConnectorTestBase implements Logger
       Url::fromRoute('acquia_connector.setup_manual')->toString(),
       $this->getRawContent()
     );
+  }
+
+  /**
+   * Tests the ::setup method with an API key.
+   */
+  public function testSetupWithApiKeys(): void {
+    $sut = $this->container->get('acquia_connector.auth_service');
+    $client_id_property = new \ReflectionProperty($sut, 'client_id');
+    $client_id_property->setAccessible(true);
+    $client_id_property->setValue($sut, '38357830-xxxx-4b4d-a356-f508c6ddecf8');
+
+    $request = Request::create(
+      Url::fromRoute('acquia_connector.setup_oauth')->toString()
+    );
+    $response = $this->doRequest($request);
+    self::assertEquals(200, $response->getStatusCode());
+    // @note: cannot use generated URL to due generated CSRF token.
+    $this->assertStringNotContainsString(
+      $this->getCsrfUrlString(Url::fromRoute('acquia_connector.auth.begin')),
+      $this->getRawContent()
+    );
+    $this->assertStringContainsString(
+      Url::fromRoute('acquia_connector.setup_manual')->toString(),
+      $this->getRawContent()
+    );
+
+    // Submit the form
+    $request = Request::create(
+      Url::fromRoute('acquia_connector.setup_oauth')->toString(),
+      'POST',
+      [
+        'api_key' => 'VALID_KEY',
+        'api_secret' => 'VALID_SECRET',
+        // @phpstan-ignore-next-line
+        'form_build_id' => (string) $this->cssSelect('input[name="form_build_id"]')[0]->attributes()->value[0],
+        // @phpstan-ignore-next-line
+        'form_token' => (string) $this->cssSelect('input[name="form_token"]')[0]->attributes()->value[0],
+        // @phpstan-ignore-next-line
+        'form_id' => (string) $this->cssSelect('input[name="form_id"]')[0]->attributes()->value[0],
+        'op' => 'Connect',
+      ]);
+    $response = $this->doRequest($request);
+    self::assertEquals(303, $response->getStatusCode(), var_export($response->getContent(), TRUE));
+    self::assertEquals(
+      Url::fromRoute('acquia_connector.setup_configure')->setAbsolute()->toString(),
+      $response->headers->get('Location')
+    );
+    // Ensure keys are being stored locally.
+    $state = $this->container->get('state');
+    $this->assertEquals('{"api_key":"VALID_KEY","api_secret":"VALID_SECRET"}', $state->get('acquia_connector.credentials', ''));
   }
 
   /**
@@ -152,9 +204,10 @@ final class AuthControllerTest extends AcquiaConnectorTestBase implements Logger
         Url::fromRoute('acquia_connector.setup_oauth')->toString(),
         $response->headers->get('Location')
       );
-      self::assertEquals(
-        ['We could not retrieve account data, please re-authorize with your Acquia Cloud account. For more information check <a target="_blank" href="https://docs.acquia.com/cloud-platform/known-issues/#unable-to-log-in-through-acquia-connector">this link</a>.'],
-        $this->container->get('messenger')->messagesByType('error')
+      $error_msg = $this->container->get('messenger')->messagesByType('error');
+      self::assertSame(
+        'We could not retrieve account data, please re-authorize with your Acquia Cloud account. For more information check <a target="_blank" href="https://docs.acquia.com/cloud-platform/known-issues/#unable-to-log-in-through-acquia-connector">this link</a>.',
+        (string) array_shift($error_msg)
       );
       self::assertEquals(
         [$error],
@@ -163,7 +216,13 @@ final class AuthControllerTest extends AcquiaConnectorTestBase implements Logger
     }
   }
 
-  public function authorizationReturnData() {
+  /**
+   * Return data for the authorization responses.
+   *
+   * @return \Generator
+   *   The test data.
+   */
+  public static function authorizationReturnData(): \Generator {
     yield 'success' => ['AUTHORIZATION_SUCCESSFUL'];
     yield 'error' => [
       'AUTHORIZATION_ERROR',
@@ -187,9 +246,10 @@ final class AuthControllerTest extends AcquiaConnectorTestBase implements Logger
       Url::fromRoute('acquia_connector.setup_oauth')->toString(),
       $response->headers->get('Location')
     );
+    $error_msg = $this->container->get('messenger')->messagesByType('error');
     self::assertEquals(
-      ['We could not retrieve account data, please re-authorize with your Acquia Cloud account. For more information check <a target="_blank" href="https://docs.acquia.com/cloud-platform/known-issues/#unable-to-log-in-through-acquia-connector">this link</a>.'],
-      $this->container->get('messenger')->messagesByType('error')
+      'We could not retrieve account data, please re-authorize with your Acquia Cloud account. For more information check <a target="_blank" href="https://docs.acquia.com/cloud-platform/known-issues/#unable-to-log-in-through-acquia-connector">this link</a>.',
+      (string) array_shift($error_msg)
     );
     self::assertEquals(
       [

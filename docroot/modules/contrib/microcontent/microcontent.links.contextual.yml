@@ -1,0 +1,4 @@
+entity.microcontent.edit_form:
+  route_name: entity.microcontent.edit_form
+  group: microcontent
+  title: Edit

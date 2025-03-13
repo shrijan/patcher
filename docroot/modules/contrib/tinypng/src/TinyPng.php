@@ -74,7 +74,7 @@ class TinyPng implements TinyPngInterface, ContainerInjectionInterface {
   public function __construct(
     ConfigFactoryInterface $config_factory,
     FileSystemInterface $file_system,
-    FileUrlGeneratorInterface $file_url_generator
+    FileUrlGeneratorInterface $file_url_generator,
   ) {
     $this->configFactory = $config_factory;
 

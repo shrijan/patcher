@@ -186,6 +186,18 @@ class UserSyncEventSubscriber implements EventSubscriberInterface {
     // Synchronize e-mail.
     if ($this->config->get('user_mail_attribute') && ($account->isNew() || $this->config->get('sync_mail'))) {
       $mail = $this->getAttributeByConfig('user_mail_attribute', $event);
+      if ($mail == $account->getEmail()){
+       if ($account->hasField('field_saml_initialised')){
+         $saml = $account->get('field_saml_initialised')->value;
+         if (!$saml){
+           $account->set('field_saml_initialised', TRUE);
+           if($account->hasField('field_password_expiration')){
+             $account->set('field_password_expiration', ['value' => 0]);
+           }
+           $event->markAccountChanged();
+         }
+        } 
+      }
       if ($mail) {
         if ($mail != $account->getEmail()) {
           // Invalid e-mail cancels the login / account creation just like name.

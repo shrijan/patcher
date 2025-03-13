@@ -11,6 +11,8 @@ use Symfony\Component\Validator\ConstraintViolation;
 
 /**
  * Test the schema.
+ *
+ * @group config_ignore
  */
 class IgnoreSchemaTest extends KernelTestBase {
 

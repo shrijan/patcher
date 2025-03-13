@@ -87,9 +87,10 @@ class ConfigIgnoreEventSubscriber implements EventSubscriberInterface, CacheTags
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
+    // phpcs:disable Drupal.Arrays.Array.LongLineDeclaration
     return [
-      ConfigEvents::STORAGE_TRANSFORM_IMPORT => ['onImportTransform', Settings::get('config_ignore_import_priority', 0)],
-      ConfigEvents::STORAGE_TRANSFORM_EXPORT => ['onExportTransform', Settings::get('config_ignore_export_priority', 0)],
+      ConfigEvents::STORAGE_TRANSFORM_IMPORT => ['onImportTransform', Settings::get('config_ignore_import_priority', -100)],
+      ConfigEvents::STORAGE_TRANSFORM_EXPORT => ['onExportTransform', Settings::get('config_ignore_export_priority', -100)],
     ];
   }
 
@@ -133,6 +134,10 @@ class ConfigIgnoreEventSubscriber implements EventSubscriberInterface, CacheTags
 
     // Get the config ignore settings form the transformation storage.
     $transformation_storage = $transformation_storage->createCollection(StorageInterface::DEFAULT_COLLECTION);
+    if (empty($transformation_storage->listAll())) {
+      // Skip if the transformation storage is empty in the default collection.
+      return;
+    }
     if ($transformation_storage->exists('config_ignore.settings')) {
       try {
         // This can be used to hook into config ignore via an event subscriber

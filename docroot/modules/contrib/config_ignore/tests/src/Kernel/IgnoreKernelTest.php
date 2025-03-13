@@ -104,7 +104,7 @@ class IgnoreKernelTest extends KernelTestBase {
    * choice, and we implemented the more strict definition of "ignore".
    * A commented out scenario for the more "lenient" option remained in the list
    * So that we could assert it when implementing a feature that allows one to
-   * configure the behaviour. It is configured differntly than originally
+   * configure the behaviour. It is configured differently than originally
    * anticipated. So this method sets up the config in the new way to cater to
    * the test scenario.
    *

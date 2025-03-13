@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link\Routing;
 
@@ -41,7 +41,7 @@ class PreviewLinkRoutes extends RouteSubscriberBase {
     foreach ($entityTypes as $entityType) {
       $canonicalPath = $entityType->getLinkTemplate('canonical');
       $route = $this->getRouteForPath($collection, $canonicalPath);
-      if (!$route) {
+      if ($route === NULL) {
         continue;
       }
 
@@ -78,7 +78,6 @@ class PreviewLinkRoutes extends RouteSubscriberBase {
    */
   protected function getRouteForPath(RouteCollection $collection, string $path): ?Route {
     foreach ($collection as $route) {
-      assert($route instanceof Route);
       if ($route->getPath() === $path) {
         return $route;
       }
@@ -90,9 +89,9 @@ class PreviewLinkRoutes extends RouteSubscriberBase {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    // Run after \Drupal\layout_builder\Routing\LayoutBuilderRoutes.
-    $events[RoutingEvents::ALTER] = ['onAlterRoutes', -120];
-    return $events;
+    return [
+      RoutingEvents::ALTER => [['onAlterRoutes', -120]],
+    ];
   }
 
 }

@@ -3,6 +3,7 @@
 namespace Drupal\structure_sync\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -31,8 +32,8 @@ class MenuSyncForm extends ConfigFormBase {
   /**
    * Class constructor.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, Connection $database) {
-    parent::__construct($config_factory);
+  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, Connection $database) {
+    parent::__construct($config_factory, $typedConfigManager);
     $this->database = $database;
   }
 
@@ -42,6 +43,7 @@ class MenuSyncForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new self(
       $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('database')
     );
   }

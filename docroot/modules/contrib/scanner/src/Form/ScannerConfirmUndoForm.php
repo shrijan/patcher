@@ -2,11 +2,13 @@
 
 namespace Drupal\scanner\Form;
 
+use Drupal\Component\Plugin\Exception\PluginException;
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
-use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Displayed to confirm that the user want to undo the replace operation.
@@ -14,6 +16,32 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 class ScannerConfirmUndoForm extends ConfirmFormBase {
 
   use StringTranslationTrait;
+
+  /**
+   * The current database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
+
+  /**
+   * Constructs a new ScannerConfirmUndoForm object.
+   *
+   * @param \Drupal\Core\Database\Connection $database
+   *   The current database connection.
+   */
+  public function __construct(Connection $database) {
+    $this->database = $database;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('database')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -38,8 +66,7 @@ class ScannerConfirmUndoForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // @todo Load this using DI.
-    $connection = \Drupal::service('database');
+    $connection = $this->database;
     $undo_id = $form_state->getValue('undo_id', 0);
     if (!empty($undo_id) && $undo_id > 0) {
       // Query the database in order to find the specific record we're trying
@@ -96,7 +123,7 @@ class ScannerConfirmUndoForm extends ConfirmFormBase {
       // The instance could not be found so fail gracefully and let the user
       // know.
       \Drupal::logger('scanner')->error($e->getMessage());
-      \Drupal::messenger()->addError(t('An error occured @e:', ['@e' => $e->getMessage()]));
+      \Drupal::messenger()->addError(t('An error occurred @e:', ['@e' => $e->getMessage()]));
     }
     $plugin->undo($data);
     $context['results']['undo_id'] = $undo_id;

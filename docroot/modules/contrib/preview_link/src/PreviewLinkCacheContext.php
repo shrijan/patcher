@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link;
 
@@ -35,7 +35,11 @@ class PreviewLinkCacheContext implements CacheContextInterface {
    * {@inheritdoc}
    */
   public function getContext() {
-    return ($route = $this->routeMatch->getRouteObject()) && $route->getOption('_preview_link_route') ?: FALSE;
+    $route = $this->routeMatch->getRouteObject();
+    if ($route === NULL) {
+      return '0';
+    }
+    return (string) $route->getOption('_preview_link_route');
   }
 
   /**

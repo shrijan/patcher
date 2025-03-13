@@ -2,9 +2,9 @@
 
 namespace Drupal\scanner\Plugin\Scanner;
 
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\node\Entity\Node as CoreNode;
 use Drupal\scanner\AdminHelper;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * A Scanner plugin for handling Node entities.
@@ -27,7 +27,7 @@ class Node extends Entity {
     // name delimited by ':' characters.
     [$entityType, $bundle, $fieldname] = explode(':', $field);
 
-    $query = \Drupal::entityQuery($entityType);
+    $query = $this->entityTypeManager->getStorage($entityType)->getQuery();
     $query->condition('type', $bundle, '=');
     if ($values['published']) {
       $query->condition('status', 1);
@@ -96,7 +96,7 @@ class Node extends Entity {
     }
     [$entityType, $bundle, $fieldname] = explode(':', $field);
 
-    $query = \Drupal::entityQuery($entityType);
+    $query = $this->entityTypeManager->getStorage($entityType)->getQuery();
     $query->condition('type', $bundle);
     if ($values['published']) {
       $query->condition('status', 1);
@@ -215,11 +215,11 @@ class Node extends Entity {
    * {@inheritdoc}
    */
   public function undo(array $data) {
-    $revision = \Drupal::entityTypeManager()->getStorage('node')
+    $revision = $this->entityTypeManager->getStorage('node')
       ->loadRevision($data['old_vid']);
     $revision->setNewRevision(TRUE);
     $revision->revision_log = $this->t('Copy of the revision from %date via Search and Replace Undo', [
-      '%date' => \Drupal::service('date.formatter')->format($revision->getRevisionCreationTime()),
+      '%date' => $this->dateFormatter->format($revision->getRevisionCreationTime()),
     ]);
     $revision->isDefaultRevision(TRUE);
     $revision->save();

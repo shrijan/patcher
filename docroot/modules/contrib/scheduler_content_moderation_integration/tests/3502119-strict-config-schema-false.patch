@@ -1,0 +1,78 @@
+diff --git a/tests/src/Functional/InstallTest.php b/tests/src/Functional/InstallTest.php
+index 2c1a834..ca71788 100644
+--- a/tests/src/Functional/InstallTest.php
++++ b/tests/src/Functional/InstallTest.php
+@@ -22,6 +22,21 @@ class InstallTest extends BrowserTestBase {
+   use SchedulerMediaSetupTrait;
+   use SchedulerSetupTrait;
+
++  /**
++   * Strict schema checking.
++   *
++   * The EntityReferenceArgument `entity_target_id` views argument plugin was
++   * introduced in Drupal 10.3 but not back-ported. This throws a schema error
++   * in earlier versions during tests (but not in actual live sites) so we need
++   * to remove the schema validation for versions earlier than 10.3.
++   *
++   * @var bool
++   *
++   * @see https://www.drupal.org/project/drupal/issues/2640994
++   * @see https://www.drupal.org/project/scheduler_content_moderation_integration/issues/3502119
++   */
++  protected $strictConfigSchema = FALSE;
++
+   /**
+    * {@inheritdoc}
+    */
+diff --git a/tests/src/Functional/SchedulerContentModerationBrowserTestBase.php b/tests/src/Functional/SchedulerContentModerationBrowserTestBase.php
+index 18a9def..9c86644 100644
+--- a/tests/src/Functional/SchedulerContentModerationBrowserTestBase.php
++++ b/tests/src/Functional/SchedulerContentModerationBrowserTestBase.php
+@@ -19,6 +19,21 @@ abstract class SchedulerContentModerationBrowserTestBase extends BrowserTestBase
+   use SchedulerMediaSetupTrait;
+   use SchedulerSetupTrait;
+
++  /**
++   * Strict schema checking.
++   *
++   * The EntityReferenceArgument `entity_target_id` views argument plugin was
++   * introduced in Drupal 10.3 but not back-ported. This throws a schema error
++   * in earlier versions during tests (but not in actual live sites) so we need
++   * to remove the schema validation for versions earlier than 10.3.
++   *
++   * @var bool
++   *
++   * @see https://www.drupal.org/project/drupal/issues/2640994
++   * @see https://www.drupal.org/project/scheduler_content_moderation_integration/issues/3502119
++   */
++  protected $strictConfigSchema = FALSE;
++
+   /**
+    * {@inheritdoc}
+    */
+diff --git a/tests/src/Kernel/SchedulerContentModerationTestBase.php b/tests/src/Kernel/SchedulerContentModerationTestBase.php
+index b6bfb3e..50b042f 100644
+--- a/tests/src/Kernel/SchedulerContentModerationTestBase.php
++++ b/tests/src/Kernel/SchedulerContentModerationTestBase.php
+@@ -19,6 +19,21 @@ abstract class SchedulerContentModerationTestBase extends KernelTestBase {
+   use SchedulerMediaSetupTrait;
+   use SchedulerSetupTrait;
+
++  /**
++   * Strict schema checking.
++   *
++   * The EntityReferenceArgument `entity_target_id` views argument plugin was
++   * introduced in Drupal 10.3 but not back-ported. This throws a schema error
++   * in earlier versions during tests (but not in actual live sites) so we need
++   * to remove the schema validation for versions earlier than 10.3.
++   *
++   * @var bool
++   *
++   * @see https://www.drupal.org/project/drupal/issues/2640994
++   * @see https://www.drupal.org/project/scheduler_content_moderation_integration/issues/3502119
++   */
++  protected $strictConfigSchema = FALSE;
++
+   /**
+    * Moderation info service.
+    *

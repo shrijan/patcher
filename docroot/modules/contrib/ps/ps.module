@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for Paragraphs Stats module.
+ */
+
+/**
+ * Implements hook_page_attachments().
+ */
+function ps_page_attachments(array &$page) {
+  $page['#attached']['library'][] = 'ps/ps.styles';
+}

@@ -12,9 +12,9 @@
  * Taxonomy Terms.
  */
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\commerce_product\Entity\Product;
 use Drupal\commerce_product\Entity\ProductInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\media\Entity\Media;
 use Drupal\media\MediaInterface;
 use Drupal\node\Entity\Node;
@@ -44,7 +44,7 @@ function _scheduler_api_test_get_entities($entityTypeId) {
       break;
 
     default:
-      throw new \Exception("Entity type id '{$entityTypeId}' is unrecognised in _scheduler_api_test_get_entities().");
+      throw new \Exception("Entity type id '{$entityTypeId}' is unrecognized in _scheduler_api_test_get_entities().");
   }
   return $results;
 }

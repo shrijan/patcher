@@ -65,7 +65,7 @@ class Container implements ContainerInterface, ResetInterface
     private bool $compiled = false;
     private \Closure $getEnv;
 
-    private static $make;
+    private static \Closure $make;
 
     public function __construct(?ParameterBagInterface $parameterBag = null)
     {
@@ -201,7 +201,6 @@ class Container implements ContainerInterface, ResetInterface
      *
      * @throws ServiceCircularReferenceException When a circular reference is detected
      * @throws ServiceNotFoundException          When the service is not defined
-     * @throws \Exception                        if an exception has been thrown when the service has been resolved
      *
      * @see Reference
      */
@@ -289,7 +288,6 @@ class Container implements ContainerInterface, ResetInterface
     public function reset()
     {
         $services = $this->services + $this->privates;
-        $this->services = $this->factories = $this->privates = [];
 
         foreach ($services as $service) {
             try {
@@ -300,6 +298,8 @@ class Container implements ContainerInterface, ResetInterface
                 continue;
             }
         }
+
+        $this->services = $this->factories = $this->privates = [];
     }
 
     /**

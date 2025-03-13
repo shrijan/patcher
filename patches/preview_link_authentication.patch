@@ -1,0 +1,15 @@
+diff --git docroot/modules/contrib/preview_link/src/Access/PreviewLinkAccessCheck.php docroot/module/contrib/preview_link/src/Access/PreviewLinkAccessCheck.php
+index 2b2e9ec..59002b1 100644
+--- docroot/module/contrib/preview_link/src/Access/PreviewLinkAccessCheck.php
++++ docroot/module/contrib/preview_link/src/Access/PreviewLinkAccessCheck.php
+@@ -33,9 +33,10 @@ class PreviewLinkAccessCheck implements AccessInterface {
+     if (!$preview_token || !$entity) {
+       return $neutral;
+     }
++    $account = \Drupal::currentUser();
+ 
+     // If we can't find a valid preview link then ignore this.
+-    if (!$this->previewLinkHost->hasPreviewLinks($entity)) {
++    if (!$this->previewLinkHost->hasPreviewLinks($entity) or !($account->isAuthenticated())) {
+       return $neutral->setReason('This entity does not have a preview link.');
+     }

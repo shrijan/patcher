@@ -19,7 +19,7 @@ ckeditor_indentblock_indent:
     library: ckeditor_indentblock/indentblock
     class: Drupal\ckeditor_indentblock\Plugin\CKEditor5Plugin\IndentBlock
     elements:
-      - <p class>
+      - <p class="Indent*">
     conditions:
       plugins:
         - ckeditor5_indent

@@ -61,9 +61,6 @@ abstract class FieldStateBase extends PluginBase implements FieldStateInterface,
     if (empty($this->configuration['target']) || empty($this->configuration['comparison'])) {
       return FALSE;
     }
-    $target_field = $form_state->getFormObject()
-      ->getFormDisplay($form_state)
-      ->getComponent($this->configuration['target']);
     // If dealing with a field on an Inline Entity Form or a Field Collection
     // have to include the field parents in the selector.
     if (!empty($parents)) {
@@ -71,15 +68,6 @@ abstract class FieldStateBase extends PluginBase implements FieldStateInterface,
     }
     else {
       $target = $this->configuration['target'];
-    }
-    switch ($target_field['type']) {
-      case 'options_select':
-        $selector = "select[name^='{$target}']";
-        break;
-
-      default:
-        $selector = ":input[name^='{$target}']";
-        break;
     }
 
     if ($this->configuration['comparison'] === 'value') {
@@ -89,7 +77,7 @@ abstract class FieldStateBase extends PluginBase implements FieldStateInterface,
       $value = TRUE;
     }
     $states[$this->pluginDefinition['id']][] = [
-      $selector => [
+      ":input[name^='{$target}']" => [
         $this->configuration['comparison'] => $value,
       ],
     ];

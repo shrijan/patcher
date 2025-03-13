@@ -1,0 +1,64 @@
+<?php
+
+/**
+ * @file
+ * Contains main module functions.
+ */
+
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Render\Element;
+use Drupal\Core\Session\AccountInterface;
+
+/**
+ * Implements hook_preprocess_views_view().
+ */
+function microcontent_preprocess_views_view(&$variables) {
+  if ($variables['view']->id() === 'microcontent_browser') {
+    $variables['view_array']['#attached']['library'][] = 'microcontent/entity-browser';
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function microcontent_theme() {
+  return [
+    'microcontent' => [
+      'render element' => 'elements',
+    ],
+  ];
+}
+
+/**
+ * Prepares variables for microcontent templates.
+ *
+ * Default template: microcontent.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - elements: An array of elements to display in view mode.
+ *   - microcontent: The microcontent item.
+ *   - name: The label for the microcontent item.
+ *   - view_mode: View mode; e.g., 'full', 'teaser', etc.
+ */
+function template_preprocess_microcontent(array &$variables) {
+  $variables['microcontent'] = $variables['elements']['#microcontent'];
+  $variables['view_mode'] = $variables['elements']['#view_mode'];
+  $variables['name'] = $variables['microcontent']->label();
+
+  // Helpful $content variable for templates.
+  foreach (Element::children($variables['elements']) as $key) {
+    $variables['content'][$key] = $variables['elements'][$key];
+  }
+}
+
+/**
+ * Implements hook_jsonapi_ENTITY_TYPE_filter_access() for microcontent.
+ */
+function microcontent_jsonapi_microcontent_filter_access(EntityTypeInterface $entity_type, AccountInterface $account) {
+  return ([
+    JSONAPI_FILTER_AMONG_ALL => AccessResult::allowedIfHasPermission($account, 'view unpublished microcontent'),
+    JSONAPI_FILTER_AMONG_PUBLISHED => AccessResult::allowedIfHasPermission($account, 'access content'),
+  ]);
+}

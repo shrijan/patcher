@@ -84,7 +84,7 @@ class TinyPngImageHandler implements TinyPngImageHandlerInterface, ContainerInje
     TinyPngInterface $tiny_png,
     ConfigFactoryInterface $config_factory,
     ImageFactory $image_factory,
-    LoggerChannelFactoryInterface $logger_channel_factory
+    LoggerChannelFactoryInterface $logger_channel_factory,
   ) {
     $this->tinyPng = $tiny_png;
     $this->config = $config_factory->get('tinypng.settings');

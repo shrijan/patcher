@@ -40,7 +40,7 @@ abstract class ConstraintValidatorBase extends ConstraintValidator implements Co
    */
   public function __construct(
     ModerationInformationInterface $moderationInformation,
-    AccountInterface $account
+    AccountInterface $account,
   ) {
     $this->moderationInformation = $moderationInformation;
     $this->account = $account;

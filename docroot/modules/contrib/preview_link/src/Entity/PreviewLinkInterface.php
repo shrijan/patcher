@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link\Entity;
 
@@ -41,7 +41,7 @@ interface PreviewLinkInterface extends ContentEntityInterface {
    * @return $this
    *   Return this for chaining.
    */
-  public function setToken(string $token): static;
+  public function setToken(string $token);
 
   /**
    * Mark the entity needing a new token. Only updated upon save.
@@ -78,7 +78,7 @@ interface PreviewLinkInterface extends ContentEntityInterface {
    * @return $this
    *   Return this for chaining.
    */
-  public function setEntities(array $entities): static;
+  public function setEntities(array $entities);
 
   /**
    * Add an entity for this preview link to unlock.
@@ -86,7 +86,7 @@ interface PreviewLinkInterface extends ContentEntityInterface {
    * @return $this
    *   Return this for chaining.
    */
-  public function addEntity(EntityInterface $entity): static;
+  public function addEntity(EntityInterface $entity);
 
   /**
    * Get expiration date.

@@ -13,6 +13,8 @@ use Drupal\Core\Url;
 use Drupal\Tests\acquia_connector\Kernel\AcquiaConnectorTestBase;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 
 /**
  * @coversDefaultClass \Drupal\acquia_connector\Controller\StatusController
@@ -83,7 +85,7 @@ final class StatusControllerTest extends AcquiaConnectorTestBase {
    * @return \Generator
    *   The test data.
    */
-  public function withPageCache() {
+  public static function withPageCache() {
     yield 'page_cache installed' => [TRUE];
     yield 'page_cache uninstalled' => [FALSE];
   }
@@ -106,6 +108,7 @@ final class StatusControllerTest extends AcquiaConnectorTestBase {
       ],
     ]);
     $request = Request::create($url->toString());
+    $request->setSession(new Session(new MockArraySessionStorage()));
     $this->container->get('request_stack')->push($request);
     $sut = $this->container->get('class_resolver')
       ->getInstanceFromDefinition(StatusController::class);
@@ -119,13 +122,15 @@ final class StatusControllerTest extends AcquiaConnectorTestBase {
    * @return \Generator
    *   The test data.
    */
-  public function accessData() {
+  public static function accessData() {
     $uuid = (new PhpUuid())->generate();
+    // phpcs:disable
     yield 'missing nonce' => [$uuid, '', '', AccessResult::forbidden('Missing nonce.')];
     yield 'missing uuid' => ['', 'f00Bar', '', AccessResult::forbidden('Missing application UUID.')];
     yield 'missing key' => [$uuid, 'f00Bar', '', AccessResult::forbidden('Could not validate key.')];
     yield 'invalid key' => [$uuid, 'f00Bar', 'ddsdfdsfdsdf', AccessResult::forbidden('Could not validate key.')];
     yield 'okay' => [$uuid, 'f00Bar', hash('sha1', "$uuid:f00Bar"), AccessResult::allowed()];
+    // phpcs:enable
   }
 
 }

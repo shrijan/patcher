@@ -146,6 +146,29 @@ props:
   [...]
 ```
 
+### Get a chunk path outside libraries
+
+It is possible to get a path to a chunk programmatically, outside the library definition.
+This can be useful for example when you need to get the path to an image or other
+asset that is not part of a library definition, but is processed by Vite.
+This requires the `vite` service to be injected and the `getChunk` method to be called
+with three arguments; the name of the extension/theme that registered a library, the
+name of the registered library to retrieve a chunk from, and the path to the chunk.
+This path should be to the source file, just as how you would use it in the library definition.
+
+```php
+$logo = \Drupal::service('vite.vite')->getChunk('frontend', 'global', 'assets/logo.svg');
+```
+
+#### Usage in Twig
+
+There's also a Twig function available to get a path to a chunk. This function accepts
+the same arguments as the PHP method above.
+
+```twig
+<img src="{{ vite_get_chunk_path('frontend', 'global', 'assets/logo.svg') }}" />
+```
+
 ## Configuration
 
 In library definition instead of only enabling vite support by setting
@@ -160,8 +183,10 @@ vite:
   # By default `<path_to_module|theme>/dist/`.
   baseUrl: '/themes/custom/my_theme/dist/'
   # Vite dev server url, by default http://localhost:5173.
-  devServerUrl: 'http://localhost:9999`
-
+  devServerUrl: 'http://localhost:9999'
+  # Library dependencies used in dev mode only.
+  devDependencies:
+    - mymodule/reactapp.devmode
 ```
 
 These settings can also be overwritten in site settings.php:
@@ -176,13 +201,16 @@ $settings['vite'] = [
   // Global overrides.
   /* Make note that these are global so they will take effect for all drupal
    * asset libraries, so setting enabled => TRUE here is not really recommended.
-   * Probably the only useful to set here would be devServerUrl to globally
+   * Probably the only useful thing to set here would be devServerUrl to globally
    * override the default one.
    */
   'enabled' => TRUE,
   'manifest' => 'vue_app/dist/manifest.json',
   'baseUrl' => '/some/custom/base/url/used/in/production/for/dist/assets/',
   'devServerUrl' => 'http://localhost:9999',
+  'devDependencies' => [
+    'mymodule/override.devmode'
+  ]
   'overrides' => [
     // Per module/theme overrides.
     '<module|theme>' => [
@@ -193,7 +221,6 @@ $settings['vite'] = [
       // ... settings like the global ones
     ]
   ],
-
 ]
 
 ```
@@ -214,4 +241,55 @@ for example:
        src/scss/style.scss: {}
      dependencies:
        - core/drupalSettings
+```
+
+If your vite loaded app needs to declare dependencies that are only used while
+in dev mode you can use the `devDependencies` option. This is particularly
+useful for React apps which need the `@react-refresh` preamble injected before
+the app is loaded.
+
+An example `@react-refresh` preamble loaded with `devDependencies` for React
+might look like this:
+
+```js
+/* /modules/custom/mymodule/js/viteDevMode.js */
+
+const thisScript = document.currentScript;
+const devServerUrl = thisScript.dataset.viteDevServer;
+
+import(`${devServerUrl}/@react-refresh`)
+  .then((RefreshRuntime) => {
+    const injectIntoGlobalHook = RefreshRuntime.default.injectIntoGlobalHook;
+    injectIntoGlobalHook(window);
+    window.$RefreshReg$ = () => {};
+    window.$RefreashSig$ = () => (type) => type;
+    window.__vite_plugin_react_preamble_installed__ = true;
+  })
+  .catch(() => {
+    console.log('Could not load RefreshRuntime from the vite dev server');
+  });
+```
+
+And loaded like this:
+
+```yaml
+# /modules/custom/mymodule/mymodule.libraries.yml
+
+reactapp.devmode:
+  js:
+    js/viteDevMode.js: {}
+
+reactapp:
+  vite:
+    manifest: app/dist/.vite/manifest.json
+    baseUrl: '/modules/custom/mymodule/app/dist/'
+    devServerUrl: 'http://host.docker.internal:5173/modules/custom/mymodule/app'
+    devDependencies:
+      - mymodule/reactapp.devmode # This loads the viteDevMode.js when in dev mode only
+  js:
+    src/main.tsx: {}
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
+    - locale/translations
 ```

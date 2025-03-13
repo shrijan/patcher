@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for Bundle Class Annotations module.
+ */
+
+/**
+ * Implements hook_entity_bundle_info_alter().
+ */
+function bca_entity_bundle_info_alter(array &$bundles): void {
+  /** @var \Drupal\bca\BundlePluginManager $manager */
+  $manager = \Drupal::service('plugin.manager.bca.bundle');
+  foreach ($manager->getDefinitions() as $definition) {
+    $entityType = $definition['entityType'] ?? $definition['entity_type'];
+    $bundle = $definition['bundle'];
+    if (isset($bundles[$entityType][$bundle])) {
+      $bundles[$entityType][$bundle]['class'] = $definition['class'];
+      $bundles[$entityType][$bundle]['label'] = $definition['label']
+        ?? $bundles[$entityType][$bundle]['label']
+        ?? $definition['class'];
+    }
+  }
+}

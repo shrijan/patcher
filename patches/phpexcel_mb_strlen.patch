@@ -1,0 +1,17 @@
+diff --git docroot/modules/contrib/phpexcel/src/PHPExcel.php docroot/modules/contrib/phpexcel/src/PHPExcel.php
+index 9024a6e..a39fc4c 100644
+--- docroot/modules/contrib/phpexcel/src/PHPExcel.php
++++ docroot/modules/contrib/phpexcel/src/PHPExcel.php
+@@ -544,10 +544,10 @@ not set to TRUE. Excel export aborted.");
+ 
+             foreach ($cells as $cell) {
+               $value = $cell->getValue();
+-              $value = mb_strlen($value) ? trim($value) : '';
++              $value = (!is_null($value) && mb_strlen($value)) ? trim($value) : '';
+ 
+               if (!$j && $keyed_by_headers) {
+-                $value = mb_strlen($value) ? $value : $k;
++                $value = (!is_null($value) && mb_strlen($value)) ? $value : $k;
+ 
+                 $this->invoke(
+                   'import',

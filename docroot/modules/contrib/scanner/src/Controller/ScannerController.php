@@ -3,11 +3,11 @@
 namespace Drupal\scanner\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Url;
-use Drupal\Core\Link;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Controller for Search and Replace module.

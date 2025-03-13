@@ -17,6 +17,12 @@ use Symfony\Component\HttpFoundation\Request;
  */
 final class ConfigureApplicationFormTest extends AcquiaConnectorTestBase {
 
+  /**
+   * Test the behavior when there is authentication is missing.
+   *
+   * This method tests the behavior of a specific scenario where
+   * no authentication is provided.
+   */
   public function testWithNoAuth(): void {
     $this->createUserWithSession();
 
@@ -29,12 +35,32 @@ final class ConfigureApplicationFormTest extends AcquiaConnectorTestBase {
       Url::fromRoute('acquia_connector.setup_oauth')->toString(),
       $response->headers->get('Location')
     );
+    $error_msg = $this->container->get('messenger')->messagesByType('error');
     self::assertEquals(
-      ['We could not retrieve account data, please re-authorize with your Acquia Cloud account. For more information check <a target="_blank" href="https://docs.acquia.com/cloud-platform/known-issues/#unable-to-log-in-through-acquia-connector">this link</a>.'],
-      $this->container->get('messenger')->messagesByType('error')
+      'We could not retrieve account data, please re-authorize with your Acquia Cloud account. For more information check <a target="_blank" href="https://docs.acquia.com/cloud-platform/known-issues/#unable-to-log-in-through-acquia-connector">this link</a>.',
+      (string) array_shift($error_msg)
     );
   }
 
+  /**
+   * Tests that api key and secret gets automatically created with auth.
+   */
+  public function testAutomaticApiKeyCreation(): void {
+    $this->createUserWithSession();
+    $this->setAccessToken('ACCESS_TOKEN_MULTIPLE_APPLICATIONS');
+
+    $request = Request::create(
+      Url::fromRoute('acquia_connector.setup_configure')->toString()
+    );
+    $response = $this->doRequest($request);
+    self::assertEquals(200, $response->getStatusCode());
+    // Ensure keys are being stored locally.
+    $state = $this->container->get('state');
+    $this->assertEquals('{"api_key":"VALID_KEY","api_secret":"VALID_SECRET","client_id":"137bd484-dcc8-4950-a784-1f01de7f6378","client_secret":"4DmbUmGiUkafdjcZk2yV6u17jPmmunwt8\/47mKdAQIc=","_links":{"self":{"href":"https:\/\/cloud.acquia.com\/api\/account\/tokens"},"parent":{"href":"https:\/\/cloud.acquia.com\/api\/account"},"notification":{"href":"https:\/\/cloud.acquia.com\/api\/notifications\/ab142771-826e-42b0-a53c-e112b70448d2"}}}', $state->get('acquia_connector.credentials', ''));
+  }
+  /**
+   * Test when there is an error fetching the application keys.
+   */
   public function testWithErrorGettingApplicationKeys(): void {
     $this->createUserWithSession();
 
@@ -55,6 +81,9 @@ final class ConfigureApplicationFormTest extends AcquiaConnectorTestBase {
     );
   }
 
+  /**
+   * Test when the subscription returns no applications.
+   */
   public function testWithNoApplications(): void {
     $this->createUserWithSession();
 
@@ -75,6 +104,9 @@ final class ConfigureApplicationFormTest extends AcquiaConnectorTestBase {
     );
   }
 
+  /**
+   * Tests when the current application uuid doesn't match the subscription.
+   */
   public function testApplicationCloudMismatch(): void {
     $this->setAccessToken('ACCESS_TOKEN_ONE_APPLICATION');
 
@@ -107,6 +139,9 @@ final class ConfigureApplicationFormTest extends AcquiaConnectorTestBase {
     );
   }
 
+  /**
+   * Test when a subscription only has one application.
+   */
   public function testWithOneApplication(): void {
     $this->createUserWithSession();
 
@@ -121,9 +156,10 @@ final class ConfigureApplicationFormTest extends AcquiaConnectorTestBase {
       Url::fromRoute('acquia_connector.settings')->setAbsolute()->toString(),
       $response->headers->get('Location')
     );
-    self::assertEquals(
-      ['status' => ['<h3>Connection successful!</h3>You are now connected to Acquia Cloud.']],
-      $this->container->get('messenger')->all()
+    $actual_msg = $this->container->get('messenger')->all()['status'];
+    self::assertSame(
+      ['status' => '<h3>Connection successful!</h3>You are now connected to Acquia Cloud.'],
+      ['status' => (string) array_shift($actual_msg)]
     );
 
     self::assertEquals(
@@ -154,6 +190,9 @@ final class ConfigureApplicationFormTest extends AcquiaConnectorTestBase {
     );
   }
 
+  /**
+   * Test when a subscription contains multiple applications.
+   */
   public function testWithMultipleApplications(): void {
     $this->createUserWithSession();
 
@@ -183,9 +222,10 @@ final class ConfigureApplicationFormTest extends AcquiaConnectorTestBase {
       Url::fromRoute('acquia_connector.settings')->setAbsolute()->toString(),
       $response->headers->get('Location')
     );
-    self::assertEquals(
-      ['status' => ['<h3>Connection successful!</h3>You are now connected to Acquia Cloud.']],
-      $this->container->get('messenger')->all()
+    $actual_msg = $this->container->get('messenger')->all()['status'];
+    self::assertSame(
+      ['status' => '<h3>Connection successful!</h3>You are now connected to Acquia Cloud.'],
+      ['status' => (string) array_shift($actual_msg)]
     );
 
     self::assertEquals(

@@ -51,7 +51,7 @@ class SettingsForm extends ConfigFormBase {
     $form['base_urls'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Base URL(s)'),
-      '#description' => $this->t('The base URLs of the site, separated by commas. Set it up for sites which front URL is different than the backoffice URL.'),
+      '#description' => $this->t('The base URLs of the site, separated by commas. Set it up for sites which front URL is different than the back office URL.'),
       '#default_value' => $config->get('base_urls'),
     ];
 
@@ -74,8 +74,8 @@ class SettingsForm extends ConfigFormBase {
 
     $form['wildcard'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Wilcard'),
-      '#description' => $this->t('Add wilcard to end of purge URL, purging all variants, such as query string tracking codes.'),
+      '#title' => $this->t('Wildcard'),
+      '#description' => $this->t('Add wildcard to end of purge URL, purging all variants, such as query string tracking codes.'),
       '#default_value' => $config->get('wildcard'),
     ];
 

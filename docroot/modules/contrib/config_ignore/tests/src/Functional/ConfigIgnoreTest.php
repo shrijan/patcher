@@ -34,11 +34,28 @@ class ConfigIgnoreTest extends ConfigIgnoreBrowserTestBase {
     ];
 
     $this->drupalGet('admin/config/development/configuration/ignore');
-    $this->submitForm($edit, $this->t('Save configuration'));
+    $this->submitForm($edit, (string) $this->t('Save configuration'));
 
     $settings = $this->config('config_ignore.settings')->get('ignored_config_entities');
 
     $this->assertEquals(['config.test_01', 'config.test_02'], $settings);
+  }
+
+  /**
+   * Verify that the config sync form loads after ignore settings are saved.
+   *
+   * Also installs core field module.
+   */
+  public function testSynchronizeForm() {
+    $this->container->get('module_installer')->install(['field']);
+    $this->drupalLogin($this->drupalCreateUser(['import configuration', 'synchronize configuration']));
+    $edit = [
+      'ignored_config_entities' => "system.site" . "\r\n" . "'system.menu.*'",
+    ];
+    $this->drupalGet('admin/config/development/configuration/ignore');
+    $this->submitForm($edit, (string) $this->t('Save configuration'));
+    $this->drupalGet('admin/config/development/configuration');
+    $this->assertSession()->statusCodeEquals(200);
   }
 
   /**

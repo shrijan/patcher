@@ -12,10 +12,11 @@ class ModeratedContentSchedulingTest extends SchedulerContentModerationTestBase 
   /**
    * Tests moderated entity publish scheduling.
    *
-   * @dataProvider dataEntityTypes()
+   * @dataProvider dataEntityTypes
    */
   public function testPublishStateSchedule($entityTypeId, $bundle) {
     $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
     $storage = \Drupal::service('entity_type.manager')->getStorage($entityTypeId);
 
     $entity = $this->createEntity($entityTypeId, $bundle, [
@@ -63,7 +64,7 @@ class ModeratedContentSchedulingTest extends SchedulerContentModerationTestBase 
   /**
    * Tests moderated entity unpublish scheduling.
    *
-   * @dataProvider dataEntityTypes()
+   * @dataProvider dataEntityTypes
    */
   public function testUnpublishStateSchedule($entityTypeId, $bundle) {
     $storage = \Drupal::service('entity_type.manager')->getStorage($entityTypeId);
@@ -92,7 +93,7 @@ class ModeratedContentSchedulingTest extends SchedulerContentModerationTestBase 
   /**
    * Tests publish scheduling for a draft of a published entity.
    *
-   * @dataProvider dataEntityTypes()
+   * @dataProvider dataEntityTypes
    */
   public function testPublishOfDraft($entityTypeId, $bundle) {
     $storage = \Drupal::service('entity_type.manager')->getStorage($entityTypeId);

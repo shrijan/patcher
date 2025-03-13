@@ -22,7 +22,7 @@ class TransitionAccessConstraintValidator extends ConstraintValidatorBase {
       return;
     }
 
-    // No need to validate if a moderation state has not ben set.
+    // No need to validate if a moderation state has not been set.
     if ($value->isEmpty()) {
       return;
     }

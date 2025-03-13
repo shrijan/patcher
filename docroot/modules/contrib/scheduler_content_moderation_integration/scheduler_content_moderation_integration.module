@@ -4,7 +4,7 @@
  * @file
  * Scheduler Content Moderation Integration.
  *
- * This sub-module provides extended options widget populated with default
+ * This submodule provides extended options widget populated with default
  * revision states to allow publishing and un-publishing of entities which are
  * moderated.
  *
@@ -12,6 +12,7 @@
  */
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
@@ -20,6 +21,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\content_moderation\ContentModerationState;
 use Drupal\workflows\Transition;
 
 require_once dirname(__FILE__) . '/includes/scheduler_hooks.inc';
@@ -295,7 +297,7 @@ function scheduler_content_moderation_integration_modules_installed($modules) {
   // type. Third-party modules can provide Scheduler plugins for entity types
   // that are not defined by that module, or that do not have the same id as the
   // module name. Similarly, core modules define entity types for which
-  // Scheduler provides the plugin. Hence we need to check both the plugin
+  // Scheduler provides the plugin. Hence, we need to check both the plugin
   // entity type and the provider and if either of these match a module that is
   // being installed then run the update functions.
   $matches = [];
@@ -439,7 +441,7 @@ function _scheduler_content_moderation_integration_hide_empty_state_options(arra
  * @return array
  *   The array of allowed values.
  */
-function _scheduler_content_moderation_integration_states_values(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, &$cacheable = FALSE) {
+function _scheduler_content_moderation_integration_states_values(FieldStorageDefinitionInterface $definition, ?FieldableEntityInterface $entity = NULL, &$cacheable = FALSE) {
   $options = [];
 
   // Fetch all possible states if no entity is given.
@@ -489,7 +491,7 @@ function _scheduler_content_moderation_integration_states_values(FieldStorageDef
 
   // The option for '_none' must be included here, so that validation of the
   // selected values via the 'allowed_values_function' setting will pass.
-  // However there is no need to specify a label because this will be set
+  // However, there is no need to specify a label because this will be set
   // automatically in OptionsWidgetBase::getOptions().
   $publish_state_options['_none'] = '';
   $unpublish_state_options['_none'] = '';
@@ -525,4 +527,41 @@ function _scheduler_content_moderation_integration_states_values(FieldStorageDef
   }
   // Finally return the options set for the field being processed.
   return $definition->getName() === 'publish_state' ? $publish_state_options : $unpublish_state_options;
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function scheduler_content_moderation_integration_module_implements_alter(array &$implementations, string $hook): void {
+  // Scheduler module implements presave that sets entity status to 0 if
+  // the entity can't be published immediately.
+  // Scmi module has to make sure, moderation state is not set to published
+  // if entity status is set to 0.
+  if ($hook === 'entity_presave') {
+    $scmi_hook = $implementations['scheduler_content_moderation_integration'];
+    unset($implementations['scheduler_content_moderation_integration']);
+    $implementations['scheduler_content_moderation_integration'] = $scmi_hook;
+  }
+}
+
+/**
+ * Implements hook_entity_presave().
+ *
+ * @see https://www.drupal.org/project/scheduler_content_moderation_integration/issues/3423224
+ */
+function scheduler_content_moderation_integration_entity_presave(EntityInterface $entity) {
+  /** @var \Drupal\content_moderation\ModerationInformationInterface $moderation_information */
+  $moderation_information = \Drupal::service('content_moderation.moderation_information');
+  if (!$moderation_information->isModeratedEntity($entity)) {
+    return;
+  }
+  assert($entity instanceof EditorialContentEntityBase);
+  $new_state_value = $entity->get('moderation_state')->value;
+  $workflow = $moderation_information->getWorkflowForEntity($entity);
+  $new_state = $workflow?->getTypePlugin()->getState($new_state_value);
+  assert($new_state instanceof ContentModerationState);
+  if (!$entity->isPublished() && $new_state->isPublishedState()) {
+    $original_state = $moderation_information->getOriginalState($entity);
+    $entity->set('moderation_state', $original_state->id());
+  }
 }

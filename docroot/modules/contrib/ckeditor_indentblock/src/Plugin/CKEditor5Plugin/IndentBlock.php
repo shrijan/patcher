@@ -3,13 +3,16 @@
 namespace Drupal\ckeditor_indentblock\Plugin\CKEditor5Plugin;
 
 use Drupal\ckeditor5\Plugin\CKEditor5PluginConfigurableInterface;
-use Drupal\ckeditor5\Plugin\CKEditor5PluginElementsSubsetInterface;
 use Drupal\ckeditor5\Plugin\CKEditor5PluginConfigurableTrait;
 use Drupal\ckeditor5\Plugin\CKEditor5PluginDefault;
+use Drupal\ckeditor5\Plugin\CKEditor5PluginElementsSubsetInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\editor\EditorInterface;
 
+/**
+ * Indent block ckeditor5 plugin.
+ */
 class IndentBlock extends CKEditor5PluginDefault implements CKEditor5PluginConfigurableInterface, CKEditor5PluginElementsSubsetInterface {
 
   use CKEditor5PluginConfigurableTrait;
@@ -56,7 +59,7 @@ class IndentBlock extends CKEditor5PluginDefault implements CKEditor5PluginConfi
    * {@inheritdoc}
    */
   public function getDynamicPluginConfig(array $static_plugin_config, EditorInterface $editor): array {
-    if(!$this->configuration['enable']) {
+    if (!$this->configuration['enable']) {
       // Remove all classes, so we don't have any indent levels.
       $static_plugin_config['indentBlock']['classes'] = [];
       // Also 'zero out' the offset so IndentBlock doesn't revert to default
@@ -69,12 +72,12 @@ class IndentBlock extends CKEditor5PluginDefault implements CKEditor5PluginConfi
   /**
    * {@inheritdoc}
    */
-  public function getElementsSubset() : array {
-    if($this->configuration['enable']) {
-      return [ '<p class>' ];
+  public function getElementsSubset(): array {
+    if ($this->configuration['enable']) {
+      return ['<p class="Indent*">'];
     }
-    else {
-      return [ 'false' ];
-    }
+
+    return ['false'];
   }
+
 }

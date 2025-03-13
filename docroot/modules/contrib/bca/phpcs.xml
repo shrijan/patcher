@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="bca">
+  <description>PHP CodeSniffer configuration for BCA project.</description>
+  <rule ref="vendor/drupal/coder/coder_sniffer/Drupal/ruleset.xml"/>
+  <arg name="extensions" value="php,inc,module,install,info,test,profile,theme,css,js"/>
+  <rule ref="Drupal.Commenting.ClassComment.Missing">
+    <exclude-pattern>./tests/modules/*/src/Entity</exclude-pattern>
+  </rule>
+</ruleset>

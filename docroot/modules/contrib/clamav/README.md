@@ -17,7 +17,7 @@ server's operating system, the package management tools available, whether a
 custom build from source is required, etc), but the process is well documented
 in the ClamAV documentation.
 
-See http://www.clamav.net/documents/installing-clamav for installation and
+See https://docs.clamav.net/manual/Installing.html for installation and
 configuration instructions.
 
 
@@ -26,6 +26,15 @@ Setup
 
 - Install a ClamAV service.
   For example: `sudo apt-get install clamav-daemon`
+
+  - Ubuntu:
+    `sudo apt-get install clamav clamav-daemon`
+  - Redhat / CentOS:
+    Enable the EPEL repo
+    `yum install clamav`
+    `yum install clamd`
+  - OS-X (via homebrew): 
+    `brew install clamav`
 
 - Enable this module.
 

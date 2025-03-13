@@ -136,11 +136,7 @@ services:
     class: Drupal\purge\Plugin\Purge\TagsHeader\PluginManager
     parent: default_plugin_manager
     public: false
-  
-  # Purge tag minificator.
-  purge.cache_tag_minificator:
-    class: Drupal\purge\CacheTagMinificator
-    arguments: ['@module_handler']
+
   # PURGE_DRUSH services. Moved over from drush.services.yml for Drush 12 compatibility.
   purge_drush.debug_commands:
     class: Drupal\purge\Drush\Commands\DebugCommands

@@ -18,6 +18,6 @@
     "source": "http://cgit.drupalcode.org/ckeditor_indentblock/"
   },
   "require": {
-    "drupal/core": "^9.4 || ^10"
+    "drupal/core": "^10.1 || ^11"
   }
 }

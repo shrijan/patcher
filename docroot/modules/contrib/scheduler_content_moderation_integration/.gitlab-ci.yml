@@ -1,37 +1,11 @@
 ################
 # DrupalCI GitLabCI template
 #
-# Gitlab-ci.yml to replicate DrupalCI testing for Contrib
-#
-# With thanks to:
-#   * The GitLab Acceleration Initiative participants
-#   * DrupalSpoons
-################
-
-################
-# Guidelines
-#
-# This template is designed to give any Contrib maintainer everything they need to test, without requiring modification. It is also designed to keep up to date with Core Development automatically through the use of include files that can be centrally maintained.
-#
-# However, you can modify this template if you have additional needs for your project.
-################
-
-################
-# Includes
-#
-# Additional configuration can be provided through includes.
-# One advantage of include files is that if they are updated upstream, the changes affect all pipelines using that include.
-#
-# Includes can be overridden by re-declaring anything provided in an include, here in gitlab-ci.yml
-# https://docs.gitlab.com/ee/ci/yaml/includes.html#override-included-configuration-values
+# Project page:  https://git.drupalcode.org/project/gitlab_templates/
+# Documentation: https://project.pages.drupalcode.org/gitlab_templates/
 ################
 
 include:
-  ################
-  # DrupalCI includes:
-  # As long as you include this, any future includes added by the Drupal Association will be accessible to your pipelines automatically.
-  # View these include files at https://git.drupalcode.org/project/gitlab_templates/
-  ################
   - project: $_GITLAB_TEMPLATES_REPO
     ref: $_GITLAB_TEMPLATES_REF
     file:
@@ -39,21 +13,53 @@ include:
       - '/includes/include.drupalci.variables.yml'
       - '/includes/include.drupalci.workflows.yml'
 
-################
 # Pipeline configuration variables
-#
-# These are the variables provided to the Run Pipeline form that a user may want to override.
-#
-# Docs at https://git.drupalcode.org/project/gitlab_templates/-/blob/1.0.x/includes/include.drupalci.variables.yml
-################
 variables:
-  _PHPUNIT_CONCURRENT: '1'
+  OPT_IN_TEST_CURRENT: 1
+  OPT_IN_TEST_MAX_PHP: 1
+  OPT_IN_TEST_PREVIOUS_MAJOR: 1
+  _PHPUNIT_CONCURRENT: 1
+  _SHOW_ENVIRONMENT_VARIABLES: 1
+  _ALL_VALIDATE_ALLOW_FAILURE: 0
 
-eslint:
-  allow_failure: false
+.composer-base:
+  after_script:
+    - vendor/bin/drush status
 
-stylelint:
-  allow_failure: false
+# Modify the 'current' variant to run Drupal 10 not 11. This has the benefit
+# that all validation and linting jobs will be run at Drupal 10.
+# Hold the PHP version at 8.3 because 3rd-party modules have deprecations in 8.4
+composer:
+  variables:
+    DRUPAL_CORE: $CORE_PREVIOUS_STABLE
+    PHP_VERSION: 8.3
 
-phpcs:
-  allow_failure: false
+composer (max PHP version):
+  variables:
+    DRUPAL_CORE: $CORE_PREVIOUS_STABLE
+    PHP_VERSION: 8.4
+  # Using when: manual needs 'allow failure: true' otherwise the overall pipeline status shows 'blocked'
+  rules:
+    - !reference [ .opt-in-max-php-rule ]
+    - !reference [ .check-max-php-version-rule ]
+    - when: manual
+      allow_failure: true
+
+# Modify the 'previous major' variant to run Drupal 9.
+composer (previous major):
+  variables:
+    DRUPAL_CORE: ^9.5
+    PHP_VERSION: 8.1
+    PHP_IMAGE_VARIANT: apache
+
+phpunit:
+  before_script:
+    # Patch to disable strict config schema validation on older versions of core.
+    # See https://www.drupal.org/project/scheduler/issues/3451750
+    - pwd
+    - |
+      vendor/bin/drush status | awk "NR==1{print \$4}" | grep -E '^(8.|9.|10.2)' \
+      && echo 'Core version is before 10.3, patching to remove strict config validation' \
+      && patch -p1 < tests/3502119-strict-config-schema-false.patch
+  variables:
+    MINK_DRIVER_ARGS_WEBDRIVER: $MINK_DRIVER_ARGS_WEBDRIVER_LEGACY

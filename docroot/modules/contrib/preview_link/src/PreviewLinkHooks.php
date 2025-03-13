@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link;
 
@@ -15,11 +15,6 @@ class PreviewLinkHooks implements ContainerInjectionInterface {
 
   /**
    * PreviewLinkHooks constructor.
-   *
-   * @param \Drupal\preview_link\PreviewLinkStorageInterface $previewLinkStorage
-   *   Preview link storage.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   Time service.
    */
   final public function __construct(
     protected PreviewLinkStorageInterface $previewLinkStorage,
@@ -31,8 +26,10 @@ class PreviewLinkHooks implements ContainerInjectionInterface {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
+    /** @var \Drupal\preview_link\PreviewLinkStorageInterface $storage */
+    $storage = $container->get('entity_type.manager')->getStorage('preview_link');
     return new static(
-      $container->get('entity_type.manager')->getStorage('preview_link'),
+      $storage,
       $container->get('datetime.time'),
     );
   }
@@ -51,7 +48,7 @@ class PreviewLinkHooks implements ContainerInjectionInterface {
       ->execute();
 
     // If there are no expired links then nothing to do.
-    if (!count($ids)) {
+    if (count($ids) === 0) {
       return;
     }
 

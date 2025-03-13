@@ -2,9 +2,9 @@
 
 namespace Drupal\geolocation\Plugin\views\style;
 
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Component\Utility\NestedArray;
 
 /**
  * Allow to display several field items on a common map.
@@ -186,6 +186,10 @@ class CommonMap extends GeolocationStyleBase {
       foreach ($this->getLocationsFromRow($row) as $location) {
         $build['locations'][] = $location;
       }
+    }
+
+    if (empty($build['locations']) && !$this->evenEmpty()) {
+      return [];
     }
 
     $build = $this->mapCenterManager->alterMap($build, $this->options['centre'], $this);

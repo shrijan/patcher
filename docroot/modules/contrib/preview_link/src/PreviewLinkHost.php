@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link;
 
@@ -13,26 +13,18 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
  */
 class PreviewLinkHost implements PreviewLinkHostInterface {
 
-  /**
-   * Preview link storage.
-   *
-   * @var \Drupal\preview_link\PreviewLinkStorageInterface
-   */
   protected PreviewLinkStorageInterface $previewLinkStorage;
 
   /**
    * PreviewLinkHost constructor.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   Entity type manager.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The clock.
    */
   final public function __construct(
     EntityTypeManagerInterface $entityTypeManager,
     protected TimeInterface $time,
   ) {
-    $this->previewLinkStorage = $entityTypeManager->getStorage('preview_link');
+    /** @var \Drupal\preview_link\PreviewLinkStorageInterface $storage */
+    $storage = $entityTypeManager->getStorage('preview_link');
+    $this->previewLinkStorage = $storage;
   }
 
   /**

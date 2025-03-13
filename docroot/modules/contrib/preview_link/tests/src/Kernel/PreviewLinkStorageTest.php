@@ -1,9 +1,11 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\Tests\preview_link\Kernel;
 
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\node\NodeInterface;
 use Drupal\preview_link\Entity\PreviewLink;
 use Drupal\Tests\node\Traits\ContentTypeCreationTrait;
 use Drupal\Tests\node\Traits\NodeCreationTrait;
@@ -24,19 +26,8 @@ final class PreviewLinkStorageTest extends PreviewLinkBase {
    */
   protected static $modules = ['node', 'filter'];
 
-  /**
-   * Testing node.
-   *
-   * @var \Drupal\node\Entity\Node
-   */
-  protected $node;
-
-  /**
-   * The preview link storage.
-   *
-   * @var \Drupal\preview_link\PreviewLinkStorageInterface
-   */
-  protected $storage;
+  protected NodeInterface $node;
+  protected EntityStorageInterface $storage;
 
   /**
    * {@inheritdoc}

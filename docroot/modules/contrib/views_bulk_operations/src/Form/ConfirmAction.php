@@ -2,6 +2,8 @@
 
 namespace Drupal\views_bulk_operations\Form;
 
+use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
@@ -17,20 +19,10 @@ class ConfirmAction extends FormBase {
 
   use ViewsBulkOperationsFormTrait;
 
-  /**
-   * The tempstore service.
-   */
-  protected PrivateTempStoreFactory $tempStoreFactory;
-
-  /**
-   * Views Bulk Operations action manager.
-   */
-  protected ViewsBulkOperationsActionManager $actionManager;
-
-  /**
-   * Views Bulk Operations action processor.
-   */
-  protected ViewsBulkOperationsActionProcessorInterface $actionProcessor;
+  // We need this if we want to keep the readonly in constructor property
+  // promotion and not have errors in plugins that use AJAX in their
+  // buildConfigurationForm() method.
+  use DependencySerializationTrait;
 
   /**
    * Constructor.
@@ -43,14 +35,10 @@ class ConfirmAction extends FormBase {
    *   Views Bulk Operations action processor.
    */
   public function __construct(
-    PrivateTempStoreFactory $tempStoreFactory,
-    ViewsBulkOperationsActionManager $actionManager,
-    ViewsBulkOperationsActionProcessorInterface $actionProcessor
-  ) {
-    $this->tempStoreFactory = $tempStoreFactory;
-    $this->actionManager = $actionManager;
-    $this->actionProcessor = $actionProcessor;
-  }
+    protected readonly PrivateTempStoreFactory $tempStoreFactory,
+    protected readonly ViewsBulkOperationsActionManager $actionManager,
+    protected readonly ViewsBulkOperationsActionProcessorInterface $actionProcessor
+  ) {}
 
   /**
    * {@inheritdoc}
@@ -80,6 +68,17 @@ class ConfirmAction extends FormBase {
     // @todo Display an error msg, redirect back.
     if (!isset($form_data['action_id'])) {
       return;
+    }
+
+    if (
+      \array_key_exists('confirm_help_text', $form_data['preconfiguration']) &&
+      $form_data['preconfiguration']['confirm_help_text'] !== ''
+    ) {
+      $form['confirm_help_text'] = [];
+      $form['confirm_help_text']['#markup'] = new FormattableMarkup($form_data['preconfiguration']['confirm_help_text'], [
+        '%action' => $form_data['action_label'],
+        '%count' => $form_data['selected_count'],
+      ]);
     }
 
     $form['list'] = $this->getListRenderable($form_data);

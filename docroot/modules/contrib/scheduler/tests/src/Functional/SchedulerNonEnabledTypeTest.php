@@ -19,7 +19,7 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
   /**
    * Tests the publish_enable and unpublish_enable entity type settings.
    *
-   * @dataProvider dataNonEnabledScenarios()
+   * @dataProvider dataNonEnabledScenarios
    */
   public function testNonEnabledType($id, $entityTypeId, $bundle, $description, $publishing_enabled, $unpublishing_enabled) {
     // Give adminUser the permissions to use the field_ui 'manage form display'
@@ -40,14 +40,21 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
         'scheduler_publish_enable' => $publishing_enabled,
         'scheduler_unpublish_enable' => $unpublishing_enabled,
       ];
+      if ($entityTypeId == 'commerce_product') {
+        // Products need an extra checkbox to be ticked.
+        // cspell:ignore variationtypes .
+        $edit['edit-variationtypes-default'] = TRUE;
+      }
       $this->submitForm($edit, 'Save');
+      // Check that the save was successful with no error message.
+      $this->assertSession()->statusMessageNotExists('error');
 
       // Show the form display page for info.
       $this->drupalGet($this->adminUrl('bundle_form_display', $entityTypeId, $bundle));
 
       // ThirdPartySettings are set correctly by saving the entity type form,
       // however this does not get replicated back to $entityType here (is this
-      // a bug is core test traits somewhere?). Thwerefore resort to setting the
+      // a bug is core test traits somewhere?). Therefore resort to setting the
       // values here too.
       $entityType->setThirdPartySetting('scheduler', 'publish_enable', $publishing_enabled)
         ->setThirdPartySetting('scheduler', 'unpublish_enable', $unpublishing_enabled)
@@ -171,9 +178,9 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
    *     publishing_enabled     - (bool) whether publishing is enabled
    *     unpublishing_enabled   - (bool) whether unpublishing is enabled
    */
-  public function dataNonEnabledScenarios() {
+  public static function dataNonEnabledScenarios() {
     $data = [];
-    foreach ($this->dataNonEnabledTypes() as $key => $values) {
+    foreach (self::dataNonEnabledTypes() as $key => $values) {
       $entityTypeId = $values[0];
       $bundle = $values[1];
       // By default check that the scheduler date fields are not displayed.

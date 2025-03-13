@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link\Access;
 
@@ -18,11 +18,6 @@ use Symfony\Component\Routing\Route;
  */
 class PreviewEnabledAccessCheck implements AccessInterface {
 
-  /**
-   * The module settings.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
   protected ImmutableConfig $config;
 
   /**
@@ -38,12 +33,10 @@ class PreviewEnabledAccessCheck implements AccessInterface {
   public function access(Route $route, RouteMatchInterface $route_match): AccessResultInterface {
     // Get the entity for both the preview route and the generate preview link
     // route.
-    if ($route->getOption('preview_link.entity_type_id')) {
-      $entity = $route_match->getParameter($route->getOption('preview_link.entity_type_id'));
-    }
-    else {
-      $entity = $route_match->getParameter('entity');
-    }
+    $entity = match($route->getOption('preview_link.entity_type_id')) {
+      NULL => $route_match->getParameter('entity'),
+      default => $route_match->getParameter($route->getOption('preview_link.entity_type_id')),
+    };
 
     return AccessResult::allowedIf($this->entityTypeAndBundleEnabled($entity))
       ->addCacheableDependency($entity)
@@ -64,7 +57,7 @@ class PreviewEnabledAccessCheck implements AccessInterface {
     $enabled_entity_types = $this->config->get('enabled_entity_types');
 
     // If no entity types are specified, fallback to allowing all.
-    if (empty($enabled_entity_types)) {
+    if (count($enabled_entity_types) === 0) {
       return TRUE;
     }
 
@@ -72,11 +65,11 @@ class PreviewEnabledAccessCheck implements AccessInterface {
     if (isset($enabled_entity_types[$entity->getEntityTypeId()])) {
       $enabled_bundles = $enabled_entity_types[$entity->getEntityTypeId()];
       // If no bundles were specified, assume all bundles are enabled.
-      if (empty($enabled_bundles)) {
+      if (count($enabled_bundles) === 0) {
         return TRUE;
       }
       // Otherwise fallback to requiring the specific bundle.
-      if (in_array($entity->bundle(), $enabled_bundles)) {
+      if (in_array($entity->bundle(), $enabled_bundles, TRUE)) {
         return TRUE;
       }
     }

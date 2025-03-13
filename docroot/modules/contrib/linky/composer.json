@@ -1,0 +1,19 @@
+{
+  "name": "drupal/linky",
+  "type": "drupal-module",
+  "description": "Link management.",
+  "keywords": ["Drupal"],
+  "license": "GPL-2.0+",
+  "homepage": "https://www.drupal.org/project/linky",
+  "minimum-stability": "dev",
+  "support": {
+    "issues": "http://drupal.org/project/issues/linky",
+    "source": "http://cgit.drupalcode.org/linky"
+  },
+  "require": {
+      "drupal/dynamic_entity_reference": "*"
+  },
+  "suggest": {
+    "drupal/linkit": "Integration with Linkit suggestions."
+  }
+}

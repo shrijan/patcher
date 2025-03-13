@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link\Entity;
 
@@ -29,6 +29,8 @@ use Drupal\Core\Url;
  *     "id" = "id"
  *   }
  * )
+ *
+ * @property \Drupal\dynamic_entity_reference\Plugin\Field\FieldType\DynamicEntityReferenceFieldItemList $entities
  */
 class PreviewLink extends ContentEntityBase implements PreviewLinkInterface {
 
@@ -59,7 +61,7 @@ class PreviewLink extends ContentEntityBase implements PreviewLinkInterface {
   /**
    * {@inheritdoc}
    */
-  public function setToken($token): static {
+  public function setToken($token) {
     $this->set('token', $token);
     // Add a second so our testing always works.
     $this->set('generated_timestamp', time() + 1);
@@ -86,25 +88,22 @@ class PreviewLink extends ContentEntityBase implements PreviewLinkInterface {
    * {@inheritdoc}
    */
   public function getEntities(): array {
-    $entities = $this->entities->referencedEntities();
-    assert(Inspector::assertAllObjects($entities, EntityInterface::class));
-    return $entities;
+    return $this->entities->referencedEntities();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setEntities(array $entities): static {
+  public function setEntities(array $entities) {
     assert(Inspector::assertAllObjects($entities, EntityInterface::class));
-    $this->entities = $entities;
-    return $this;
+    return $this->set('entities', $entities);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function addEntity(EntityInterface $entity): static {
-    $this->entities[] = $entity;
+  public function addEntity(EntityInterface $entity) {
+    $this->entities->appendItem($entity);
     return $this;
   }
 

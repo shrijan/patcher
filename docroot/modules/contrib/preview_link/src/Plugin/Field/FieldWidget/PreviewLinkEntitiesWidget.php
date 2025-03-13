@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\preview_link\Plugin\Field\FieldWidget;
 
@@ -65,8 +65,10 @@ final class PreviewLinkEntitiesWidget extends DynamicEntityReferenceWidget {
       throw new \LogicException('Can only be used with PreviewLinkForm');
     }
 
-    $targetType = $items->get($delta)->target_type;
-    $targetId = $items->get($delta)->target_id;
+    /** @var \Drupal\dynamic_entity_reference\Plugin\Field\FieldType\DynamicEntityReferenceItem $item */
+    $item = $items->get($delta);
+    $targetType = $item->target_type;
+    $targetId = $item->target_id;
     $host = $formObject->getHostEntity($this->routeMatch);
     $hostEntityTypeId = $host->getEntityTypeId();
 

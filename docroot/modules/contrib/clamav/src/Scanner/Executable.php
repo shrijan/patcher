@@ -2,15 +2,34 @@
 
 namespace Drupal\clamav\Scanner;
 
-use Drupal\file\FileInterface;
-use Drupal\clamav\ScannerInterface;
-use Drupal\clamav\Scanner;
 use Drupal\clamav\Config;
+use Drupal\clamav\Scanner;
+use Drupal\clamav\ScannerInterface;
+use Drupal\Core\Logger\LoggerChannelTrait;
+use Drupal\file\FileInterface;
 
+/**
+ * Executable class for the ClamAV scanner instance.
+ */
 class Executable implements ScannerInterface {
+
+  use LoggerChannelTrait;
+
   private $_executable_path = '';
   private $_executable_parameters = '';
+
+  /**
+   * File variable.
+   *
+   * @var string
+   */
   private $_file = '';
+
+  /**
+   * Virus name variable.
+   *
+   * @var string
+   */
   protected $_virus_name = '';
 
   /**
@@ -27,7 +46,7 @@ class Executable implements ScannerInterface {
   public function scan(FileInterface $file) {
     // Verify that the executable exists.
     if (!file_exists($this->_executable_path)) {
-      \Drupal::logger('Clam AV')->warning('Unable to find ClamAV executable at @executable_path', array('@executable_path' => $this->_executable_path));
+      $this->getLogger('clamav')->warning('Unable to find ClamAV executable at @executable_path', ['@executable_path' => $this->_executable_path]);
       return Scanner::FILE_IS_UNCHECKED;
     }
 
@@ -38,31 +57,25 @@ class Executable implements ScannerInterface {
 
     // Text output from the executable is assigned to: $output
     // Return code from the executable is assigned to: $return_code.
-
     // Possible return codes (see `man clamscan`):
     // - 0 = No virus found.
     // - 1 = Virus(es) found.
-    // - 2 = Some error(s) occured.
-
+    // - 2 = Some error(s) occurred.
     // Note that older versions of clamscan (prior to 0.96) may have return
     // values greater than 2. Any value of 2 or greater means that the scan
     // failed, and the file has not been checked.
     exec($cmd, $output, $return_code);
     $output = implode("\n", $output);
 
-
     switch ($return_code) {
       case 0:
         return Scanner::FILE_IS_CLEAN;
-        // return array(Scanner::FILE_IS_CLEAN, $return_code, $output);
 
       case 1:
         return Scanner::FILE_IS_INFECTED;
-        // return array(Scanner::FILE_IS_INFECTED, $return_code, $output);
 
       default:
         return Scanner::FILE_IS_UNCHECKED;
-        // return array(Scanner::FILE_IS_UNCHECKED, $return_code, $output);
     }
   }
 
@@ -84,4 +97,5 @@ class Executable implements ScannerInterface {
       return NULL;
     }
   }
+
 }

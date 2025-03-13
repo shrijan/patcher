@@ -4,6 +4,7 @@ namespace Drupal\scanner\Form;
 
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -58,6 +59,8 @@ class ScannerAdminForm extends ConfigFormBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
+   *   The typed config manager.
    * @param \Drupal\scanner\Plugin\ScannerPluginManager $scanner_plugin_manager
    *   The scanner plugin manager.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
@@ -71,13 +74,14 @@ class ScannerAdminForm extends ConfigFormBase {
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
+    TypedConfigManagerInterface $typedConfigManager,
     ScannerPluginManager $scanner_plugin_manager,
     LanguageManagerInterface $language_manager,
     EntityTypeManagerInterface $entity_type_manager,
     EntityFieldManagerInterface $entity_field_manager,
-    EntityTypeBundleInfoInterface $entity_type_bundle_info
+    EntityTypeBundleInfoInterface $entity_type_bundle_info,
   ) {
-    parent::__construct($config_factory);
+    parent::__construct($config_factory, $typedConfigManager);
     $this->scannerPluginManager = $scanner_plugin_manager;
     $this->languageManager = $language_manager;
     $this->entityTypeManager = $entity_type_manager;
@@ -91,6 +95,7 @@ class ScannerAdminForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('plugin.manager.scanner'),
       $container->get('language_manager'),
       $container->get('entity_type.manager'),

@@ -1,0 +1,62 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Paragraphs Stats module.
+ */
+
+use Drupal\field\Entity\FieldStorageConfig;
+
+/**
+ * Implements hook_schema().
+ */
+function ps_schema() {
+  $schema['paragraphs_stats_inuse'] = [
+    'description' => 'Stores data in which fields paragraphs are used.',
+    'fields' => [
+      'psid' => [
+        'description' => 'Primary Key: unique ID for a record.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'paragraph_name' => [
+        'description' => 'Paragraph machine name.',
+        'type' => 'varchar_ascii',
+        'length' => FieldStorageConfig::NAME_MAX_LENGTH,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'entity_type' => [
+        'description' => 'Entity type name.',
+        'type' => 'varchar_ascii',
+        'length' => FieldStorageConfig::NAME_MAX_LENGTH,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'bundle' => [
+        'description' => 'Bundle name.',
+        'type' => 'varchar_ascii',
+        'length' => FieldStorageConfig::NAME_MAX_LENGTH,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'field_name' => [
+        'description' => 'The name of the field where the paragraph is used.',
+        'type' => 'varchar_ascii',
+        'length' => FieldStorageConfig::NAME_MAX_LENGTH,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+    ],
+    'indexes' => [
+      'paragraph_name' => ['paragraph_name'],
+      'entity_type' => ['entity_type'],
+      'bundle' => ['bundle'],
+      'field_name' => ['field_name'],
+    ],
+    'primary key' => ['psid'],
+  ];
+
+  return $schema;
+}

@@ -177,10 +177,11 @@ not set to TRUE. Excel export aborted.");
     // Make sure we have an ignore_headers key to prevent Notices.
     $options['ignore_headers'] = $options['ignore_headers'] ?? empty($headers);
 
-    if (!count($data)) {
-      $this->logger->error("No data was provided. Excel export aborted.");
-
-      return self::PHPEXCEL_ERROR_NO_DATA;
+    if (isset($data) && (is_array($data) || is_countable($data))) {
+      if (count($data) === 0) {
+          $this->logger->error("No data was provided. Excel export aborted.");
+          return self::PHPEXCEL_ERROR_NO_DATA;
+      }
     }
 
     if (!(is_writable($path) || (!file_exists($path) && is_writable(dirname($path))))) {
@@ -370,7 +371,7 @@ not set to TRUE. Excel export aborted.");
 
         $this->invoke('export', 'pre cell', $value, $sheet, $options, $i, 1);
 
-        $sheet->setCellValueByColumnAndRow($i + 1, 1, $value);
+        $sheet->setCellValue([$i + 1, 1], $value);
 
         $this->invoke('export', 'post cell', $value, $sheet, $options, $i, 1);
       }
@@ -436,7 +437,7 @@ not set to TRUE. Excel export aborted.");
           // headers, because PhpSpreadsheet starts the count at 1, not 0).
           $this->invoke('export', 'pre cell', $value, $sheet, $options, $j, $i + $offset);
 
-          $sheet->setCellValueByColumnAndRow($j + 1, $i + $offset, $value);
+          $sheet->setCellValue([$j + 1, $i + $offset], $value);
 
           $this->invoke('export', 'post cell', $value, $sheet, $options, $j, $i + $offset);
         }
@@ -544,10 +545,10 @@ not set to TRUE. Excel export aborted.");
 
             foreach ($cells as $cell) {
               $value = $cell->getValue();
-              $value = mb_strlen($value) ? trim($value) : '';
+              $value = (!is_null($value) && mb_strlen($value)) ? trim($value) : '';
 
               if (!$j && $keyed_by_headers) {
-                $value = mb_strlen($value) ? $value : $k;
+                $value = (!is_null($value) && mb_strlen($value)) ? $value : $k;
 
                 $this->invoke(
                   'import',
