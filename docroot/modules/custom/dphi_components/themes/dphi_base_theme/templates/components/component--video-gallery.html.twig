@@ -1,0 +1,12 @@
+{{ attach_library('dphi_base_theme/component.video_gallery') }}
+
+<div{{attributes}}>
+  <div class="nsw-container">
+    {% if videoGalleryData.title %}
+      <h2 class="nsw-p-top-md nsw-p-x-{{ videoGalleryData.show_filters == '1' ? 'md' : 'sm' }}">{{ videoGalleryData.title }}</h2>
+    {% endif %}
+    <div class="react-filtered-lists-load-wrapper">
+      <div id="react-filtered-lists-app" data-items="{{ videoGalleryData.video_data|json_encode }}" data-filters="{{ videoGalleryData.category_terms|json_encode }}" data-display-layout="{{ videoGalleryData.display_layout }}" data-show-filters="{{ videoGalleryData.show_filters }}" data-theme="{{ videoGalleryData.theme }}"></div>
+    </div>
+  </div>
+</div>

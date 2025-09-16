@@ -1,0 +1,8 @@
+<div class="nsw-list-item__content" data-title="{{ node.label }}" data-date="{{ node.getSortDate }}">
+  <div class="nsw-list-item__info">{{ content.field_publish_event_date }}</div>
+  <div class="nsw-list-item__title"><a href="{{ url }}">{{ label }}</a></div>
+  <div class="nsw-list-item__copy">{{ content.body }}</div>
+</div>
+<div class="nsw-list-item__image">
+  {{ node.getImageWithFallback() }}
+</div>

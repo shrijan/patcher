@@ -2,6 +2,7 @@
 
 namespace Drupal\material_icons\Plugin\Field\FieldWidget;
 
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
@@ -38,7 +39,14 @@ class MaterialIcons extends WidgetBase implements ContainerFactoryPluginInterfac
   /**
    * {@inheritdoc}
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, ConfigFactory $config_factory) {
+  public function __construct(
+    $plugin_id,
+    $plugin_definition,
+    FieldDefinitionInterface $field_definition,
+    array $settings,
+    array $third_party_settings,
+    ConfigFactory $config_factory,
+  ) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $third_party_settings);
     $this->configFactory = $config_factory;
   }
@@ -53,7 +61,7 @@ class MaterialIcons extends WidgetBase implements ContainerFactoryPluginInterfac
       $configuration['field_definition'],
       $configuration['settings'],
       $configuration['third_party_settings'],
-      $container->get('config.factory'),
+      $container->get('config.factory')
     );
   }
 
@@ -72,6 +80,7 @@ class MaterialIcons extends WidgetBase implements ContainerFactoryPluginInterfac
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
+    $element = [];
     $element['allow_style'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Allow Style Selection'),
@@ -108,11 +117,17 @@ class MaterialIcons extends WidgetBase implements ContainerFactoryPluginInterfac
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(
+    FieldItemListInterface $items,
+    $delta,
+    array $element,
+    array &$form,
+    FormStateInterface $form_state,
+  ) {
     $cardinality = $this->fieldDefinition->getFieldStorageDefinition()->getCardinality();
 
     // Gets font family from $form_state, if available.
-    $font_family = $this->getFormStateFontFamily($form_state)
+    $font_family = $this->getFormStateFontFamily($form, $form_state)
       ??
       ($items[$delta]->get('family')->getValue()
         ??
@@ -121,12 +136,12 @@ class MaterialIcons extends WidgetBase implements ContainerFactoryPluginInterfac
     // Unique Id layer wrapper.
     $form_id = $form_state->getBuildInfo()['form_id'];
     $field_name = $items->getName();
-    $field_wrapper_id = "{$form_id}__{$field_name}__{$delta}";
+    $field_wrapper_id = "{$form_id}__{$field_name}__$delta";
 
     // Icon autocomplete.
     $element['icon'] = [
       '#type' => 'textfield',
-      '#title' => $cardinality == 1 ? $this->fieldDefinition->getLabel() : $this->t('Icon Name'),
+      '#title' => $cardinality === 1 ? $this->fieldDefinition->getLabel() : $this->t('Icon Name'),
       '#default_value' => $items[$delta]->get('icon')->getValue(),
       '#required' => $element['#required'],
       '#description' => $this->t('Name of the Material Design Icon. See @iconsLink for valid icon names, or begin typing for an autocomplete list.', [
@@ -139,7 +154,7 @@ class MaterialIcons extends WidgetBase implements ContainerFactoryPluginInterfac
       '#autocomplete_route_parameters' => [
         'font_family' => $font_family,
       ],
-      '#prefix' => "<div id=\"{$field_wrapper_id}\">",
+      '#prefix' => "<div id=\"$field_wrapper_id\">",
       '#suffix' => '</div>',
     ];
 
@@ -172,108 +187,50 @@ class MaterialIcons extends WidgetBase implements ContainerFactoryPluginInterfac
 
   /**
    * Updated the value of the Icon Style field.
+   *
    * @param array $form
    *   The form where the settings form is being included in.
-   * @param FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state of the (entire) configuration form.
+   *
    * @return array
+   *   The form element to be updated.
    */
   public function handleIconStyleUpdated(array &$form, FormStateInterface $form_state) {
-
-    $parents = $this->getFormStateStructure($form_state);
-
-    // Traverse the form values to find the edited element.
-    $element = $form;
-    while (is_array($parents) && count($parents) > 1) {
-      // Get the next key in the array.
-      $parent_key = array_pop($parents);
-      // If the key exists in the form values, limit form values to that child's.
-      if (isset($element[$parent_key])) {
-        $element = $element[$parent_key];
-      }
-      // If we run into an unexpected key exit the loop.
-      else {
-        exit;
-      }
-    }
-
-    return $element['icon'];
+    $element = $this->getElement($form, $form_state);
+    return $element['icon'] ?? NULL;
   }
 
   /**
    * Gets the selected value of the font family.
-   * @param FormStateInterface $form_state
+   *
+   * @param array $form
+   *   The form where the settings form is being included in.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state of the (entire) configuration form.
+   *
    * @return string|Null
-   */
-  private function getFormStateFontFamily(FormStateInterface $form_state):string|Null {
-    return $this->getEditedFieldValues($form_state)['family'] ?? NULL;
-  }
-
-  /**
-   * Gets the selected value of the edited icon field.
-   * @param FormStateInterface $form_state
-   *   The form state of the (entire) configuration form.
-   * @return array|Null
-   */
-  private function getEditedFieldValues(FormStateInterface $form_state):array|Null {
-
-    // Get variables we'll need to locate the font family selection.
-    $parents = $this->getFormStateStructure($form_state);
-    $form_values = $form_state->getValues();
-
-    // No font family value if the triggering element has no parents.
-    if (is_null($parents)) {
-      return NULL;
-    }
-
-    // Traverse the form values.
-    while (is_array($parents) && count($parents) > 1) {
-      // Get the next key in the array.
-      $parent_key = array_pop($parents);
-      // Widget keys exist in form structure but not in form values.
-      if ($parent_key == 'widget') {
-        continue;
-      }
-      // If the key exists in the form values, limit form values to that child's.
-      if (isset($form_values[$parent_key])) {
-        $form_values = $form_values[$parent_key];
-      }
-      // If we run into an unexpected key exit the loop.
-      else {
-        exit;
-      }
-    }
-
-    // Expected type is array, only return array or null.
-    if (is_array($form_values)) {
-      return $form_values;
-    } else {
-      return NULL;
-    }
-
-  }
-
-  /**
-   * Gets the selected value of the font family.
-   * @param FormStateInterface $form_state
-   *   The form state of the (entire) configuration form.
-   * @return array|Null
    *   This is the array structure being delivered:
-   *     0 => 'family'
-   *     1 => [delta integer]
-   *     2 => 'widget'
-   *     3 => [original field name]
    */
-  private function getFormStateStructure(FormStateInterface $form_state):array|Null {
-    $triggering_element = $form_state->getTriggeringElement();
+  private function getFormStateFontFamily(array &$form, FormStateInterface $form_state): string|Null {
+    $element = $this->getElement($form, $form_state);
+    return $element['family'] ?? NULL;
+  }
 
-    if (empty($triggering_element)) {
-      return NULL;
-    }
-
-    $parents = array_reverse($triggering_element['#array_parents']);
-    return (array_key_exists(1, $parents) && array_key_exists(3, $parents)) ? $parents : NULL;
+  /**
+   * Gets the element.
+   *
+   * @param array $form
+   *   The form where the settings form is being included in.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the (entire) configuration form.
+   *
+   * @return array|Null
+   *   The array structure being delivered.
+   */
+  private function getElement(array &$form, FormStateInterface $form_state): array|Null {
+    $trigger = $form_state->getTriggeringElement();
+    return $trigger ? NestedArray::getValue($form, array_slice($trigger['#array_parents'], 0, -1)) : NULL;
   }
 
   /**

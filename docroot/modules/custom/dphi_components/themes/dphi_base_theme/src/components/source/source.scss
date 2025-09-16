@@ -1,0 +1,157 @@
+@import '../../base';
+.popup-source {
+  position: absolute;
+  cursor: pointer;
+  z-index: 200;
+  bottom: 0;
+  right: 3%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-end;
+  padding: 0.5rem;
+  @include breakpoint('sm', 'max-width') {
+    top: 2%;
+    bottom: inherit;
+  }
+
+  .show {
+    animation: fadeIn 1s;
+    display: block;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem;
+
+    p {
+      padding: 0.5rem;
+      width: 100%;
+      margin: 0;
+    }
+  }
+
+  &-close,
+  &-icon {
+    appearance: none;
+    background: transparent;
+    border-width: 0;
+    box-shadow: none;
+    padding: 0;
+
+    .material-icons {
+      background: var(--nsw-palette-black);
+      color: var(--nsw-palette-white);
+      border-radius: 50%;
+      padding: 0.5rem;
+      cursor: pointer;
+    }
+    &:focus {
+      outline: solid 3px var(--nsw-focus);
+    }
+  }
+
+  &-close {
+    margin-left: 1rem;
+    .material-icons {
+      background: transparent;
+      color: var(--nsw-palette-white);
+      border-radius: 50%;
+      cursor: pointer;
+      padding: 0.25rem;
+      font-size: 1rem;
+    }
+  }
+
+  &-text {
+    background-color: var(--nsw-black-75);
+    color: var(--nsw-palette-white);
+    text-align: left;
+    border-radius: 6px;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+
+    .description {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+}
+.show-camera-icon {
+  position: relative;
+}
+.hide-camera-icon {
+  .popup-source-icon {
+    display: none;
+  }
+}
+.has-caption .nsw-media {
+  margin-bottom: 0;
+}
+.paragraph--type--image-carousel-container {
+  .popup-source {
+    bottom: 4rem;
+  }
+}
+.img-txt-50 {
+  .nsw-hero-banner__box {
+    .popup-source {
+      @include breakpoint('lg', 'max-width') {
+        padding-bottom: 1rem;
+      }
+    }
+  }
+}
+.hero-hide-image-mobile.nsw-hero-banner {
+  .popup-source {
+    display: none;
+    @include breakpoint('md') {
+      display: block;
+    }
+  }
+}
+.paragraph--type--content-blocks {
+  .nsw-content-block__icon {
+    .popup-source {
+      display: none;
+    }
+  }
+}
+
+/* Add animation (fade in the popup) */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.popup-source.move-bottom {
+  bottom: 2%;
+  left: 2%;
+}
+.video-image-teaser {
+  .teaser-background-image {
+    .popup-source {
+      display: none;
+    }
+  }
+  &.show-camera-icon{
+    position: inherit;
+
+  }
+}
+
+.component_promotional_panel .desktop-camera-icon {
+  display: none;
+}
+
+@media screen and (min-width: 768px) {
+  .component_promotional_panel .mobile-camera-icon {
+    display: none;
+  }
+
+  .component_promotional_panel .desktop-camera-icon {
+    display: block;
+  }
+}

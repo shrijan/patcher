@@ -1,0 +1,12 @@
+@import '../../base';
+
+@import 'nsw-design-system/src/components/link-list/link-list';
+
+.nsw-link-list {
+  .material-icons {
+    font-size: 1.5rem;
+    vertical-align: text-top;
+    margin-left: 0;
+    text-decoration: none;
+  }
+}

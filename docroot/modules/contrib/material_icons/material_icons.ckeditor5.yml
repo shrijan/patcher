@@ -12,6 +12,11 @@ material_icons_icons:
           height: 75%
           dialogClass: material-icons-widget-modal
           title: Insert Material Icons
+      htmlSupport:
+        allow:
+          -
+            name: span
+            classes: true
   drupal:
     label: Material Icons
     admin_library: material_icons/cke.admin

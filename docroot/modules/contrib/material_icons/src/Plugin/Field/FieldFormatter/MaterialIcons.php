@@ -28,7 +28,7 @@ class MaterialIcons extends FormatterBase {
     $element = [];
 
     foreach ($items as $delta => $item) {
-      $family = ($this->getFontFamilyClass($item->get('family')->getValue()));
+      $family = $this->getFontFamilyClass($item->get('family')->getValue());
       $element[$delta] = [
         '#theme' => 'material_icon',
         '#icon' => $item->get('icon')->getValue(),

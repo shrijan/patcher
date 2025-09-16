@@ -30,15 +30,6 @@ class IconDialog extends FormBase {
   protected $configFactory;
 
   /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('config.factory')
-    );
-  }
-
-  /**
    * IconDialog constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
@@ -46,6 +37,15 @@ class IconDialog extends FormBase {
    */
   public function __construct(ConfigFactoryInterface $configFactory) {
     $this->configFactory = $configFactory;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('config.factory')
+    );
   }
 
   /**
@@ -85,7 +85,7 @@ class IconDialog extends FormBase {
       '#autocomplete_route_parameters' => [
         'font_family' => $form_state->getValue('family') ?? (count($style_options) ? array_keys($style_options)[0] : NULL),
       ],
-      '#prefix' => "<div id=\"{$field_wrapper_id}\">",
+      '#prefix' => "<div id=\"$field_wrapper_id\">",
       '#suffix' => '</div>',
     ];
 
@@ -147,11 +147,14 @@ class IconDialog extends FormBase {
 
   /**
    * Updated the value of the Icon Style field.
+   *
    * @param array $form
    *   The form where the settings form is being included in.
-   * @param FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state of the (entire) configuration form.
+   *
    * @return array
+   *   The form element to be replaced.
    */
   public function handleIconStyleUpdated(array &$form, FormStateInterface $form_state) {
     return $form['icon'];

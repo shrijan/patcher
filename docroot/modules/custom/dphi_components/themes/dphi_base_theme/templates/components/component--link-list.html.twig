@@ -1,0 +1,25 @@
+{{ attach_library('dphi_base_theme/component.link_list') }}
+
+<div class="nsw-link-list">
+  {% if list.icon or list.title %}
+  <div class="nsw-link-list__title">
+    {% if list.icon %}
+      <span class="material-icons nsw-material-icons nsw-callout__icon" focusable="false" aria-hidden="true">{{ list.icon }}</span>
+    {% endif %} {{ list.title }}
+  </div>
+  {% endif %}
+  <ul>
+    {% for list_item in list.list_items %}
+      {% set link = {
+        url: list_item.link,
+        classes: 'multi-link',
+        text: list_item.link_text,
+        target: list_item.link_type == '1' ? '_blank' : '',
+        icon: list_item.link_type == '0' ? 'get_app' : list_item.link_type == '1' ? 'open_in_new' : 'east'
+      } %}
+      <li>
+        {% include '@dphi_base_theme/components/component--link.html.twig' %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>

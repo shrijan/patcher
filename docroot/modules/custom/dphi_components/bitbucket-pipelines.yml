@@ -1,0 +1,31 @@
+definitions:
+  caches:
+    npm:
+      key:
+        files:
+          - themes/dphi_base_theme/package-lock.json
+      path: themes/dphi_base_theme/node_modules
+
+pipelines:
+  branches:
+    main:
+      - step:
+          name: "Create release"
+          image: node:20
+          caches:
+            - npm
+          script:
+            - git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+            - git fetch origin --tags
+            - git checkout build
+            - git merge main
+            - cd themes/dphi_base_theme
+            - npm install
+            - npm run build
+            - perl -i -ne 'print unless /^dist$/' .gitignore
+            - cd ../../
+            - git add -A
+            - if ! git diff-index --quiet HEAD --; then git commit -m "Commit dist changes"; else echo "No changes to commit"; fi
+            - ./scripts/auto_git_tag.sh
+            - git push
+            - git push --tags

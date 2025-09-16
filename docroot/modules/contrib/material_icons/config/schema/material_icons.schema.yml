@@ -1,3 +1,13 @@
+material_icons.settings:
+  type: config_object
+  label: 'Material Icons settings'
+  mapping:
+    families:
+      type: sequence
+      label: 'Families to Include'
+      sequence:
+        type: string
+
 field.widget.settings.material_icons:
   type: mapping
   label: 'Material Icons widget settings'

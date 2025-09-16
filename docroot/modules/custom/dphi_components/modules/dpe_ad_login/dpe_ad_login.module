@@ -1,0 +1,349 @@
+<?php
+/**
+ * @file
+ * Contains dpe_ad_login.module.
+ */
+use Drupal\samlauth\Controller\SamlController;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function dpe_ad_login_form_user_login_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $route_provider = \Drupal::service('router.route_provider');
+  //$route_exists = count($route_provider->getRoutesByNames(['simplesamlphp_auth.saml_login'])) === 1;
+  $route_exists = count($route_provider->getRoutesByNames(['samlauth.saml_controller_login'])) === 1;
+  if ($route_exists) {
+    //$config = \Drupal::config('simplesamlphp_auth.settings');
+    //$display_enabled = $config->get('login_link_show');
+    $display_enabled = true;
+    if ($display_enabled) {
+      $form['reset-password-link'] = [
+        '#title' => 'Reset your password',
+        '#type' => 'link',
+        '#url' => \Drupal\Core\Url::fromRoute('user.pass'),
+        '#attributes' => [
+          'title' => 'Reset your password',
+          'class' => ['reset-password'],
+        ],
+      ];
+    }
+  }
+}
+
+/**
+ * Implements hook_menu_local_tasks_alter().
+ */
+function dpe_ad_login_menu_local_tasks_alter(&$data, $route_name) {
+  $uid  =  \Drupal::currentUser()->id();
+  $route_provider = \Drupal::service('router.route_provider');
+  //$route_exists = count($route_provider->getRoutesByNames(['simplesamlphp_auth.saml_login'])) === 1;
+  $route_exists = count($route_provider->getRoutesByNames(['samlauth.saml_controller_login'])) === 1;
+  if ($route_exists) {
+    $config = \Drupal::config('samlauth.settings');
+    $label = $config->get('login_menu_item_title');
+
+    //$display_enabled = $config->get('login_link_show');
+    $label = "Login using your DPE network account";
+    $display_enabled = true;
+  }
+
+  if (!(is_allowed_tfa_edit()) && isset($data['tabs'][0]['tfa.overview'])) {
+    hide($data['tabs'][0]['tfa.overview']);
+  }
+  $account = get_user_info();
+
+  $saml = $account->get('field_saml_initialised')->value;
+  if (isset($data['tabs'][0])) {
+    foreach ($data['tabs'][0] as $key => $tab) {
+      if ($key == 'entity.user.edit_form') {
+        $is_basic_user = has_only_authenticated_role();
+        $allowed_edit = is_allowed_profile_edit();
+        if ($is_basic_user || !($allowed_edit)) {
+          if ($saml) {
+            unset($data['tabs'][0][$key]);
+          }
+        }
+      }
+      if (($key == 'entity.user.canonical') && (empty($uid)) && !(is_allowed_tfa_edit())) {
+        unset($data['tabs'][0][$key]);
+      }
+    }
+  }
+  if (($route_name == 'user.login' || $route_name == 'user.pass') && isset($data['tabs'][0])) {
+    $options = [];
+    $destination = \Drupal::request()->query->get('destination');
+    if ($destination) {
+      $options['destination'] = $destination;
+    }
+    // Remove password reset tab from user login form.
+    foreach ($data['tabs'][0] as $key => $tab) {
+      if ($key == 'user.pass') {
+        if ($route_exists && $display_enabled) {
+          unset($data['tabs'][0][$key]);
+        }
+      } else if($key == 'user.login') {
+        $data['tabs'][0][$key]['#link']['url'] = \Drupal\Core\Url::fromRoute('user.login', $options);
+        $data['tabs'][0][$key]['#link']['title'] = 'Login using an external account';
+        $data['tabs'][0][$key]['#link']['localized_options'] = [
+          'attributes' => [
+            'class' => 'dpe_ad_login_card'.($route_name == 'user.login' ? ' dpe_ad_login_external' : ''),
+            'data-suffix' => 'If you don\'t have a DPE account, login with your existing account or request a new login.'
+          ]
+        ];
+      }
+    }
+    if ($route_exists && $display_enabled) {
+      foreach ($data['tabs'][0] as &$tab) {
+        $tab['#active'] = false;
+      }
+      $data['tabs'][0]['samlauth.saml_controller_login'] = [
+        '#theme' => 'menu_local_task',
+        '#weight' => -20,
+        '#link' => [
+          'title' => $label,
+          //'url' => \Drupal\Core\Url::fromRoute('simplesamlphp_auth.saml_login', $options),
+          'url' => \Drupal\Core\Url::fromRoute('samlauth.saml_controller_login', $options),
+          'localized_options' => [
+            'attributes' => [
+              'title' => t($label),
+              'class' => 'dpe_ad_login_card',
+              'data-suffix' => 'If you have a DPE network account, use this option to allow you to login with Single Sign On (SSO).'
+            ]
+          ]
+        ]
+      ];
+    }
+  } else if ($route_name == 'entity.user.edit_form') {
+    if ($uid != 1 && !(is_allowed_tfa_edit()) && isset($data['tabs'][0]['tfa.overview'])) {
+      hide($data['tabs'][0]['tfa.overview']);
+    }
+  }
+}
+/**
+ * Implements hook_form_alter().
+ */
+function dpe_ad_login_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id){
+  $uid = \Drupal::currentUser()->id();
+  // Restrict default user edit for
+  if ($form_id == "user_form") {
+    $is_basic_user = has_only_authenticated_role();
+    $allowed_edit = is_allowed_profile_edit();
+    $account = get_user_info();
+    $saml = $account->get('field_saml_initialised')->value;
+    if ($saml) {
+      if($is_basic_user || !($allowed_edit)){
+        throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException();
+      }
+    }
+    if ($uid != 1 && isset($form['field_saml_initialised'])) {
+      $form['field_saml_initialised']['#access'] = FALSE;
+    }
+    $user = $form_state->getFormObject()->getEntity();
+    if ($user) {
+      $saml = $user->get('field_saml_initialised')->value;
+      if ($saml) {
+        hide($form['account']['pass']);
+        hide($form['account']['current_pass']);
+        $form['#attributes']['class'][] = 'hide-pwd-policy';
+        $form['#attached']['library'][] = 'dpe_ad_login/hide_policy';
+      }
+    }
+    $form['#validate'][] = 'dpe_ad_login_user_form_validate';
+  } else if ($form_id == 'user_pass') {
+    if (isset($form['mail']['#markup'])) {
+      $account = get_user_info();
+      $saml = $account->get('field_saml_initialised')->value;
+      if ($saml) {
+        $form['mail']['#markup'] = t('You are logged in with AD account, password reset is not allowed for this account via CMS.');
+        if (isset($form['captcha'])) {
+          hide($form['captcha']);
+        }
+        hide($form['actions']);
+      }
+    }
+    //array_unshift($form['#validate'], 'dpe_ad_login_pass_form_validate');
+    $form['#validate'][] = 'dpe_ad_login_pass_form_validate';
+  }
+  if (in_array($form_id, ['user_login_form', 'user_pass'])) {
+    $form['#attached']['library'][] = 'dpe_ad_login/login_links';
+    $form['#prefix'] = '<div data-drupal-messages class="nsw-container nsw-m-y-sm dpe_ad_login_external_message" hidden>
+      <div class="nsw-in-page-alert nsw-in-page-alert--info">
+        <span class="material-icons nsw-material-icons nsw-in-page-alert__icon" focusable="false" aria-hidden="true">info</span>
+        <div class="nsw-in-page-alert__content">
+          <h5>Don\'t have an account?</h5>
+          <p class="nsw-small">Please email <a href="mailto:digital@dpie.nsw.gov.au">digital@dpie.nsw.gov.au</a> to request access.</p>
+        </div>
+      </div>
+    </div>';
+
+    array_unshift($form['#validate'], 'dpe_ad_login_login_form_validate');
+  }
+}
+/**
+ * Form validation handler for user_form.
+ *
+ */
+function dpe_ad_login_pass_form_validate(&$form, FormStateInterface $form_state) {
+  $name = trim($form_state->getValue('name'));
+  // Try to load by email.
+  $account = user_load_by_mail($name);
+  if (empty($account)) {
+    // No success, try to load by name.
+    $account = user_load_by_name($name);
+  }
+  if ($account) {
+    $saml = $account->get('field_saml_initialised')->value;
+    if ($saml) {
+      $form_state->setErrorByName('op',  t('Password reset not allowed for this account. Please try DPE AD Login.'));
+    }
+  }
+}
+/**
+ * Form validation handler for user_form.
+ *
+ */
+function dpe_ad_login_user_form_validate($form, FormStateInterface $form_state) {
+  $has_ad = $form_state->hasValue('simplesamlphp_auth_user_enable');
+  $has_pwd_expiry = $form_state->hasValue('field_password_expiration');
+  if ($has_ad && $has_pwd_expiry) {
+    if ($form_state->getValue('simplesamlphp_auth_user_enable')) {
+      $form_state->setValue('field_password_expiration', ['value' => 0]);
+    }
+  }
+}
+
+function dpe_ad_login_toolbar_alter(&$items) {
+  \Drupal::service('cache.render')->invalidateAll();
+  $items['user']['#attached']['drupalSettings']['authenticatedusercheck'] = ["authenticateduser" => "show"];
+  $account = get_user_info();
+  $saml = $account->get('field_saml_initialised')->value;
+  if ($saml) {
+    $items['user']['#attached']['drupalSettings']['authenticatedusercheck'] = ["authenticateduser" => "hide"];
+    $items['administration']['#attached']['library'][] = 'dpe_ad_login/hide_links';
+  }
+}
+
+/*
+  Check the user has only authenticated role
+*/
+function has_only_authenticated_role() {
+  $role = FALSE;
+  $authenticated = array('authenticated');
+  $user_roles = \Drupal::currentUser()->getRoles();
+  $higher_roles = array_diff( $user_roles, $authenticated);
+  if (empty($higher_roles)) {
+     $role = TRUE;
+  }
+  return $role;
+}
+/*
+  Check the user has profile edit permission
+*/
+function is_allowed_profile_edit() {
+  $allowed = FALSE;
+  $current_user_id = \Drupal::currentUser()->id();
+  $user = \Drupal::routeMatch()->getParameter('user');
+  if ($user) {
+    $uid = $user->id();
+    $allowed_profile_edit = ($current_user_id == 1 || $current_user_id != $uid)?1:0;
+    if ($allowed_profile_edit) {
+       $allowed = TRUE;
+    }
+  }
+  return $allowed;
+}
+
+/*
+  Check the user has tfa edit permission
+*/
+function is_allowed_tfa_edit() {
+  $allowed = FALSE;
+  $current_user_id = \Drupal::currentUser()->id();
+  $user = \Drupal::routeMatch()->getParameter('user');
+  if ($user) {
+    $initialised = \Drupal\user\Entity\User::load($user->id())->get('field_saml_initialised')->value;
+    if (!($initialised)) {
+      return TRUE;
+    }
+    if ($initialised && $current_user_id != 1) {
+      $allowed = FALSE;
+      return $allowed;
+    }
+  }
+  $admin_role = \Drupal\user\Entity\User::load($current_user_id)->hasRole('administrator');
+  if ($current_user_id == 1 || $admin_role) {
+    $allowed = TRUE;
+  }
+  return $allowed;
+}
+
+/**
+* Function used to validate the user has access to the system when logging in. (i.e. they have changed corps, changed api settings etc)
+*/
+function dpe_ad_login_login_form_validate(&$form, FormStateInterface $form_state){
+  $username = $form_state->getValue('name');
+  $account = user_load_by_name($username);
+  if ($account) {
+    $saml = $account->get('field_saml_initialised')->value;
+    if ($saml) {
+      $form_state->setErrorByName('name', t('CMS Login not allowed for this account. Please try DPE AD Login.'));
+    }
+  }
+}
+/**
+ * Hook to alter a Drupal user account after SAML authentication.
+ *
+ * Allows other modules to change fields or properties on the Drupal account
+ * after a user logged in through SimpleSAMLphp. This can be used to add
+ * map additional SAML attributes to Drupal user profile fields.
+ *
+ * @param \Drupal\user\UserInterface $account
+ *   The Drupal account that can be altered.
+ * @param array $attributes
+ *   The SimpleSAMLphp attributes for this user.
+ *
+ * @return \Drupal\user\UserInterface|bool
+ *   The altered Drupal account or FALSE if nothing was changed.
+ */
+function dpe_ad_login_simplesamlphp_auth_user_attributes(\Drupal\user\UserInterface $account, $attributes) {
+  $account->set('field_saml_initialised', TRUE);
+  if ($account->hasField('field_password_expiration')) {
+    $account->set('field_password_expiration', ['value' => 0]);
+  }
+  return $account;
+}
+
+function dpe_ad_login_user_presave(\Drupal\user\UserInterface $account){
+  $saml_service = \Drupal::service('samlauth.saml');
+  if ($saml_service->getAttributeByConfig('user_name_attribute')) {
+    $account->set('field_saml_initialised', TRUE);
+  }
+}
+
+
+/**
+ * Hook to alter a Drupal user account
+ */
+function dpe_ad_login_user_login(\Drupal\user\UserInterface $account) {
+  \Drupal::service('cache.render')->invalidateAll();
+}
+/**
+ * return user object
+ */
+function get_user_info($uid = NULL) {
+  return \Drupal\user\Entity\User::load($uid ?: \Drupal::currentUser()->id());
+}
+
+/**
+* Hide warning message from Login security module if there is an error message
+*/
+function dpe_ad_login_preprocess_status_messages(&$variables) {
+  $route = \Drupal::routeMatch()->getRouteName();
+  $message = $variables['message_list'];
+  if ($route == 'user.login') {
+    if (isset($message['warning']) && isset($message['error'])) {
+      unset($variables['message_list']['warning']);
+    }
+  }
+}

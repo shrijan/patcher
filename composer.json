@@ -34,6 +34,7 @@
         "drupal/acquia_connector": "^4.1",
         "drupal/acquia_purge": "^1.2",
         "drupal/acquia_search": "^3.1",
+        "dphi/dphi_components": "^2025.08",
         "drupal/addtoany": "^2.0",
         "drupal/admin_toolbar": "^3.1",
         "drupal/anchor_link": "^3.0",

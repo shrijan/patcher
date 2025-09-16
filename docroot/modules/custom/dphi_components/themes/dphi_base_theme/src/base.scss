@@ -1,0 +1,14 @@
+@import 'nsw-design-system/src/global/scss/settings/settings';
+@import 'nsw-design-system/src/global/scss/base/functions';
+@import 'nsw-design-system/src/global/scss/base/mixins';
+
+/**
+ * This variable from core/iconography is used everywhere in the imports above, it's a mixed file so we don't want to
+ * @import it.
+ */
+$nsw-icon-sizes: (
+  20: 20px,
+  24: 24px,
+  30: 30px,
+  36: 36px,
+);

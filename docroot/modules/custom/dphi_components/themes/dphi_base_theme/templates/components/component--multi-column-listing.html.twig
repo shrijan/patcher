@@ -1,0 +1,17 @@
+{{ attach_library('dphi_base_theme/component.multi_column_listing') }}
+
+{% set titleClass = 'no-title' %}
+{% if multiColumnListing.title is not empty %}
+  <h2 class="nsw-p-bottom-sm multi-column-title">{{ multiColumnListing.title }}</h2>
+  {% set titleClass = '' %}
+{% endif %}
+
+<div class="list-wrapper {{ titleClass }}">
+  <div class="nsw-container nsw-grid">
+    {% for list in multiColumnListing.lists %}
+      <div class="nsw-col nsw-col-md-6 nsw-col-lg-{{ multiColumnListing.number_of_column}} nsw-p-x-xs">
+        {% include '@dphi_base_theme/components/component--link-list.html.twig' %}
+      </div>
+    {% endfor %}
+  </div>
+</div>

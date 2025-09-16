@@ -1,0 +1,34 @@
+@import '../../base';
+
+@include media-breakpoint-up(md){
+  .component--multi-column-listing {
+    .no-title{
+      .nsw-grid {
+        margin-left: -1.5rem;
+      }
+      .nsw-p-x-xs {
+        margin-left: 0;
+      }
+    }
+  }
+}
+
+/* No breakpoint down available in mixins file*/
+//@include media-breakpoint-down(md){
+//  .component--multi-column-listing {
+//    .no-title{
+//      .nsw-grid {
+//        margin-left: -1.25rem;
+//      }
+//      .nsw-p-x-xs {
+//        margin-left: 0;
+//      }
+//    }
+//  }
+//}
+.component--multi-column-listing {
+  .nsw-link-list__title:empty{
+    padding:0;
+  }
+}
+

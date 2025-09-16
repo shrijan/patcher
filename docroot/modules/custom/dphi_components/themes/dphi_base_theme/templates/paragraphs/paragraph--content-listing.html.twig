@@ -1,0 +1,119 @@
+{#
+/**
+* @file
+* Default theme implementation to display a paragraph.
+*
+* Available variables:
+* - paragraph: Full paragraph entity.
+* Only method names starting with "get", "has", or "is" and a few common
+* methods such as "id", "label", and "bundle" are available. For example:
+* - paragraph.getCreatedTime() will return the paragraph creation timestamp.
+* - paragraph.id(): The paragraph ID.
+* - paragraph.bundle(): The type of the paragraph, for example, "image" or "text".
+* - paragraph.getOwnerId(): The user ID of the paragraph author.
+* See Drupal\paragraphs\Entity\Paragraph for a full list of public properties
+* and methods for the paragraph object.
+* - content: All paragraph items. Use {{ content }} to print them all,
+* or print a subset such as {{ content.field_example }}. Use
+* {{ content|without('field_example') }} to temporarily suppress the printing
+* of a given child element.
+* - attributes: HTML attributes for the containing element.
+* The attributes.class element may contain one or more of the following
+* classes:
+* - paragraphs: The current template type (also known as a "theming hook").
+* - paragraphs--type-[type]: The current paragraphs type. For example, if the paragraph is an
+* "Image" it would result in "paragraphs--type--image". Note that the machine
+* name will often be in a short form of the human readable label.
+* - paragraphs--view-mode--[view_mode]: The View Mode of the paragraph; for example, a
+* preview would result in: "paragraphs--view-mode--preview", and
+* default: "paragraphs--view-mode--default".
+* - view_mode: View mode; for example, "preview" or "full".
+* - logged_in: Flag for authenticated user status. Will be true when the
+* current user is a logged-in member.
+* - is_admin: Flag for admin user status. Will be true when the current user
+* is an administrator.
+*
+* @see template_preprocess_paragraph()
+*
+* @ingroup themeable
+*/
+#}
+
+{{ attach_library('dphi_base_theme/component.content_listing') }}
+{% set content_listing = paragraph.getComponent() %}
+
+{% set classes = [
+  'component',
+  'component--content-listing',
+  'paragraph',
+  'nsw-section',
+  'nsw-content-listing',
+  'paragraph--type--' ~ paragraph.bundle|clean_class,
+  view_mode ? 'paragraph--view-mode--' ~ view_mode|clean_class,
+  not paragraph.isPublished() ? 'paragraph--unpublished',
+  paragraph.getPaddingControlClass
+] %}
+
+{% if content_listing.cards_per_row == 3 %}
+  {% set items_per_row = "nsw-col nsw-col-md-6 nsw-col-lg-4" %}
+{% elseif content_listing.cards_per_row == 4 %}
+  {% set items_per_row = "nsw-col nsw-col-md-6 nsw-col-lg-3" %}
+{% else %}
+  {% set items_per_row = "nsw-col nsw-col-md-6 nsw-col-lg-4" %}
+{% endif %}
+
+
+{% block paragraph %}
+  <section{{ attributes.addClass(classes) }}>
+    {% block content %}
+    <div class="nsw-container">
+      <header class="nsw-content-listing-header">
+        <div class="nsw-header-title-wrapper">
+          <h2>{{ content_listing.title|default('') }}</h2>
+          {% if content_listing.view_all %}
+            <a href="{{ content_listing.view_all.url }}" class="nsw-view-all-link"
+               ><span class="nsw-view-all-link__title">{{ content_listing.view_all.title }}</span>
+              <span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">east</span>
+            </a>
+          {% endif %}
+        </div>
+        <div class="description">
+          <div>{{ content_listing.description }}</div>
+          <div id="paragraph-content-listing-sort"
+              class="nsw-form__group js-form-item form-item js-form-type-select form-item-sort-by js-form-item-sort-by">
+            <label data-element-type="select" for="sort-by" class="nsw-form__select-label visually-hidden">Sort
+              by</label>
+            <select data-drupal-selector="sort-by" id="sort-by" name="sort_by"
+                    class="form-select select-sort nsw-form__select">
+              {% for value, label in {
+                title_asc: 'Alphabetically A-Z',
+                title_desc: 'Alphabetically Z-A',
+                date_desc: 'Date - newest first',
+                date_asc: 'Date - oldest first'
+              } %}
+                <option
+                    value="{{ value }}"{% if value == content_listing.sort_by %} selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </header>
+
+      {% if content_listing.display_format == 'cards' %}
+      {% set itemClassName = items_per_row %}
+      <div class="nsw-content-listing-items nsw-grid">
+        {% else %}
+        {% set itemClassName = 'nsw-list-item nsw-list-item--reversed nsw-list-item--block' %}
+        <div class="nsw-content-listing-items nsw-list-view">
+          {% endif %}
+          {% for node in content_listing.nodes %}
+            <div class="{{ itemClassName }}">
+              {{ node }}
+            </div>
+          {% endfor %}
+        </div>
+
+      </div>
+      {% endblock content %}
+  </section>
+{% endblock paragraph %}

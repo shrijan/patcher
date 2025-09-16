@@ -1,0 +1,27 @@
+dphi_components.content_listing.admin_settings:
+  title: 'Content Listing Settings'
+  description: 'Configure which content types and categories to exclude.'
+  parent: system.admin_config_content
+  route_name: content_listing.settings
+  weight: 100
+dphi_components.sidenav_admin_settings:
+  title: 'Global Config'
+  parent: system.admin_config
+  description: 'Configure global settings'
+  route_name: dphi_components.global_config
+dphi_components.settings_form:
+  title: 'Rapid Start'
+  description: 'Configure Rapid Start.'
+  parent: system.admin_config_system
+  route_name: dphi_components.settings_form
+  weight: 50
+entity.map_pin_type.collection:
+  title: 'Map Pin types'
+  description: 'Manage map pin types.'
+  parent: system.admin_structure
+  route_name: entity.map_pin_type.collection
+entity.map_pin.collection:
+  title: 'Map Pins'
+  description: 'List of map pins.'
+  route_name: entity.map_pin.collection
+  parent: system.admin_content

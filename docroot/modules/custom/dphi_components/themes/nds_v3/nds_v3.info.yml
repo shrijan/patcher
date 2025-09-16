@@ -1,0 +1,18 @@
+name: NDS V3 (Deprecated
+type: theme
+description: Placeholder to allow uninstallation of the NDS V3 theme which has been deprecated.
+package: Custom
+base theme: false
+
+regions:
+  header_branding: 		  'Header (branding / search)'
+  header_menu: 			    'Header (primary menu)'
+  breadcrumb: 			    'Breadcrumb'
+  messages: 			      'Status Messages'
+  page_top: 			      'Page top (title)'
+  sidebar_first:        'Submenu left sidebar'
+  content: 		          'Content'
+  footer_upper:         'Footer (upper)'
+  footer: 				      'Footer (lower)'
+
+core_version_requirement: ^9 || ^10 || ^11

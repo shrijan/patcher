@@ -1,0 +1,6 @@
+<video {{ attributes }}>
+  {% for file in files %}
+    {% do file.source_attributes.setAttribute('src', file.source_attributes.toArray()['src'] ~ '#t=0.005') %}
+    <source {{ file.source_attributes }} />
+  {% endfor %}
+</video>

@@ -1,0 +1,5 @@
+name: 'Global Alert (Deprecated)'
+type: module
+description: 'Placeholder to allow uninstallation of the stand-alone global alert module which has been deprecated.'
+package: DPHI
+core_version_requirement: ^10 || ^11

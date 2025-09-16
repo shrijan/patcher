@@ -59,14 +59,18 @@ class TrashServiceProvider extends ServiceProviderBase {
         'class' => CorePgsqlQueryFactory::class,
       ];
     }
-    $definition = (new ChildDefinition($factory['service']))
-      ->setClass($factory['class'])
-      ->setDecoratedService('entity.query.sql', NULL, 100);
-    $container->setDefinition('trash.entity.query.sql', $definition);
-    $definition = (new ChildDefinition($pgsql_factory['service']))
-      ->setClass($pgsql_factory['class'])
-      ->setDecoratedService('pgsql.entity.query.sql', NULL, 100);
-    $container->setDefinition('trash.pgsql.entity.query.sql', $definition);
+    if ($container->hasDefinition($factory['service'])) {
+      $definition = (new ChildDefinition($factory['service']))
+        ->setClass($factory['class'])
+        ->setDecoratedService('entity.query.sql', NULL, 100);
+      $container->setDefinition('trash.entity.query.sql', $definition);
+    }
+    if ($container->hasDefinition($pgsql_factory['service'])) {
+      $definition = (new ChildDefinition($pgsql_factory['service']))
+        ->setClass($pgsql_factory['class'])
+        ->setDecoratedService('pgsql.entity.query.sql', NULL, 100);
+      $container->setDefinition('trash.pgsql.entity.query.sql', $definition);
+    }
 
     if ($container->hasDefinition('workspaces.information')) {
       $container->register('trash.workspaces.information', TrashWorkspaceInformation::class)
@@ -90,6 +94,12 @@ class TrashServiceProvider extends ServiceProviderBase {
         ->setDecoratedService('inline_block.usage')
         ->addArgument(new Reference('trash.inline_block.usage.inner'))
         ->addArgument(new Reference('trash.manager'));
+    }
+
+    if ($container->hasDefinition('wse_menu.tree_storage')) {
+      $container->getDefinition('wse_menu.tree_storage')
+        ->setClass(TrashWseMenuTreeStorage::class)
+        ->addMethodCall('setTrashManager', [new Reference('trash.manager')]);
     }
   }
 

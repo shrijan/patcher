@@ -1,0 +1,11 @@
+<a href="{{ link.url }}" {% if link.type == '1' %} target="_blank"  {% endif %}>
+  <span class="nsw-p-right-xs">{{ link.text }}</span>
+  {% if link.type == "0" %}
+    <span class="sr-only">download file</span><span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">get_app</span>
+  {% elseif links.type == "1" %}
+    <span class="sr-only">opens a new window</span><span class="material-icons nsw-material-icons " focusable="false" aria-hidden="true">open_in_new</span>
+  {% else %}
+    <span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">east</span>
+  {% endif %}
+</a>
+

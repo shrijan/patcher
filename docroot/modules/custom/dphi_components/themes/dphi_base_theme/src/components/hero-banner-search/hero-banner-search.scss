@@ -1,0 +1,165 @@
+@import '../../base';
+
+@import 'nsw-design-system/src/components/form/_form';
+
+.hero-banner-search {
+  background-size: cover;
+  background-position: center;
+  @include breakpoint('md') {
+    padding: 4rem 1rem;
+  }
+
+  .hero-search__wrapper {
+    background-color: var(--nsw-off-white);
+    border-bottom: solid 4px var(--nsw-brand-accent);
+    padding: 2rem 1rem;
+    @include breakpoint('md') {
+      border-top-left-radius: var(--nsw-border-radius);
+      border-top-right-radius: var(--nsw-border-radius);
+      padding-left: 5rem;
+      padding-right: 5rem;
+    }
+  }
+
+  .hero-search__content {
+    max-width: 43.75rem;
+    margin: 0 auto;
+    text-align: center;
+
+    .form-text {
+      padding-right: 51px;
+      @include breakpoint(sm) {
+        padding-right: 102px;
+      }
+    }
+    &.prefilters .form-text {
+      padding-right: 205px;
+      @include breakpoint(sm) {
+        padding-right: 260px;
+      }
+    }
+  }
+
+  form {
+    position: relative;
+    margin-top: 20px;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+
+    .form-text {
+      @extend .nsw-form__input;
+      &:hover {
+        background-image: none;
+      }
+    }
+
+    .filter-results {
+      display: flex;
+      position: absolute;
+      top: 24px;
+      right: 0;
+
+      .trigger {
+        padding: 2px 2px 2px 15px;
+        margin: 10px;
+        border-left: 2px solid var(--nsw-grey-border);
+        background: var(--nsw-palette-white);
+      }
+
+      .keyboard-arrow-right {
+        transform: rotate(90deg);
+        line-height: 2;
+        cursor: pointer;
+        background: var(--nsw-palette-white);
+        text-decoration: none;
+
+        &.active {
+          transform: rotate(270deg);
+        }
+      }
+
+      .form-submit {
+        border: none;
+        font-size: 0;
+        background-color: transparent;
+        height: 48px;
+        min-width: 51px;
+        @include breakpoint(sm) {
+          min-width: 102px;
+        }
+
+        &:focus {
+          position: relative;
+        }
+      }
+    }
+
+    .icon-search {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      font-size: 30px;
+      pointer-events: none;
+      @include breakpoint(sm) {
+        right: 40px;
+      }
+    }
+
+    .nsw-filters__list:not(.active) {
+      display: none;
+    }
+
+    .js-form-type-select {
+      display: none;
+    }
+  }
+
+  .nsw-filters__list {
+    display: none;
+    justify-content: space-between;
+    border: 1px solid var(--nsw-palette-black);
+    background: var(--nsw-palette-white);
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 4px;
+
+    &.active {
+      display: block;
+      @include breakpoint(md) {
+        display: flex;
+      }
+    }
+
+    .js-form-item {
+      text-align: left;
+      width: 100%;
+      margin-bottom: 20px;
+      @include breakpoint(md) {
+        width: 30%;
+        margin-bottom: 0;
+      }
+
+      > label {
+        @extend .nsw-form__legend;
+      }
+
+      > legend {
+        font-weight: bold;
+      }
+    }
+
+    .nsw-form__checkbox-label {
+      margin-top: 1rem;
+    }
+  }
+
+  ul {
+    margin-top: -0.5rem;
+    padding-left: 0;
+
+    li {
+      display: inline-block;
+      margin: 0.5rem 1rem 0 1rem;
+    }
+  }
+}

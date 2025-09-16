@@ -1,0 +1,23 @@
+@import '../../base.scss';
+
+.check-limit {
+  padding: 5px;
+
+  &:not(.active) .form-checkboxes {
+    input,
+    label {
+      &:nth-child(n+9) {
+        display: none;
+      }
+    }
+  }
+
+  .all-options,
+  .less-options {
+    margin-top: 20px;
+
+    &:not([hidden]) {
+      display: inline-block;
+    }
+  }
+}

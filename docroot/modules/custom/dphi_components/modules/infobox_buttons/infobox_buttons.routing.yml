@@ -1,0 +1,15 @@
+infobox_buttons.dialog_outline:
+  path: '/style_buttons/dialog'
+  defaults:
+    _form: '\Drupal\infobox_buttons\Form\StyledButtonsPopup'
+    _title: 'Select Button Type'
+  requirements:
+    _permission: 'access content'
+
+infobox_buttons.dialog_tooltip:
+  path: '/tooltip_buttons/dialog'
+  defaults:
+    _form: '\Drupal\infobox_buttons\Form\TooltipPopup'
+    _title: 'Select Tooltip Type'
+  requirements:
+    _permission: 'access content'

@@ -1,0 +1,38 @@
+{{ attach_library('dphi_base_theme/component.documents_container') }}
+
+{% if documentsContainer.title %}
+  <div class="nsw-p-bottom-sm">
+    {% if documentsContainer.titleAsH3 %}
+      <h3>{{ documentsContainer.title }}</h3>
+    {% else %}
+      <h2>{{ documentsContainer.title }}</h2>
+    {% endif %}
+  </div>
+{% endif %}
+<div class="nsw-documents">
+  <div class="nsw-table nsw-table--striped">
+    <table>
+      <thead>
+        <tr>
+          {% if documentsContainer.show_date_column %}
+            <th>Date</th>
+          {% endif %}
+          <th>Document name</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for document in documentsContainer.documents %}
+          <tr>
+            {% if documentsContainer.show_date_column %}
+              <td class="nsw-border--black nsw-border--bottom">{{ document.date | date('d F Y') }}</td>
+            {% endif %}
+            <td class="nsw-border--black nsw-border--bottom">
+              <a href="{{ document.file_url }}" target="_blank">{{ document.description }}</a>
+              ({{ document.extension | upper }}{% if document.size %}, {{document.size}}{% endif %})
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

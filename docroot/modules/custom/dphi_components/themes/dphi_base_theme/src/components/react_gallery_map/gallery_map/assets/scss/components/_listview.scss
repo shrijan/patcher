@@ -1,0 +1,124 @@
+.list-view-container {
+  .list-view {
+    .nsw-list-item {
+      margin: 16px;
+      border-radius: 4px;
+      border: 1px solid #cdd3d6;
+      padding: 0;
+      display: flex;
+      align-items: stretch;
+
+      .nsw-list-item__content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 0 16px;
+
+        .nsw-list-item__title,
+        .nsw-list-item__copy {
+          padding: 5px 0;
+        }
+
+        .nsw-list-item__title {
+          color: #002664;
+
+          h1 {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 28px;
+          }
+        }
+
+        .nsw-list-item__copy {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+
+          p {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+
+            svg {
+              width: 20px;
+              height: 20px;
+            }
+
+            img {
+              filter: brightness(0);
+              max-height: 20px;
+              width: auto;
+            }
+          }
+        }
+      }
+
+      .nsw-list-item__image {
+        flex: 0 0 155px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        min-width: 0;
+        margin: 0;
+        height: auto;
+
+        img {
+          width: 155px;
+          height: 100%;
+          object-fit: cover;
+          object-position: center;
+        }
+      }
+
+      &.is-hover,
+      &.is-active {
+        .nsw-list-item__copy {
+          .nsw-list-item__copy-item {
+            img {
+              filter: brightness(0) invert(1) saturate(0);
+            }
+          }
+        }
+
+        .nsw-list-item__title {
+          filter: brightness(0) invert(1) saturate(0);
+        }
+      }
+      @media (max-width: 62rem) {
+        margin: 10px;
+      }
+    }
+
+    @media (max-width: 62rem) {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .list-view-alert {
+      margin: 16px;
+      border-radius: 4px;
+      background-color: #fbeee5;
+      padding: 20px;
+      display: flex;
+
+      span {
+        font-size: 30px;
+        color: #c95000;
+      }
+
+      div {
+        margin-left: 20px;
+        p {
+          margin: 0;
+          padding: 0 0 10px 0;
+
+          &.no-results {
+            font-weight: 700;
+          }
+        }
+      }
+    }
+  }
+}

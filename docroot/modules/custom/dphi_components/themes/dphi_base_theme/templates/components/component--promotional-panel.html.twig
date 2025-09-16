@@ -1,0 +1,48 @@
+{{ attach_library('dphi_base_theme/component.promotional_panel') }}
+
+<div class="component_promotional_panel {{ promotional_panel.parallaxClass }} {{ promotional_panel.backgroundClass }}"
+  {% if promotional_panel.desktopImage is not empty %}
+    style="
+      --rs-parallax-desktop-bg: url({{ promotional_panel.desktopImage }});
+      --rs-parallax-mobile-bg: url({{ promotional_panel.mobileImage }});
+    "
+  {% endif %}
+>
+  <div class="component_promotional_panel__wrapper">
+
+    <div
+      class="component_promotional_panel__card {% if promotional_panel.transparentOption == 1 %} opacity {% endif %}">
+
+      {% if promotional_panel.heading is not empty %}
+        <div class="component_promotional_panel__title">
+          <h3>{{ promotional_panel.heading }}</h3>
+        </div>
+      {% endif %}
+
+      {% if promotional_panel.description is not empty %}
+        {{ promotional_panel.description }}
+      {% endif %}
+
+      {% if promotional_panel.link.text is not empty %}
+        {% include '@dphi_base_theme/components/component--link.html.twig' with {link: promotional_panel.link} %}
+      {% endif %}
+
+    </div>
+
+  </div>
+
+  {% if promotional_panel.camera_icon %}
+    <div class="desktop-camera-icon">
+    {% include '@dphi_base_theme/components/component--source.html.twig' with {
+      imageCredit: promotional_panel.image_credit|striptags,
+      imageDescription: promotional_panel.image_description|striptags
+    } %}
+    </div>
+    <div class="mobile-camera-icon">
+    {% include '@dphi_base_theme/components/component--source.html.twig' with {
+      imageCredit: promotional_panel.mobile_image_credit|striptags,
+      imageDescription: promotional_panel.mobile_image_description|striptags
+    } %}
+    </div>
+  {% endif %}
+</div>

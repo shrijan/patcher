@@ -1,0 +1,409 @@
+# Main theme library.
+global:
+  vite: &vite
+    enabled: true
+    baseUrl: /modules/custom/dphi_components/themes/dphi_base_theme/dist/
+    devServerUrl: https://rapid-start.ddev.site:5173
+    devDependencies:
+      - dphi_components/react_refresh
+  css:
+    base:
+      src/global/entry.scss: {}
+      //fonts.googleapis.com/css?family=Public+Sans:400,600&display=swap: { type: external }
+  dependencies:
+    - core/once
+    - core/drupal
+
+# Components in alphabetical order.
+component.50_50:
+  vite: *vite
+  css:
+    component:
+      src/components/50-50/entry.scss: {}
+
+component.accordion:
+  vite: *vite
+  js:
+    src/components/accordion/entry.js: {}
+
+component.breadcrumb:
+  vite: *vite
+  css:
+    component:
+      src/components/breadcrumb/entry.scss: {}
+
+component.button:
+  vite: *vite
+  css:
+    component:
+      src/components/button/entry.scss: {}
+
+component.button_set:
+  vite: *vite
+  css:
+    component:
+      src/components/button-set/entry.scss: {}
+
+component.callout:
+  vite: *vite
+  css:
+    component:
+      src/components/callout/entry.scss: {}
+
+component.card:
+  vite: *vite
+  css:
+    component:
+      src/components/card/entry.scss: {}
+
+component.case_study:
+  vite: *vite
+  css:
+    component:
+      src/components/case-study/entry.scss: {}
+
+component.checkboxes:
+  vite: *vite
+  js:
+    src/components/checkboxes/entry.js: {}
+
+component.content_block:
+  vite: *vite
+  css:
+    component:
+     src/components/content-block/entry.scss: {}
+  dependencies:
+    - dphi_base_theme/component.button
+    - dphi_base_theme/component.media
+    - dphi_base_theme/component.table
+    - dphi_base_theme/component.tooltip
+
+component.content_listing:
+  vite: *vite
+  js:
+    src/components/content-listing/entry.js: {}
+  dependencies:
+    - dphi_base_theme/component.tooltip
+
+component.data_table_csv:
+  vite: *vite
+  js:
+    src/components/data-table-csv/entry.js: {}
+  dependencies:
+    - dphi_base_theme/component.form
+    - dphi_base_theme/component.select
+    - dphi_base_theme/component.table
+
+component.documents_container:
+  vite: *vite
+  dependencies:
+    - dphi_base_theme/component.link
+    - dphi_base_theme/component.table
+
+component.featured_publication:
+  vite: *vite
+  css:
+    component:
+      src/components/featured-publication/entry.scss: {}
+  dependencies:
+    - dphi_base_theme/component.button
+
+component.filters:
+  vite: *vite
+  css:
+    component:
+      src/components/filters/entry.scss: {}
+
+component.footer:
+  vite: *vite
+  css:
+    component:
+      src/components/footer/entry.scss: {}
+
+component.form:
+  vite: *vite
+  css:
+    component:
+      src/components/form/entry.scss: {}
+  dependencies:
+    - dphi_base_theme/component.button
+
+component.form_assembly:
+  vite: *vite
+  css:
+    component:
+      src/components/form-assembly/entry.scss: {}
+
+component.gallery_map:
+  vite: *vite
+  js:
+    src/components/react_gallery_map/gallery_map/entry.jsx: {}
+  dependencies:
+    - dphi_base_theme/component.filters
+    - dphi_base_theme/component.form
+
+component.global_alert:
+  vite: *vite
+  js:
+    src/components/global-alert/entry.js: {}
+  dependencies:
+    - dphi_base_theme/component.button
+
+component.header:
+  vite: *vite
+  js:
+    src/components/header/entry.js: {}
+
+component.hero:
+  vite: *vite
+  css:
+    component:
+      src/components/hero/entry.scss: {}
+
+component.hero_banner_search:
+  vite: *vite
+  js:
+    src/components/hero-banner-search/entry.js: {}
+
+component.image_carousel:
+  vite: *vite
+  css:
+    component:
+      src/components/image-carousel/entry.scss: {}
+  dependencies:
+    - dphi_base_theme/component.media
+
+component.image_carousel_container:
+  vite: *vite
+  js:
+    src/components/image-carousel-container/entry.js: {}
+
+component.in_page_alert:
+  vite: *vite
+  css:
+    component:
+      src/components/in-page-alert/entry.scss: {}
+
+component.in_page_navigation:
+  vite: *vite
+  js:
+    src/components/in-page-navigation/entry.js: {}
+  dependencies:
+    - core/jquery
+
+component.link:
+  vite: *vite
+  css:
+    component:
+      src/components/link/entry.scss: {}
+
+component.link_list:
+  vite: *vite
+  css:
+    component:
+      src/components/link-list/entry.scss: {}
+
+component.list_item:
+  vite: *vite
+  css:
+    component:
+      src/components/list-item/entry.scss: {}
+
+component.masthead:
+  vite: *vite
+  css:
+    component:
+      src/components/masthead/entry.scss: {}
+
+component.media:
+  vite: *vite
+  css:
+    component:
+      src/components/media/entry.scss: {}
+
+component.messages:
+  vite: *vite
+  css:
+    component:
+      src/components/messages/entry.scss: {}
+  dependencies:
+    - core/drupal.message
+
+component.multi_column_listing:
+  vite: *vite
+  css:
+    component:
+      src/components/multi-column-listing/entry.scss: {}
+
+component.navigation:
+  vite: *vite
+  css:
+    component:
+      src/components/navigation/entry.scss: {}
+
+component.pagination:
+  vite: *vite
+  css:
+    component:
+      src/views/pager/entry.scss: {}
+  js:
+    src/components/pagination/entry.js: {}
+
+component.promotional_panel:
+  vite: *vite
+  css:
+    component:
+      src/components/promotional-panel/entry.scss: {}
+
+component.related_content:
+  vite: *vite
+  css:
+    component:
+      src/components/related-content/entry.scss: {}
+  dependencies:
+    - dphi_base_theme/component.card
+    - dphi_base_theme/component.tags
+
+component.select:
+  vite: *vite
+  css:
+    component:
+      src/components/select/entry.scss: {}
+
+component.spatial:
+  vite: *vite
+  css:
+    component:
+      src/components/react_gallery_map/gallery_map/assets/scss/components/select.css: {}
+  js:
+    src/components/spatial/entry.js: {}
+  dependencies:
+    - dphi_base_theme/component.checkboxes
+    - dphi_base_theme/component.form
+    - dphi_base_theme/component.pagination
+    - dphi_base_theme/component.select
+    - dphi_base_theme/component.tabs
+
+component.spatial_mapbox_api:
+  header: true
+  js:
+    https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.js: {type: external}
+  css:
+    component:
+      https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.css: {}
+
+component.spatial_gmap_api:
+  header: true
+  js:
+    https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js: {type: external}
+
+component.side_nav:
+  vite: *vite
+  js:
+    src/components/side-nav/entry.js: {}
+
+component.source:
+  vite: *vite
+  js:
+    src/components/source/entry.js: {}
+
+component.statistics:
+  vite: *vite
+  js:
+    src/components/statistics/entry.js: {}
+
+component.steps_timeline:
+  vite: *vite
+  css:
+    component:
+      src/components/steps-timeline/entry.scss: {}
+
+component.table:
+  vite: *vite
+  css:
+    component:
+      src/components/table/entry.scss: {}
+
+component.tabs:
+  vite: *vite
+  js:
+    src/components/tabs/entry.js: {}
+
+component.tags:
+  vite: *vite
+  css:
+    component:
+      src/components/tags/entry.scss: {}
+
+component.tasks:
+  vite: *vite
+  css:
+    component:
+      src/components/tasks/entry.scss: {}
+
+component.tooltip:
+  vite: *vite
+  js:
+    src/components/tooltip/entry.js: {}
+
+component.video_gallery:
+  vite: *vite
+  js:
+    src/components/react_lists_components/video_gallery/entry.jsx: {}
+  dependencies:
+    - dphi_base_theme/component.filters
+    - dphi_base_theme/component.form
+    - dphi_base_theme/component.media
+    - dphi_base_theme/component.select
+    - dphi_base_theme/component.pagination
+
+component.video_image_teaser:
+  vite: *vite
+  css:
+    component:
+      src/components/video-image-teaser/entry.scss: {}
+
+content.publication:
+  vite: *vite
+  css:
+    component:
+      src/content/publication/entry.scss: {}
+
+view.date-picker:
+  vite: *vite
+  js:
+    src/views/date-picker/entry.js: {}
+
+view.publications:
+  vite: *vite
+  css:
+    component:
+      src/views/publications/entry.js: {}
+  dependencies:
+    - dphi_base_theme/component.card
+    - dphi_base_theme/component.tags
+    - dphi_base_theme/view.date-picker
+    - dphi_base_theme/view.search
+
+view.search:
+  vite: *vite
+  js:
+    src/views/search/entry.js: {}
+  dependencies:
+    - dphi_base_theme/component.checkboxes
+    - dphi_base_theme/component.filters
+    - dphi_base_theme/component.form
+    - dphi_base_theme/component.hero
+    - dphi_base_theme/component.list_item
+    - dphi_base_theme/component.pagination
+    - dphi_base_theme/component.select
+    - dphi_base_theme/view.date-picker
+
+view.stories_and_case_studies:
+  vite: *vite
+  js:
+    src/views/stories-and-case-studies/entry.js: {}
+  dependencies:
+    - dphi_base_theme/component.card
+    - dphi_base_theme/component.tags
+    - dphi_base_theme/view.search

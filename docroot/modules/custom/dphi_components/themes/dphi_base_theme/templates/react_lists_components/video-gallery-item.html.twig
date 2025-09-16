@@ -1,0 +1,16 @@
+<div class="video-item">
+  <h3>{{ video.title }}</h3>
+  <div class="video-embed">
+    <iframe src="{{ video.video_url }}" frameborder="0" allowfullscreen></iframe>
+  </div>
+  <div class="video-caption">{{ video.caption }}</div>
+  <div class="video-tags">
+    {% for tag in video.tags %}
+      <span class="tag">{{ tag }}</span>
+    {% endfor %}
+  </div>
+  {% if video.transcript_link %}
+    <a href="{{ video.transcript_link }}" target="_blank">Transcript</a>
+  {% endif %}
+  <div class="video-body">{{ video.body|raw }}</div>
+</div>

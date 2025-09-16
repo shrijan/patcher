@@ -6,19 +6,18 @@ namespace Drupal\trash\Form;
 
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Sql\SqlEntityStorageInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\TypedData\TypedDataTrait;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Configure Trash settings for this site.
  */
 class TrashSettingsForm extends ConfigFormBase {
-
-  use TypedDataTrait;
 
   /**
    * The entity type manager.
@@ -68,6 +67,19 @@ class TrashSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('trash.settings');
     $enabled_entity_types = $config->get('enabled_entity_types') ?? [];
+    $unsupported_entity_types = $this->getUnsupportedEntityTypes();
+
+    // Get all applicable entity types.
+    $applicable_entity_types = array_map(
+      fn (EntityTypeInterface $entity_type): string => (string) $entity_type->getLabel(),
+      array_filter(
+        $this->entityTypeManager->getDefinitions(),
+        fn (EntityTypeInterface $entity_type): bool =>
+          is_subclass_of($entity_type->getStorageClass(), SqlEntityStorageInterface::class)
+          && !in_array($entity_type->id(), $unsupported_entity_types, TRUE),
+      )
+    );
+    asort($applicable_entity_types);
 
     $form['enabled_entity_types'] = [
       '#type' => 'details',
@@ -76,57 +88,36 @@ class TrashSettingsForm extends ConfigFormBase {
       '#tree' => TRUE,
     ];
 
-    // Disallow enabling trash on entity types that haven't been tested enough.
-    $disallowed_entity_types = [
-      'comment',
-      'taxonomy_term',
-      'path_alias',
-      'user',
-      'workspace',
-      'wse_menu_tree',
-    ];
+    foreach ($applicable_entity_types as $entity_type_id => $entity_type_label) {
+      /** @var \Drupal\Core\Field\BaseFieldDefinition[] $field_definitions */
+      $field_definitions = $this->entityFieldManager->getBaseFieldDefinitions($entity_type_id);
+      $form['enabled_entity_types'][$entity_type_id]['enabled'] = [
+        '#type' => 'checkbox',
+        '#title' => $entity_type_label,
+        '#default_value' => isset($field_definitions['deleted']) && isset($enabled_entity_types[$entity_type_id]),
+        '#disabled' => isset($field_definitions['deleted']) && ($field_definitions['deleted']->getProvider() !== 'trash'),
+      ];
 
-    if ($this->entityTypeManager->hasDefinition('menu_link_content')) {
-      // Custom menu links can be deleted if there's a module which allows
-      // changing the hierarchy in pending revisions (e.g. wse_menu).
-      $menu_link_content = $this->entityTypeManager->getDefinition('menu_link_content');
-      $constraints = $menu_link_content->getConstraints();
-      if (isset($constraints['MenuTreeHierarchy'])) {
-        $disallowed_entity_types = array_merge($disallowed_entity_types, ['menu_link_content']);
-      }
-    }
-    // Get all applicable entity types.
-    foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
-      if (is_subclass_of($entity_type->getStorageClass(), SqlEntityStorageInterface::class)
-        && !\in_array($entity_type_id, $disallowed_entity_types, TRUE)) {
-        /** @var \Drupal\Core\Field\BaseFieldDefinition[] $field_definitions */
-        $field_definitions = $this->entityFieldManager->getBaseFieldDefinitions($entity_type_id);
-        $form['enabled_entity_types'][$entity_type_id]['enabled'] = [
-          '#type' => 'checkbox',
-          '#title' => $entity_type->getLabel(),
-          '#default_value' => isset($field_definitions['deleted']) && isset($enabled_entity_types[$entity_type_id]),
-          '#disabled' => isset($field_definitions['deleted']) && ($field_definitions['deleted']->getProvider() !== 'trash'),
-        ];
-        if ($entity_type->getBundleEntityType()) {
-          $bundles = array_map(
-            fn (array $bundle): string => (string) $bundle['label'],
-            $this->entityTypeBundleInfo->getBundleInfo($entity_type_id)
-          );
-          asort($bundles);
+      $bundles = array_map(
+        fn (array $bundle): string => (string) $bundle['label'],
+        $this->entityTypeBundleInfo->getBundleInfo($entity_type_id)
+      );
 
-          $form['enabled_entity_types'][$entity_type_id]['bundles'] = [
-            '#type' => 'checkboxes',
-            '#title' => $this->t('Bundles'),
-            '#description' => $this->t('If none are selected, all are allowed.'),
-            '#options' => $bundles,
-            '#default_value' => $enabled_entity_types[$entity_type_id] ?? [],
-            '#states' => [
-              'visible' => [
-                ':input[name="enabled_entity_types[' . $entity_type_id . '][enabled]"]' => ['checked' => TRUE],
-              ],
+      if (count($bundles) > 1) {
+        asort($bundles);
+        $form['enabled_entity_types'][$entity_type_id]['bundles'] = [
+          '#type' => 'checkboxes',
+          '#title' => $this->t('Bundles'),
+          '#description' => $this->t('If none are selected, all are allowed.'),
+          '#options' => $bundles,
+          '#default_value' => $enabled_entity_types[$entity_type_id] ?? [],
+          '#states' => [
+            'visible' => [
+              ':input[name="enabled_entity_types[' . $entity_type_id . '][enabled]"]' => ['checked' => TRUE],
             ],
-          ];
-        }
+          ],
+          '#attributes' => ['class' => ['trash--bundles']],
+        ];
       }
     }
 
@@ -157,6 +148,17 @@ class TrashSettingsForm extends ConfigFormBase {
         ],
       ],
     ];
+
+    $form['compact_overview'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Compact overview'),
+      '#config_target' => 'trash.settings:compact_overview',
+      '#description' => $this->t('Simplify the <a href=":url">Trash overview page</a> when there are many entity types enabled.', [
+        ':url' => Url::fromRoute('trash.admin_content_trash')->toString(),
+      ]),
+    ];
+
+    $form['#attached']['library'][] = 'trash/trash.admin';
 
     return parent::buildForm($form, $form_state);
   }
@@ -203,6 +205,32 @@ class TrashSettingsForm extends ConfigFormBase {
     $config->save();
 
     parent::submitForm($form, $form_state);
+  }
+
+  /**
+   * Returns an array of entity types that are not supported by Trash.
+   */
+  protected function getUnsupportedEntityTypes(): array {
+    // Disallow enabling trash on entity types that haven't been tested enough.
+    $unsupported_entity_types = [
+      'comment',
+      'taxonomy_term',
+      'path_alias',
+      'user',
+      'workspace',
+    ];
+
+    if ($this->entityTypeManager->hasDefinition('menu_link_content')) {
+      // Custom menu links can be deleted if there's a module which allows
+      // changing the hierarchy in pending revisions (e.g. wse_menu).
+      $menu_link_content = $this->entityTypeManager->getDefinition('menu_link_content');
+      $constraints = $menu_link_content->getConstraints();
+      if (isset($constraints['MenuTreeHierarchy'])) {
+        $unsupported_entity_types = array_merge($unsupported_entity_types, ['menu_link_content']);
+      }
+    }
+
+    return $unsupported_entity_types;
   }
 
 }

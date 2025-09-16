@@ -5,36 +5,73 @@ declare(strict_types=1);
 namespace Drupal\trash\Hook\TrashHandler;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Menu\MenuLinkManagerInterface;
-use Drupal\menu_link_content\MenuLinkContentInterface;
 use Drupal\trash\Handler\DefaultTrashHandler;
+use Drupal\workspaces\Event\WorkspacePostPublishEvent;
+use Drupal\workspaces\WorkspaceManagerInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Provides a trash handler for the 'menu_link_content' entity type.
  */
-class MenuLinkContentTrashHandler extends DefaultTrashHandler {
+class MenuLinkContentTrashHandler extends DefaultTrashHandler implements EventSubscriberInterface {
 
   public function __construct(
     protected MenuLinkManagerInterface $menuLinkManager,
+    protected ?WorkspaceManagerInterface $workspaceManager = NULL,
   ) {}
 
   /**
-   * Implements hook_ENTITY_TYPE_update() for 'menu_link_content'.
+   * {@inheritdoc}
    */
-  #[Hook('menu_link_content_update')]
-  public function entityUpdate(EntityInterface $entity): void {
-    assert($entity instanceof MenuLinkContentInterface);
+  public function postTrashDelete(EntityInterface $entity): void {
+    parent::postTrashDelete($entity);
 
-    // Handle removing menu link definitions. It's essential that this is done
-    // in an update hook rather than a presave one because it needs to run after
-    // \Drupal\menu_link_content\Entity\MenuLinkContent::postSave(). That method
-    // might add a deleted menu link to the Live menu tree when a workspace is
-    // published, so this code needs to run afterward in order to remove it
-    // again.
-    if (trash_entity_is_deleted($entity)) {
-      $this->menuLinkManager->removeDefinition($entity->getPluginId(), FALSE);
+    // This needs to happen *after* the menu link is trashed, so its menu_tree
+    // entry can be deleted.
+    /** @var \Drupal\menu_link_content\Entity\MenuLinkContent $entity */
+    $entity::preDelete($this->entityTypeManager->getStorage('menu_link_content'), [$entity]);
+  }
+
+  /**
+   * Removes menu link definitions for trashed menu items.
+   */
+  public function onPostPublish(WorkspacePostPublishEvent $event): void {
+    $menu_link_ids = $event->getPublishedRevisionIds()['menu_link_content'] ?? [];
+    if (empty($menu_link_ids)) {
+      return;
     }
+
+    // Handle menu links that were trashed in the workspace.
+    $this->trashManager->executeInTrashContext('ignore', function () use ($menu_link_ids) {
+      $this->workspaceManager?->executeOutsideWorkspace(function () use ($menu_link_ids) {
+        /** @var \Drupal\menu_link_content\MenuLinkContentInterface[] $menu_links */
+        $menu_links = $this->entityTypeManager
+          ->getStorage('menu_link_content')
+          ->loadMultipleRevisions(array_keys($menu_link_ids));
+
+        foreach ($menu_links as $menu_link) {
+          if (trash_entity_is_deleted($menu_link)) {
+            $this->menuLinkManager->removeDefinition($menu_link->getPluginId(), FALSE);
+          }
+        }
+      });
+    });
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getSubscribedEvents(): array {
+    $events = [];
+    if (class_exists(WorkspacePostPublishEvent::class)) {
+      // During workspace publishing, menu link definitions for trashed items
+      // could be created or updated, so this subscriber needs to run last in
+      // order to remove them.
+      $events[WorkspacePostPublishEvent::class][] = ['onPostPublish', -100];
+    }
+
+    return $events;
   }
 
 }

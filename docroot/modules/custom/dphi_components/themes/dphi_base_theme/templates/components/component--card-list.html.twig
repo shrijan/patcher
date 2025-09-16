@@ -1,0 +1,24 @@
+{{ attach_library('dphi_base_theme/component.card') }}
+{% if cardList.title %}
+  <h2>{{ cardList.title }}</h2>
+{% endif %}
+<div class="description-{% if cardList.description_on_left %}75{% else %}50{% endif %}">
+  {{ cardList.description }}
+</div>
+{% set cards = cardList.cards %}
+{% if cards|length %}
+  <div class="nsw-grid">
+    {% for card in cards %}
+      {% set itemsPerRow = cardList.items_per_row %}
+      {% set classes = [
+        'nsw-col',
+        itemsPerRow == 2 ? 'nsw-col-md-6',
+        itemsPerRow == 3 ? 'nsw-col-lg-4',
+        itemsPerRow == 4 ? 'nsw-col-lg-3'
+      ] %}
+      <div class="{{ classes|join(' ') }}">
+        {% include '@dphi_base_theme/components/component--card.html.twig' %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}

@@ -1,0 +1,14 @@
+<div class="nsw-container">
+  <div class="sitemap">
+    {% if message %}
+      <div class="sitemap-message">
+        {{ message }}
+      </div>
+    {% endif %}
+    {% if sitemap_items %}
+      {% for item in sitemap_items %}
+        {{ item }}
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>

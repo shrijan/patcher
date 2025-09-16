@@ -1,0 +1,12 @@
+@use 'sass:meta';
+@use '../theme/typography' as t;
+
+$typeRules: meta.module-variables('t');
+
+:root {
+  @each $typeRule, $typeValue in $typeRules {
+    @if ($typeValue !=null) {
+      --nsw-#{$typeRule}: #{$typeValue};
+    }
+  }
+}

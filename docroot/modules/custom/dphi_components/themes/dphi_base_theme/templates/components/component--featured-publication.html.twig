@@ -1,0 +1,101 @@
+{{ attach_library('dphi_base_theme/component.featured_publication') }}
+{% set classes = [
+  'component',
+  'component--featured-publication',
+  'paragraph',
+  'paragraph--type--' ~ paragraph.bundle|clean_class,
+  view_mode ? 'paragraph--view-mode--' ~ view_mode|clean_class,
+  not paragraph.isPublished() ? 'paragraph--unpublished'
+] %}
+
+{% block paragraph %}
+
+  {% block content %}
+
+    <div class="nsw-featured-publication nsw-featured-publication--reversed">
+      {% set image %}
+        {% if featured_publication.image.url %}
+          <img src="{{ featured_publication.image.url }}" alt="">
+        {% else %}
+          {{ featured_publication.image }}
+        {% endif %}
+      {% endset %}
+      <div class="nsw-featured-publication__content">
+
+        {# Mobile and Right Section Image display #}
+        {% if featured_publication.show_thumbnail %}
+          <div class="nsw-featured-publication__image-mobile">
+            {{ image }}
+          </div>
+        {% endif %}
+
+
+        {% if featured_publication.heading is not empty %}
+          <h2 class="nsw-featured-publication__title">
+            {# Heading for desktop when NOT in middle_right_section (display as link) #}
+            {% if not featured_publication.is_middle_right %}
+              <a href="{{ path('entity.node.canonical', {'node': featured_publication.nid}) }}"
+                 class="featured-publication-heading-desktop">{{ featured_publication.heading }}</a>
+              {# Heading for mobile view (always display as text) #}
+              <span class="featured-publication-heading-mobile">{{ featured_publication.heading }}</span>
+            {% endif %}
+            {# Heading for desktop when IN middle_right_section (display as text) #}
+            {% if featured_publication.is_middle_right %}
+              <span class="featured-publication-heading-desktop-middle-right">{{ featured_publication.heading }}</span>
+            {% endif %}
+          </h2>
+        {% endif %}
+
+
+        <div class="nsw-featured-publication__flex-container">
+          <div class="nsw-featured-publication__info-container">
+            {% if featured_publication.published_date is not empty %}
+              <div class="nsw-featured-publication__info nsw-featured-publication__info-date">
+                <span class="nsw-material-icons material-icons " focusable="false"
+                      aria-hidden="true">calendar_today</span>
+                <span>{{ featured_publication.published_date }}</span>
+              </div>
+            {% endif %}
+            {% if featured_publication.file_size is not empty %}
+              <div class="nsw-featured-publication__info nsw-featured-publication__info-file">
+                <span class="nsw-material-icons material-icons attachment-icon" focusable="false" aria-hidden="true">attachment</span>
+                <span>{{ featured_publication.file_size }}</span>
+              </div>
+            {% endif %}
+          </div>
+          {% if featured_publication.description is not empty %}
+            <div class="nsw-featured-publication__copy">{{ featured_publication.description|raw }}</div>
+          {% endif %}
+        </div>
+
+        {% if featured_publication.file_url is not empty %}
+          <a href="{{ featured_publication.file_url }}" class="nsw-button nsw-button--dark-outline-solid"
+             target="_blank">
+            <span class="material-icons" focusable="false" aria-hidden="true"
+                  style="vertical-align: middle;">download</span>
+            <span>Download</span>
+          </a>
+          {# Mobile Download button #}
+          <a href="{{ featured_publication.file_url }}"
+             class="nsw-button nsw-button-mobile nsw-button--dark-outline-solid" target="_blank">
+            <span class="material-icons" focusable="false" aria-hidden="true"
+                  style="vertical-align: middle;">download</span>
+            <span>Download</span>
+          </a>
+        {% endif %}
+
+        {% if featured_publication.file_url is not empty %}
+          <a href="{{ path('entity.node.canonical', {'node': featured_publication.nid}) }}"
+             class="nsw-button nsw-button-mobile nsw-button--dark-outline-solid">More info</a>
+        {% endif %}
+      </div>
+
+      {# Desktop Image display #}
+      <div class="nsw-featured-publication__image">
+        {{ image }}
+      </div>
+    </div>
+
+  {% endblock %}
+
+{% endblock paragraph %}

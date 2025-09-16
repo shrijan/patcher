@@ -15,7 +15,7 @@
         "source": "https://cgit.drupalcode.org/user_redirect"
     },
     "require": {
-        "drupal/core": "^9.2 || ^10.0"
+        "drupal/core": "^9.5 || ^10 || ^11"
     },
     "license": "GPL-2.0-or-later"
 }

@@ -1,0 +1,18 @@
+<div class="statistics nsw-display-flex nsw-flex-wrap nsw-flex-column nsw-flex-md-row
+{% if statistics.show_border %}
+  border
+{% endif %}">
+  {% for statisticsItem in statistics.items %}
+    {% set classes = [
+      'nsw-col',
+      statistics.enable_dynamic_counter ? 'dynamicCounter',
+      statistics.column_layout == '4' ? 'nsw-col-lg-4',
+      (statistics.column_layout == '4' and loop.index != 3) ? 'nsw-col-md-6',
+      statistics.column_layout == '6' ? (loop.index == 3 ? 'nsw-col-12' : 'nsw-col-md-6'),
+      (statistics.column_layout not in ['4', '6'] and statistics.align == 'centre') ? 'center'
+    ] %}
+    <div class="{{ classes|join(' ') }}">
+      {% include '@dphi_base_theme/components/component--statistics-item.html.twig' %}
+    </div>
+  {% endfor %}
+</div>

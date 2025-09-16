@@ -1,0 +1,98 @@
+@import '../../base';
+
+@import 'nsw-design-system/src/components/content-block/_content-block';
+
+.component--content-blocks {
+  // Fix negative margin overlaps with surrounding content.
+  padding-top: 0.1px;
+  padding-bottom: 0.1px;
+}
+
+.nsw-content-block {
+  &__icon .nsw-media {
+    margin-bottom: 0;
+  }
+
+  .align-left {
+    margin-right: 24px;
+  }
+  .align-right {
+    margin-left: 24px;
+  }
+  .align-center {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .ck-anchor {
+    color: inherit;
+    font-weight: inherit;
+    text-decoration: none;
+
+    &:hover {
+      background-color: transparent;
+      outline: none;
+    }
+  }
+
+  .nsw-table--caption-top caption {
+    caption-side: top;
+  }
+
+  figure {
+    margin: 0;
+  }
+
+  figure,
+  .nsw-content-block__copy > .nsw-media,
+  .nsw-content-block__copy > .media-youtube {
+    @include breakpoint('md') {
+      max-width: 50%;
+    }
+  }
+
+  video {
+    max-width: 100%;
+  }
+
+  &__copy {
+    &::after {
+      clear: both;
+      content: '';
+      display: block;
+    }
+  }
+
+  .nsw-tooltip,
+  .nsw-toggletip {
+    white-space: normal;
+  }
+}
+
+.nsw-content-block__icon img {
+  max-width: 4rem;
+  max-height: 4rem;
+  object-fit: contain;
+}
+
+.nsw-content-block__list li::before {
+  background-color: currentColor;
+}
+
+.nsw-layout__main:only-child,
+.paragraph--type--bottom-section {
+  .nsw-section.light_gray_background {
+    background-color: var(--nsw-off-white);
+  }
+}
+
+// Video embed styles code.
+.nsw-section.nsw-bg--brand-dark .nsw-content-block__content a {
+  color: var(--nsw-text-light);
+  &:hover {
+    // @todo: next Rapid-start iteration set $enable-important-utilities: false;
+    color: var(--nsw-text-dark) !important;
+    background-color: var(--nsw-brand-light);
+  }
+}

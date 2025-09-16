@@ -1,0 +1,17 @@
+{{ attach_library('dphi_base_theme/component.multi_column_listing') }}
+{%
+  set classes = [
+  'component',
+  'component--lists',
+  'paragraph',
+  'paragraph--type--lists',
+  view_mode ? 'paragraph--view-mode--' ~ view_mode|clean_class,
+  not paragraph.isPublished() ? 'paragraph--unpublished'
+]
+%}
+{% set components = paragraph.getComponent() %}
+
+<div{{ attributes.addClass(classes) }}>
+  {% include '@dphi_base_theme/components/component--link-list.html.twig' with {list: components.lists} %}
+</div>
+

@@ -1,0 +1,1024 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for DPHI components module.
+ */
+
+use Drupal\Core\Block\BlockPluginInterface;
+use Drupal\Core\Database\Query\AlterableInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\file\Entity\File;
+use Drupal\node\Entity\Node;
+use Drupal\paragraphs\Entity\Paragraph;
+use Drupal\taxonomy\Entity\Term;
+use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\views\ViewExecutable;
+
+/**
+ * Implements hook_theme_suggestions_alter().
+ */
+function dphi_components_theme_suggestions_alter(array &$suggestions, array $variables, $hook) {
+  if ($hook === 'microcontent') {
+    $entity = $variables['elements']['#microcontent'];
+    $suggestions[] = 'microcontent__' . $entity->bundle();
+  }
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function dphi_components_module_implements_alter(&$implementations, $hook) {
+  switch ($hook) {
+    case 'form_alter':
+      // Move our hook_form_BASE_FORM_ID_alter() implementation to the end of the list.
+      $group = $implementations['dphi_components'];
+      unset($implementations['dphi_components']);
+      $implementations['dphi_components'] = $group;
+      break;
+    case 'form_node_form_alter':
+      // Replace menu_ui with our own version.
+      $config = \Drupal::config('dphi_components.settings');
+      if (isset($implementations['menu_ui']) && $config->get('menu_widget_enabled')) {
+        unset($implementations['menu_ui']);
+      }
+      break;
+  }
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for \Drupal\node\NodeForm.
+ */
+function dphi_components_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  \Drupal::service('dphi_components.node_menu_widget')
+    ->alterForm($form, $form_state);
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function dphi_components_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  \Drupal\dphi_components\Service\EntityDeleteFormAlter::alterEntityDeleteFormMessages($form, $form_state);
+
+  if (!\Drupal::service('router.admin_context')->isAdminRoute()) {
+    foreach ($form as &$value) {
+      if (is_array($value) && !empty($value['#type']) && in_array($value['#type'], [
+          'textfield',
+          'password',
+        ])) {
+        $value['#attributes'] = ['class' => ['nsw-form__input']];
+      }
+    }
+    if (!empty($form['actions'])) {
+      foreach ($form['actions'] as &$action) {
+        if (!empty($action['#type'])) {
+          $action['#attributes'] = [
+            'class' => [
+              'nsw-button',
+              'nsw-button--dark',
+            ],
+          ];
+        }
+      }
+    }
+  }
+  if ($form_id === 'node_page_edit_form' || $form_id === 'node_page_form') {
+    // Spatial component
+    if (isset($form['field_middle_left_section']['widget'][0]['subform']['field_section_content']['widget'][0]['subform']) || isset($form['field_bottom_section']['widget'][0]['subform']['field_section_content']['widget'][0]['subform'])) {
+      $sections = [
+        'middle_left' => $form['field_middle_left_section']['widget'][0]['subform']['field_section_content']['widget'],
+      ];
+      if (!empty($form['field_bottom_section']['widget'][0])) {
+        $sections['bottom'] = $form['field_bottom_section']['widget'][0]['subform']['field_section_content']['widget'];
+      }
+
+      foreach ($sections as $section_key => $section_content) {
+        foreach ($section_content as $key => $subform) {
+          if (is_int($key) && array_key_exists('field_pin_id', $subform['subform'])) {
+            $form['field_' . $section_key . '_section']['widget'][0]['subform']['field_section_content']['widget'][$key]['subform']['field_pin_id']['widget'][0]['value']['#attributes']['disabled'] = 'disabled';
+            $form['actions']['submit']['#submit'][] = 'spatial_component_form_submit';
+            $form['#validate'][] = 'spatial_component_form_validate';
+          }
+        }
+      }
+    }
+    // Adding in conditional field on the sidebar level
+    if (isset($form['field_sidebar_setting']) && isset($form['field_sidebar_level'])) {
+      $form['field_sidebar_level']['#states'] = [
+        'visible' => [
+          ':input[name="field_sidebar_setting"]' => ['value' => 'global'],
+        ],
+      ];
+    }
+  }
+  else {
+    if ($form_id === 'views_exposed_form') {
+      if ($form['#id'] == 'views-exposed-form-spatial-components-block-list') {
+        $node = \Drupal::routeMatch()->getParameter('node');
+        if ($node instanceof \Drupal\node\NodeInterface) {
+          $node = Node::load($nid = $node->id());
+
+          $sections = [
+            'middle_left' => $node->get('field_middle_left_section'),
+            'bottom' => $node->get('field_bottom_section'),
+          ];
+
+          foreach ($sections as $section_key => $section_content) {
+            if ($section_id = @$section_content->getValue()[0]['target_id']) {
+              $paragraph_section = Paragraph::load($section_id);
+              $paragraph_section_content = $paragraph_section->field_section_content ? $paragraph_section->field_section_content->getValue() : [];
+
+              foreach ($paragraph_section_content as $content) {
+                if ($pid = $content['target_id']) {
+                  if ($paragraph = Paragraph::load($pid)) {
+                    if ($paragraph->bundle() === 'spatial_component') {
+                      $spatial_component = $paragraph;
+
+                      if ($pin_id = $spatial_component->get('field_pin_id')
+                        ->getValue()[0]['value']) {
+                        $sc_filters = [
+                          'one' => 'sc_filter_one',
+                          'two' => 'sc_filter_two',
+                          'three' => 'sc_filter_three',
+                          'four' => 'sc_filter_four',
+                          'five' => 'sc_filter_five',
+                        ];
+
+                        $filters = 0;
+                        foreach ($sc_filters as $key => $sc_filter) {
+                          $filter_type = $spatial_component->get('field_filter_' . $key . '_type')
+                            ->getValue()[0]['value'] ?? 'select';
+                          $form[$sc_filter]['#options'] = get_spatial_components_tag_options($pin_id, 'field_sc_filter_' . $key, $filter_type);
+                          if (!$spatial_component->get('field_show_filter_' . $key)
+                            ->getValue()[0]['value']) {
+                            $form[$sc_filter]['#type'] = 'hidden';
+                            $form[$sc_filter]['#prefix'] = '<div class="hidden">';
+                            $form[$sc_filter]['#suffix'] = '</div>';
+                          }
+                          else {
+                            $filters += 1;
+                            unset($form['sc_filter_' . $key]['#size']);
+
+                            $form[$sc_filter]['#type'] = $filter_type;
+                            $form[$sc_filter]['#prefix'] = '<div class="filter nsw-col nsw-col-lg-4">';
+                            $form[$sc_filter]['#suffix'] = '</div>';
+                            $form['#info']['filter-field_' . $sc_filter . '_target_id']['label'] = $spatial_component->get('field_filter_' . $key . '_label')
+                              ->getValue()[0]['value'] ?? t('Filter') . ' ' . $key;
+
+                            if ($filter_type == 'select') {
+                              $form[$sc_filter]['#multiple'] = FALSE;
+                            }
+                          }
+                        }
+
+                        if ($filters == 1) {
+                          foreach ($sc_filters as $key => $sc_filter) {
+                            if ($spatial_component->get('field_show_filter_' . $key)
+                              ->getValue()[0]['value']) {
+                              $filter_type = $spatial_component->get('field_filter_' . $key . '_type')
+                                ->getValue()[0]['value'] ?? 'select';
+                              if ($filter_type !== 'select') {
+                                $form[$sc_filter]['#type'] = 'select';
+                                $form[$sc_filter]['#multiple'] = TRUE;
+                                $form[$sc_filter]['#options'] = get_spatial_components_tag_options($pin_id, 'field_sc_filter_' . $key, 'customselect');
+                                $form[$sc_filter]['#prefix'] = '<div class="filter checkboxes nsw-col nsw-col-lg-4">';
+                                $form[$sc_filter]['#suffix'] = '</div>';
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        $form['#attributes']['class'][] = 'nsw-grid--exposed-form';
+        $form['#attributes']['class'][] = 'nsw-grid--flush';
+        $form['#attributes']['class'][] = 'nsw-grid';
+
+        $pclass = 'nsw-col-lg-4';
+        if (isset($filters) && $filters != 1) {
+          $pclass = 'nsw-col-lg-8';
+        }
+
+        $form['postcode']['#prefix'] = '<div class="nsw-col ' . $pclass . '">';
+        $form['postcode']['#suffix'] = '</div>';
+      } elseif (in_array($form['#id'], ['views-exposed-form-contentt-search-page-1', 'views-exposed-form-acquia-search-page'])) {
+        $filters = ['field_theme', 'field_category', 'field_location', 'field_topics'];
+        foreach ($filters as $filter) {
+          if (array_key_exists($filter, $form) && empty($form[$filter]['#options'])) {
+            unset($form[$filter]);
+          }
+        }
+      }
+      else {
+        $path = \Drupal::service('path.current')->getPath();
+        if ($form['#id'] === 'views-exposed-form-publications-page-list') {
+          foreach (['', '_1'] as $suffix) {
+            $form['field_publish_event_date' . $suffix]['#attributes']['class'] = ['nsw-form__input js-date-input__text'];
+            $form['field_publish_event_date' . $suffix]['#attributes']['placeholder'] = 'dd/mm/yyyy';
+            $form['field_publish_event_date' . $suffix]['#weight'] = -20;
+          }
+          $form['field_theme_target_id']['#type'] = 'checkboxes';
+          $form['field_publication_type_target_id']['#type'] = 'checkboxes';
+
+          if (!\Drupal::request()->query->has('sort_by') && !\Drupal::request()->query->get('keyword')) {
+            $form['sort_by']['#value'] = 'field_publish_event_date_value';
+          }
+        }
+        else if (in_array($path, ['/news', '/resources-and-research', '/stories-and-case-studies'])) {
+          foreach ([
+            'field_theme',
+            'field_related_to',
+            'field_topic',
+            'field_containing'
+          ] as $key) {
+            $form[$key.'_target_id']['#type'] = 'checkboxes';
+          }
+        }
+        else {
+          if ($path == '/search') {
+            if (!\Drupal::request()->query->has('sort_by') && \Drupal::request()->query->get('input-autocomplete')) {
+              $form['sort_by']['#value'] = 'search_api_relevance';
+            }
+
+            foreach ($form as $key => &$field) {
+              if (str_starts_with($key, 'field_') && $field['#type'] == 'select' && !empty($field['#multiple'])) {
+                if ($field['#size'] === 0) {
+                  unset($form[$key]);
+                }
+                else {
+                  $field['#checkboxes'] = TRUE;
+                }
+              }
+            }
+          }
+        }
+
+        $field_name = 'field_publish_event_date_value';
+        if (in_array($path, [
+            '/news',
+            '/resources-and-research',
+            '/stories-and-case-studies',
+          ]) && !empty($form[$field_name]) && !empty($form[$field_name . '_1'])) {
+          array_splice($form, array_search($field_name, array_keys($form)), 0, [
+            [
+              '#name'=>'daterange',
+              '#type' => 'checkbox',
+              '#title' => t('View results during dates'),
+              '#attributes' => [
+                'class' => ['option nsw-form__checkbox-input'],
+              ]
+            ]
+          ]);
+          foreach (['', '_1'] as $suffix) {
+            $form[$field_name . $suffix]['#attributes']['class'] = ['nsw-form__input js-date-input__text'];
+            $form[$field_name . $suffix]['#attributes']['placeholder'] = 'dd/mm/yyyy';
+          }
+        }
+      }
+    }
+  }
+  if ($form_id == 'node_page_form' || $form_id == 'node_page_edit_form' || $form_id == 'node_publications_form' || $form_id == 'node_publications_edit_form') {
+    // Adds new group in Advanced fieldset
+    $form['dpe_common_fieldset'] = [
+      '#type' => 'details',
+      '#title' => t('Hide from search'),
+      '#open' => FALSE,
+      '#weight' => 2, // Adjust the weight as needed.
+      '#group' => 'advanced',
+    ];
+
+    $form['xmlsitemap']['#group'] = 'dpe_common_fieldset';
+    $form['xmlsitemap']['#title'] = t('Hide from external search engines');
+    $form['xmlsitemap']['#description'] = t('<b>Should this page be included in external search results?</b>');
+    $form['xmlsitemap']['status']['#title'] = t('<span style="font-weight:normal">All pages are discoverable by external search engines (eg Google) by default. To hide this page from external search engines, select Excluded from the dropdown. It may take a few weeks for a published page to be removed from external search engines.</span>');
+    $form['xmlsitemap']['priority']['#access'] = FALSE;
+    $form['xmlsitemap']['changefreq']['#access'] = FALSE;
+    $form['search_api_exclude']['#group'] = 'dpe_common_fieldset';
+    $form['search_api_exclude']['#title'] = t('Hide from internal website search');
+    $form['search_api_exclude']['#description'] = t('Once the below checkbox is checked and the page is saved, this page will be removed from internal site search results immediately.');
+    $form['search_api_exclude']['#open'] = FALSE;
+    $form['search_api_exclude']['exclude']['#title'] = t('Exclude this page from internal site search results.');
+  }
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function dphi_components_page_attachments_alter(array &$variables) {
+  foreach ($variables['#attached']['html_head'] as $tag) {
+    if ($tag[1] == 'og_image_url_0') {
+      return;
+    }
+  }
+
+  $node = \Drupal::request()->attributes->get('node');
+  if ($node && $node->bundle() == 'page') {
+    $image = $node->getImageWithFallback();
+    if (!empty($image['#attributes']['src'])) {
+      $variables['#attached']['html_head'][] = [
+        [
+          '#tag' => 'meta',
+          '#attributes' => [
+            'property' => 'og:image:url',
+            'content' => \Drupal::request()
+                ->getSchemeAndHttpHost() . $image['#attributes']['src'],
+          ],
+        ],
+        'og_image_url_0',
+      ];
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess().
+ *
+ * Add configuration to make Left side navigation expandable if checked.
+ */
+function dphi_components_preprocess(&$variables, $hook) {
+  $config = \Drupal::configFactory()->get('dphi_components.settings');
+  $left_nav_flag = $config->get('left_side_nav_expand_collapse');
+  $variables['#attached']['drupalSettings']['left_nav_expand'] = $left_nav_flag;
+}
+
+/**
+ * Implements hook_preprocess_table().
+ *
+ * Remove two menus from the Menus page
+ */
+function dphi_components_preprocess_table(array &$data) {
+  $uri = strtok(\Drupal::request()->getRequestUri(), '?');
+  if ($uri == '/admin/structure/menu') {
+    if (!in_array('editor', \Drupal::currentUser()->getRoles())) {
+      return;
+    }
+
+    // Administration
+    unset($data['rows']['admin']);
+
+    // Tools
+    unset($data['rows']['tools']);
+
+    // User account menu
+    unset($data['rows']['account']);
+  }
+}
+
+/**
+ * Implements hook_views_pre_view().
+ */
+function dphi_components_views_pre_view(ViewExecutable $view) {
+  if (!in_array('editor', \Drupal::currentUser()->getRoles())) {
+    return;
+  }
+
+  foreach ([
+    'content'=>['type', 'node_type', ['video']],
+    'media'=>['bundle', 'media_type', ['audio', 'video']],
+    'media_library'=>['bundle', 'media_type', ['audio', 'video']],
+    'scheduler_scheduled_media'=>['bundle', 'media_type', ['audio', 'video']]
+  ] as $id=>$data) {
+    if ($view->id() == $id) {
+      list($key, $entity_type_id, $values) = $data;
+      $display = $view->getDisplay();
+      $options = $display->getOption('filters');
+      if (empty($options[$key]['value'])) {
+        foreach (array_keys(Drupal::entityTypeManager()
+                       ->getStorage($entity_type_id)
+                       ->loadMultiple()) as $type) {
+          $options[$key]['value'][$type] = $type;
+        }
+      }
+      foreach ($values as $value) {
+        unset($options[$key]['value'][$value]);
+      }
+      $options[$key]['expose']['reduce'] = 1;
+      $display->setOption('filters', $options);
+    }
+  }
+}
+
+/**
+ * Implements hook_query_alter().
+ *
+ * Sort "Trash" results by "Updated" column
+ */
+function dphi_components_query_alter(AlterableInterface $query) {
+  $uri = strtok(\Drupal::request()->getRequestUri(), '?');
+  if ($uri == '/admin/content/trash') {
+    if (!empty($query->getOrderBy()['base_table.nid'])) {
+      unset($query->getOrderBy()['base_table.nid']);
+      $query->addExpression('MAX(node_field_data.changed)', 'max_changed');
+      $query->orderBy('max_changed', 'DESC');
+    }
+  }
+}
+
+/**
+ * Implements hook_views_query_alter().
+ */
+function dphi_components_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
+  if (!in_array('editor', \Drupal::currentUser()->getRoles())) {
+    return;
+  }
+
+  foreach ([
+    'content'=>['node', 'type', ['video']],
+    'media'=>['media', 'bundle', ['audio', 'video']],
+    'media_library'=>['media', 'bundle', ['audio', 'video']],
+    'scheduler_scheduled_media'=>['media', 'bundle', ['audio', 'video']]
+  ] as $id=>$data) {
+    if ($view->id() == $id) {
+      list($type, $key, $values) = $data;
+      $index = array_key_first($query->where);
+      $condition_group = $query->where[$index];
+      foreach ($condition_group['conditions'] as &$condition) {
+         if ($condition['field'] == $type.'_field_data.'.$key) {
+           return;
+         }
+      }
+      $query->where[$index]['conditions'][] = [
+        'field'=>$type.'_field_data.'.$key,
+        'operator'=>'not in',
+        'value'=>$values
+      ];
+      break;
+    }
+  }
+}
+
+/**
+ * Implements hook_views_pre_build().
+ */
+function dphi_components_views_pre_build(ViewExecutable $view) {
+  if ($view->id() == 'spatial_components') {
+    $node = \Drupal::routeMatch()->getParameter('node');
+    if ($node instanceof \Drupal\node\NodeInterface) {
+      $nid = $node->id();
+      $storage = \Drupal::entityTypeManager()->getStorage('node');
+      $latest_revision_id = $storage->getLatestRevisionId($nid);
+      $node = $storage->loadRevision($latest_revision_id);
+
+      $sections = [
+        'middle_left' => $node->get('field_middle_left_section'),
+        'bottom' => $node->get('field_bottom_section'),
+      ];
+
+      foreach ($sections as $section_key => $section_content) {
+        $section_content_value = $section_content->getValue();
+        if ($section_content_value && $section_id = $section_content_value[0]['target_id']) {
+          $paragraph_storage = \Drupal::entityTypeManager()->getStorage('paragraph');
+          $latest_revision_id = $paragraph_storage->getLatestRevisionId($section_id);
+          $paragraph_section = $paragraph_storage->loadRevision($latest_revision_id);
+          $paragraph_section_content = $paragraph_section->field_section_content ? $paragraph_section->field_section_content->getValue() : [];
+
+          foreach ($paragraph_section_content as $content) {
+            if ($pid = $content['target_id']) {
+              if ($paragraph = Paragraph::load($pid)) {
+                if ($paragraph->bundle() === 'spatial_component' && $view->filter && $view->filter['field_pin_id_value']) {
+                  if ($pin_id = $paragraph->get('field_pin_id')
+                    ->getValue()[0]['value']) {
+                    $view->filter['field_pin_id_value']->value['value'] = $pin_id;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+function dphi_components_preprocess_views_view(&$vars) {
+  $view = $vars['view'];
+
+  if ($view->id() == 'spatial_components') {
+    $mapbox = [
+      'geojson' => [
+        'type' => 'FeatureCollection',
+      ],
+    ];
+
+    $plot_method = NULL;
+
+    $node = \Drupal::routeMatch()->getParameter('node');
+    if ($node instanceof \Drupal\node\NodeInterface) {
+      $nid = $node->id();
+      $storage = \Drupal::entityTypeManager()->getStorage('node');
+      $latest_revision_id = $storage->getLatestRevisionId($nid);
+      $node = $storage->loadRevision($latest_revision_id);
+
+      $sections = [
+        'middle_left' => $node->get('field_middle_left_section'),
+        'bottom' => $node->get('field_bottom_section'),
+      ];
+
+      foreach ($sections as $section_key => $section_content) {
+        $section_content_value = $section_content->getValue();
+        if ($section_content_value && $section_id = $section_content_value[0]['target_id']) {
+          $paragraph_storage = \Drupal::entityTypeManager()->getStorage('paragraph');
+          $latest_revision_id = $paragraph_storage->getLatestRevisionId($section_id);
+          $paragraph_section = $paragraph_storage->loadRevision($latest_revision_id);
+          $paragraph_section_content = $paragraph_section->field_section_content ? $paragraph_section->field_section_content->getValue() : [];
+
+          foreach ($paragraph_section_content as $content) {
+            if ($pid = $content['target_id']) {
+              if ($paragraph = Paragraph::load($pid)) {
+                if ($paragraph->bundle() === 'spatial_component') {
+                  $spatial_component = $paragraph;
+                  $mapbox['geojson']['zoom'] = $spatial_component->get('field_zoom_level')
+                    ->getValue()[0]['value'];
+                  $field_plot_method = $spatial_component->get('field_plot_method')
+                    ->getValue();
+                  $plot_method = $field_plot_method ? $field_plot_method[0]['value'] : NULL;
+                  $mapbox['plot_method'] = $plot_method;
+                  $clustering = $spatial_component->get('field_clustering')
+                    ->getValue()[0]['value'];
+                  $mapbox['clustering'] = $clustering;
+                  $vars['hide_view'] = $spatial_component->get('field_hide_view')
+                    ->getValue()[0]['value'];
+
+                  $type = $spatial_component->get('field_map_type')->getValue();
+                  $map_type = $type ? $type[0]['value'] : null;
+                  if ($map_type == 'gmap') {
+                    $api_key = Drupal\Core\Site\Settings::get('gmap_api_key');
+                    if ($api_key) {
+                      $vars['map_type'] = $map_type;
+                      $vars['#attached']['library'][] = 'dphi_base_theme/component.spatial_gmap_api';
+
+                      $vars['gmap_api_key'] = $api_key;
+                    }
+                  }
+                  else if ($map_type == 'mapbox') {
+                    $token = Drupal\Core\Site\Settings::get('mapboxgl_access_token');
+                    if ($token) {
+                      $vars['map_type'] = $map_type;
+                      $vars['#attached']['library'][] = 'dphi_base_theme/component.spatial_mapbox_api';
+
+                      $mapbox['token'] = $token;
+                      $mapbox['style'] = Drupal\Core\Site\Settings::get('mapboxgl_style');
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    $mapbox['defaultConfig'] = !$_GET;
+
+    $vars['filter']['postcode'] = \Drupal::request()->get('postcode');
+
+    $pin_filter = \Drupal::request()->query->get('pin_filter');
+    $postcode = \Drupal::request()->query->get('postcode');
+
+    $mapbox['filtered'] = TRUE;
+
+    $module_path = \Drupal::service('extension.list.module')
+      ->getPath('dphi_components');
+    $postcodes_json = file_get_contents($module_path . '/themes/dphi_base_theme/src/components/spatial/data/australian_postcodes.json');
+    $postcodes_json_data = json_decode($postcodes_json, TRUE);
+
+    // getiing and filtering results for displaing on map without pagination.
+    $query = \Drupal::entityQuery('node')->accessCheck(TRUE);
+    $query->condition('type', 'spatial_component');
+    $pin_id = $spatial_component->get('field_pin_id')->getValue()[0]['value'];
+    if (isset($pin_id)) {
+      $query->condition('field_pin_id', $pin_id);
+    }
+
+    if ($postcode = \Drupal::request()->query->get('postcode')) {
+      $query->condition('field_postcode', $postcode);
+    }
+
+    $queryParameters = \Drupal::request()->query;
+
+    foreach (['one', 'two', 'three', 'four', 'five'] as $suffix) {
+      $show_filter = $spatial_component->get('field_show_filter_' . $suffix)
+        ->getValue()[0]['value'];
+      if (!empty($show_filter) && $queryParameters->has('sc_filter_' . $suffix)) {
+        $filter = $queryParameters->all()['sc_filter_' . $suffix];
+        if ($filter) {
+          $query->condition('field_sc_filter_' . $suffix, $filter, 'IN');
+        }
+      }
+    }
+
+    $result = $query->execute();
+
+    $features = [];
+    $legends = [];
+
+    $counter = 0;
+    foreach ($result as $nid) {
+      //increase coordinates for splitting pins, with same postcode coordinates.
+      $counter += 0.000002;
+      $node = Node::load($nid);
+
+      $address = ['lat' => NULL, 'lng' => NULL];
+      switch ($plot_method) {
+        case 'location':
+          $address = $node->get('field_address')->getValue()[0];
+          break;
+        case 'postcode':
+          foreach ($postcodes_json_data as $data_item) {
+            if ($data_item['postcode'] === $node->get('field_postcode')->value) {
+              $address = [
+                'lat' => $data_item['lat'] + $counter,
+                'lng' => $data_item['long'] + $counter,
+              ];
+            }
+          }
+          break;
+      }
+
+      $colours_mapping = [
+        'blue' => 'var(--nsw-focus-light)',
+        'red' => 'var(--nsw-brand-accent)',
+        'dark' => 'var(--nsw-brand-dark)',
+        'supplementary' => 'var(--nsw-brand-supplementary)',
+      ];
+
+      $pin_label = $node->get('field_category_label')->value;
+      $pin_colour = $node->get('field_pin_category_colour')->value;
+      @$legends[$colours_mapping[$pin_colour]] = $pin_label;
+
+      $properties = [
+        'id' => $node->id(),
+        'type' => $node->getType(),
+        'title' => $node->getTitle(),
+        'link' => $node->get('field_website')
+          ->getValue() ? $node->get('field_website')->getValue()[0]['uri'] : '',
+        'postcode' => $node->get('field_postcode')->value,
+        'color' => $node->get('field_pin_category_colour')->value,
+        'Latitude' => $address['lat'],
+        'Longitude' => $address['lng'],
+      ];
+
+      if ($node->get('body')->value || $node->get('body')->summary) {
+        $properties['description'] = $node->get('body')->summary ? $node->get('body')->summary : $node->get('body')->value;
+        if (strlen($properties['description']) > 150) {
+          $properties['description'] = substr($properties['description'], 0, 150) . '...';
+        }
+      }
+      else {
+        $properties['description'] = t('No description');
+      }
+
+      $features[] = [
+        'type' => 'Feature',
+        'properties' => $properties,
+        'geometry' => [
+          'type' => 'Point',
+          'coordinates' => [
+            $address['lng'],
+            $address['lat'],
+          ],
+        ],
+      ];
+    }
+    $mapbox['geojson']['features'] = $features;
+
+    if (isset($clustering)) {
+      $vars['clustering'] = $clustering;
+    }
+    $vars['legends'] = $legends;
+
+    $vars['mapbox'] = json_encode($mapbox);
+  }
+  elseif (in_array($view->id(), ['contentt_search', 'acquia_search'], TRUE)) {
+    if (!\Drupal::keyValue('dphi_components')->get('search_filters')) {
+      $vars['hide_filter_sidebar'] = TRUE;
+    }
+    $vars['keyword'] = \Drupal::request()->query->get('input-autocomplete');
+  }
+}
+
+/**
+ * Implements hook_local_tasks_alter().
+ */
+function dphi_components_local_tasks_alter(&$local_tasks) {
+  // Setting weight in the view configuration doesn't work.
+  if (array_key_exists('entity.block_content.collection', $local_tasks)) {
+    $local_tasks['entity.block_content.collection']['weight'] = 15;
+  }
+  if (array_key_exists('feeds.admin', $local_tasks)) {
+    $local_tasks['feeds.admin']['weight'] = 12;
+    $local_tasks['feeds.admin']['title'] = new TranslatableMarkup('CSV bulk upload (feeds)');
+  }
+
+  if (array_key_exists('entity.microcontent.collection', $local_tasks)) {
+    $local_tasks['entity.microcontent.collection']['parent_id'] = 'system.admin_content';
+    $local_tasks['entity.microcontent.collection']['weight'] = 20;
+  }
+  if (array_key_exists('entity.linky.collection', $local_tasks)) {
+    $local_tasks['entity.linky.collection']['parent_id'] = 'system.admin_content';
+    $local_tasks['entity.linky.collection']['weight'] = 21;
+  }
+}
+
+/**
+ * Implements hook_field_widget_complete_WIDGET_TYPE_form_alter().
+ */
+function dphi_components_field_widget_complete_options_buttons_form_alter(&$element, &$form_state, $context) {
+  // Check if the field is the one you're targeting.
+  if ($element["widget"]["#field_name"] === 'field_choose_available_filters') {
+    $element['#attached']['library'][] = 'dphi_components/videoGalleryFilterWidget';
+  }
+}
+
+/**
+ * Implements hook_entity_operation().
+ */
+function dphi_components_entity_operation($entity) {
+  $operations = [];
+  if ($entity instanceof \Drupal\dphi_components\Entity\MapPin && $entity->hasLinkTemplate('version-history')) {
+    $operations['revisions'] = [
+      'title' => t('Revisions'),
+      'weight' => 50,
+      'url' => $entity->toUrl('version-history'),
+    ];
+  }
+  return $operations;
+}
+
+/**
+ * Implements function form_validate().
+ */
+function spatial_component_form_validate(array $form, FormStateInterface $form_state) {
+  $values = $form_state->getValues();
+
+  $sections = [
+    'middle_left' => $form['field_middle_left_section']['widget'][0]['subform']['field_section_content']['widget'],
+    'bottom' => $form['field_bottom_section']['widget'][0]['subform']['field_section_content']['widget'],
+  ];
+
+  foreach ($sections as $section_key => $section_content) {
+    foreach ($section_content as $key => $subform) {
+      if (is_int($key) && array_key_exists('field_pin_id', $subform['subform'])) {
+        $fid = $values['field_' . $section_key . '_section'][0]['subform']['field_section_content'][$key]['subform']['field_pin_file'][0]['fids'][0];
+
+        $file = File::load($fid);
+        $filepath = \Drupal::service('file_url_generator')
+          ->generateString($file->getFileUri());
+
+        $filepath = ltrim($filepath, '/');
+        //$host = \Drupal::request()->getSchemeAndHttpHost();
+        //$filepath = $host.'/'.$filepath;
+        //$filepath = str_replace("rapid-start-latest/docroot/", "", $filepath);
+
+        if (!file_exists($filepath)) {
+          $form_state->setErrorByName('field_pin_file', t("The path '@path' doesn't exist. Try to rename the file by replacing spaces and special characters with underscore", ['@path' => $filepath]));
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements function form_submit().
+ */
+function spatial_component_form_submit(array $form, FormStateInterface $form_state) {
+  $values = $form_state->getValues();
+
+  $sections = [
+    'middle_left' => $form['field_middle_left_section']['widget'][0]['subform']['field_section_content']['widget'],
+    'bottom' => $form['field_bottom_section']['widget'][0]['subform']['field_section_content']['widget'],
+  ];
+
+  foreach ($sections as $section_key => $section_content) {
+    foreach ($section_content as $key => $subform) {
+      if (is_int($key) && array_key_exists('field_pin_id', $subform['subform'])) {
+        $fid = $values['field_' . $section_key . '_section'][0]['subform']['field_section_content'][$key]['subform']['field_pin_file'][0]['fids'][0];
+        $pid = $values['field_' . $section_key . '_section'][0]['subform']['field_section_content'][$key]['subform']['field_pin_id'][0]['value'];
+
+        $nid = $form_state->getformObject()->getEntity()->id();
+        $storage = \Drupal::entityTypeManager()->getStorage('node');
+        $latest_revision_id = $storage->getLatestRevisionId($nid);
+        $latest_node = $storage->loadRevision($latest_revision_id);
+        $section_field = $latest_node->get('field_' . $section_key . '_section')->getValue();
+        $section_id = !empty($section_field[0]['target_id']) ? $section_field[0]['target_id'] : NULL;
+        if ($section_id) {
+           $paragraph_storage = \Drupal::entityTypeManager()->getStorage('paragraph');
+          $latest_revision_id = $paragraph_storage->getLatestRevisionId($section_id);
+          $paragraph_section = $paragraph_storage->loadRevision($latest_revision_id);
+          $paragraph_section_content = $paragraph_section->field_section_content->getValue();
+
+          foreach ($paragraph_section_content as $content) {
+            if ($pgid = $content['target_id']) {
+              if ($paragraph = Paragraph::load($pgid)) {
+                if ($paragraph->bundle() === 'spatial_component') {
+                  $spatial_component = $paragraph;
+                  $spatial_component->set('field_pin_id', $fid);
+                  $spatial_component->save();
+                }
+              }
+            }
+          }
+        }
+
+        if ($fid != $pid) {
+          $file = File::load($fid);
+          $filepath = \Drupal::service('file_url_generator')
+            ->generateString($file->getFileUri());
+          $filepath = ltrim($filepath, '/');
+          //$host = \Drupal::request()->getSchemeAndHttpHost();
+          //$filepath = $host.'/'.$filepath;
+
+          //$filepath = str_replace("rapid-start-latest/docroot/", "", $filepath);
+          if (is_readable($filepath)) {
+            $phpexcel = \Drupal::service('phpexcel');
+            $result = $phpexcel->import($filepath);
+
+            if (!empty($result) && is_array($result)) {
+              foreach ($result as $sheet) {
+                foreach ($sheet as $row) {
+                  if (!empty($row['Pin title'])) {
+                    // Create node object with attached file.
+                    $node = Node::create([
+                      'type' => 'spatial_component',
+                    ]);
+
+                    $node->set('title', $row['Pin title']);
+                    $node->set('body', $row['Pin description']);
+                    $node->set('field_pin_id', $fid);
+                    $node->set('field_category_label', $row['Pin category label']);
+
+                    if (filter_var($row['Pin Link'], FILTER_VALIDATE_URL)) {
+                      $node->set('field_website', $row['Pin Link']);
+                    }
+
+                    if (array_key_exists('Postcode', $row) && !empty($row['Postcode'])) {
+                      $node->set('field_postcode', $row['Postcode']);
+                    }
+
+                    $sc_filters = [
+                      'one' => 'Filter 1',
+                      'two' => 'Filter 2',
+                      'three' => 'Filter 3',
+                      'four' => 'Filter 4',
+                      'five' => 'Filter 5',
+                    ];
+
+                    foreach ($sc_filters as $key => $sc_filter) {
+                      if (array_key_exists($sc_filter, $row) && !empty($row[$sc_filter])) {
+                        $vid = 'spatial_components_filters';
+
+                        $terms = \Drupal::entityTypeManager()
+                          ->getStorage('taxonomy_term')
+                          ->loadByProperties([
+                            'name' => $row[$sc_filter],
+                            'vid' => $vid,
+                          ]);
+                        if (empty($terms)) {
+                          $term = Term::create([
+                            'name' => $row[$sc_filter],
+                            'vid' => $vid,
+                          ]);
+                          $term->save();
+                        }
+                        else {
+                          $term = reset($terms);
+                        }
+
+                        $node->set('field_sc_filter_' . $key, $term->id());
+                      }
+                    }
+
+                    switch ($row['Pin category colour']) {
+                      case 'Brand Dark':
+                        $node->set('field_pin_category_colour', 'dark');
+                        break;
+                      case 'Brand Supplementary':
+                        $node->set('field_pin_category_colour', 'supplementary');
+                        break;
+                      case 'Brand Light':
+                        $node->set('field_pin_category_colour', 'blue');
+                        break;
+                      case 'Brand Accent':
+                        $node->set('field_pin_category_colour', 'red');
+                        break;
+                    }
+
+                    $float_lat = (float) $row['Latitude'];
+                    $float_lon = (float) $row['Longitude'];
+
+                    if (strval($float_lat) == $row['Latitude'] || strval($float_lon) == $row['Longitude']) {
+                      $geoaddress = [
+                        'lat' => $row['Latitude'],
+                        'lng' => $row['Longitude'],
+                      ];
+                    }
+                    else {
+                      if (!empty($row['Latitude'] && !empty($row['Longitude']))) {
+                        $geoaddress = [
+                          'lat' => DMStoDD($row['Latitude']),
+                          'lng' => DMStoDD($row['Longitude']),
+                        ];
+                      }
+                    }
+
+                    $node->set('field_address', $geoaddress);
+                    $node->save();
+                  }
+                }
+              }
+            }
+          }
+          else {
+            \Drupal::logger('spatial_component')->error(
+              "The path '@path' is not readable.",
+              ['@path' => $filepath]
+            );
+          }
+
+          //remove items from removed file.
+          $nids = \Drupal::entityQuery('node')
+            ->accessCheck(TRUE)
+            ->condition('type', 'spatial_component')
+            ->condition('field_pin_id', $pid)
+            ->execute();
+
+          foreach ($nids as $nid) {
+            if ($sp = Node::load($nid)) {
+              $sp->delete();
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+function DMStoDD($input) {
+  $deg = " ";
+  $min = " ";
+  $sec = " ";
+  $inputM = " ";
+
+  for ($i = 0; $i < strlen($input); $i++) {
+    $tempD = $input[$i];
+    if ($tempD == iconv("UTF-8", "ISO-8859-1//TRANSLIT", 'Â°')) {
+      $newI = $i + 1;
+      $inputM = substr($input, $newI, -1);
+      break;
+    }
+    $deg .= $tempD;
+  }
+
+  for ($j = 0; $j < strlen($inputM); $j++) {
+    $tempM = $inputM[$j];
+    if ($tempM == "'") {
+      $newI = $j + 1;
+
+      $sec = substr($inputM, $newI, -1);
+      break;
+    }
+    @$min .= $tempM;
+  }
+
+  @$result = $deg + ($min / 60) + ($sec / 3600);
+
+  return $result;
+}
+
+function get_spatial_components_tag_options($pin_id, $filter_id, $filter_type) {
+  $options = [];
+  if ($filter_type == 'select') {
+    $options[''] = 'Select filter';
+  }
+
+  $query = \Drupal::entityQuery('node')
+    ->accessCheck(TRUE)
+    ->condition('status', 1)
+    ->condition('type', 'spatial_component')
+    ->condition('field_pin_id', $pin_id);
+  $nids = $query->execute();
+
+  foreach ($nids as $nid) {
+    $node = Node::load($nid);
+    $term = $node->$filter_id->entity;
+    if ($term) {
+      $options[$term->id()] = $term->getName();
+    }
+  }
+
+  return $options;
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave() for File entities.
+ */
+function dphi_components_file_presave(\Drupal\Core\Entity\EntityInterface $file) {
+  \Drupal\dphi_components\Service\FilePreSaveHook::preSave($file);
+}

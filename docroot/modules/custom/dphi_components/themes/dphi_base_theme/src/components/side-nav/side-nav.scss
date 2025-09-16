@@ -1,0 +1,123 @@
+@import '../../base';
+
+@import 'nsw-design-system/src/components/side-nav/_side-nav';
+
+.nsw-side-nav-mobile-trigger {
+  button {
+    border: none;
+    font-size: var(--nsw-font-size-md-mobile);
+    line-height: var(--nsw-line-height-md-mobile);
+    font-weight: var(--nsw-font-bold);
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    background-color: var(--nsw-off-white);
+    width: 100%;
+    text-align: left;
+    position: relative;
+
+    &.active {
+      background-color: var(--nsw-brand-dark);
+      color: var(--nsw-text-light);
+
+      .nsw-material-icons {
+        color: var(--nsw-off-white);
+        transform: translateY(-50%) rotate(180deg);
+      }
+    }
+  }
+  .nsw-material-icons {
+    font-size: 1.875rem;
+    color: var(--nsw-brand-dark);
+    transform: translateY(-50%);
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    transition: transform 0.15s ease-in-out, color 0.15s ease-in-out;
+  }
+
+  @include breakpoint('lg') {
+    display: none;
+  }
+}
+.nsw-side-nav {
+  display: none;
+  @include breakpoint(lg) {
+    display: block;
+  }
+  a {
+    width: 100%;
+    &.current {
+      background-color: transparent;
+      font-weight: var(--nsw-font-bold);
+      &.is-active {
+        background-color: var(--nsw-off-white);
+      }
+    }
+  }
+  li {
+    &.active {
+      display: block;
+      ul.current {
+        display: block;
+      }
+    }
+    ul {
+      display: none;
+    }
+    li li li li a {
+      padding-left: rem(64px);
+    }
+    li li li li li a {
+      padding-left: rem(80px);
+    }
+    li li li li li li a {
+      padding-left: rem(96px);
+    }
+    li li li li li li li a {
+      padding-left: rem(112px);
+    }
+    li li li li li li li li a {
+      padding-left: rem(128px);
+    }
+    li li li li li li li li li a {
+      padding-left: rem(144px);
+    }
+  }
+  > ul > li:first-child {
+    border-top: none;
+  }
+}
+.submenu-hasChild {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .sidenav-trigger {
+    background: transparent;
+    border-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .material-icons {
+      padding: 1rem;
+      cursor: pointer;
+      transition: translate 0.15s ease-in-out, color 0.15s ease-in-out, rotate 0.15s ease-in-out;
+    }
+
+    &[aria-expanded="true"] {
+      .material-icons {
+        rotate: 180deg;
+      }
+    }
+  }
+}
+.mobile-hr {
+  height: 2px;
+  background-color: var(--nsw-off-white);
+  margin-top: 1rem;
+
+  @include breakpoint('lg') {
+    display: none;
+  }
+}

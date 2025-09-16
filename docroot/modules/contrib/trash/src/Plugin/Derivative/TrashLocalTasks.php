@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\trash\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Drupal\trash\TrashManagerInterface;
@@ -18,6 +19,7 @@ class TrashLocalTasks extends DeriverBase implements ContainerDeriverInterface {
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected TrashManagerInterface $trashManager,
+    protected ConfigFactoryInterface $configFactory,
   ) {}
 
   /**
@@ -26,7 +28,8 @@ class TrashLocalTasks extends DeriverBase implements ContainerDeriverInterface {
   public static function create(ContainerInterface $container, $base_plugin_id) {
     return new static(
       $container->get('entity_type.manager'),
-      $container->get('trash.manager')
+      $container->get('trash.manager'),
+      $container->get('config.factory')
     );
   }
 
@@ -34,6 +37,10 @@ class TrashLocalTasks extends DeriverBase implements ContainerDeriverInterface {
    * {@inheritdoc}
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
+    if ($this->configFactory->get('trash.settings')->get('compact_overview')) {
+      return ['trash' => $base_plugin_definition];
+    }
+
     $this->derivatives = [];
     $enabled_entity_types = $this->trashManager->getEnabledEntityTypes();
 

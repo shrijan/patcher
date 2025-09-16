@@ -1,0 +1,80 @@
+{{ attach_library('dphi_base_theme/view.search') }}
+
+<div class="nsw-hero-banner nsw-bg--brand-dark nsw-text--light">
+  <div class="nsw-hero-banner__container">
+    <div class="nsw-hero-banner__wrapper">
+      <div class="nsw-hero-banner__content">
+        <h1>{{ view.title }}</h1>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="content" aria-label="Main page content" class="contentt-search nsw-p-top-sm nsw-p-bottom-lg nsw-container">
+  {% if exposed['#info']['filter-search_api_fulltext'] %}
+    <div class="nsw-layout">
+      <div class="nsw-layout__main search-bar" aria-labelledby="search">
+        <p class="nsw-intro"></p>
+        <div class="nsw-m-top-lg">
+          <form action="" method="get" name="nsw-search--in-page" role="search" id="nsw-search--in-page">
+            <div class="nsw-form__input-group">
+              <label class="sr-only" for="nsw-search--in-page--field">Search</label>
+              <input class="nsw-form__input" type="text" id="nsw-search--in-page--field" name="input-autocomplete" value="{{ keyword }}" placeholder="Search">
+              <button class="nsw-button nsw-button--dark nsw-button--flex" type="submit">Search</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="nsw-layout__sidebar nsw-layout__sidebar--desktop"></div>
+    </div>
+  {% endif %}
+  <div class="nsw-layout">
+    {% if exposed['#info'] and not hide_filter_sidebar %}
+      <div class="nsw-layout__sidebar" id="search-result-filter">
+        <div class="nsw-filters nsw-filters--instant">
+          <div class="filters-wrapper">
+            <div class="nsw-filters__title">Filter results</div>
+            <button class="nsw-button nsw-button--grey-04 nsw-width-100 nsw-display-flex nsw-justify-content-between" id="toggle-filters" aria-expanded="false" aria-controls="nsw-filters">After something specific? <span class="material-icons" focusable="false" aria-hidden="true">expand_more</span></button>
+            <div class="filters" id="nsw-filters">
+              <!-- begin top "apply filters" button -->
+              <div data-drupal-selector="edit-actions" class="form-actions js-form-wrapper form-wrapper nsw-hide-lg">
+                <input data-drupal-selector="edit-submit-stories-and-case-studies" type="submit" value="Apply filters" class="nsw-button nsw-button--full-width nsw-button--dark nsw-m-y-md apply-filter-btn-top">
+              </div>
+              <div class="nsw-filters__list">
+                <!-- end top "apply filters" button -->
+
+                <!-- begin filter form -->
+                {{ exposed | without('sort_by') }}
+                <!-- end filter form -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+    <div class="nsw-layout__main">
+      <div class="nsw-results-bar">
+        <div class="nsw-results-bar__info">{% if header %}<span class="search-key nsw-filters__title"><h2> Search results {% if keyword is not empty %} for ‘<b>{{ keyword }}</b>’ {% endif %} {% endif %}</h2></span><span class="search-counter">{{ header }}</span></div>
+
+        {% if exposed.sort_by and rows %}
+          <div class="nsw-results-bar__sorting">
+            {{ exposed.sort_by }}
+          </div>
+        {% endif %}
+      </div>
+
+      {% if rows %}
+        <div class="nsw-search-results">
+          {# RESULTS #}
+          {{ rows }}
+        </div>
+      {% else %}
+        <div class="nsw-results-bar__info"> {# NO RESULTS #}
+          <span>Sorry, no results found for your search {% if keyword is not empty %} "<b>{{ keyword }}</b>" {% endif %} </span>
+        </div>
+      {% endif %}
+      <div class="nsw-block nsw-pagination">
+        {{ pager }}
+      </div>
+    </div>
+  </div>
+</div>

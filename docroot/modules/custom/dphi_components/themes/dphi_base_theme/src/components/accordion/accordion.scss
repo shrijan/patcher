@@ -1,0 +1,7 @@
+@import '../../base';
+
+@import 'nsw-design-system/src/components/accordion/_accordion';
+
+.nsw-section .nsw-container.paragraph--type--accordion > h2:first-child {
+  padding-bottom: 0;
+}

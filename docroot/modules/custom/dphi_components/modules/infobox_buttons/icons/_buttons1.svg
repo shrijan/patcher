@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 46 38" style="shape-rendering:geometricPrecision;text-rendering:geometricPrecision;image-rendering:optimizeQuality;fill-rule:evenodd;clip-rule:evenodd">
+  <path style="opacity:1" fill="#fefaf7" d="M-.5-.5h46v38h-46v-38Z"/>
+  <path style="opacity:1" fill="#00008B" d="M4.5 2.5a684.94 684.94 0 0 1 37 .5L43 4.5a196.24 196.24 0 0 1 0 28L41.5 34a342.483 342.483 0 0 1-37 0 125.59 125.59 0 0 1 0-31.5Z"/>
+  <path style="opacity:1" fill="#fcfaf7" d="M6.5 9.5h34v22h-34v-22Z"/>
+  <path style="opacity:1" fill="#2e2031" d="M18.5 15.5c5.972-1.191 8.305.976 7 6.5 2.494 2.423 2.494 4.756 0 7-2.31.497-4.643.663-7 .5v-14Z"/>
+  <path style="opacity:1" fill="#f5f0e6" d="M20.5 17.5h4c.744 3.45-.59 5.116-4 5v-5Z"/>
+  <path style="opacity:1" fill="#fffaee" d="M20.5 23.5c3.45-.744 5.116.59 5 4h-5v-4Z"/>
+</svg>

@@ -1,0 +1,9 @@
+name: 'Custom Paragraph Browser'
+description: 'Module for custom paragraph browser'
+package: Custom
+
+type: module
+core_version_requirement: ^9 || ^10
+
+dependencies: 
+  - drupal:paragraphs_browser

@@ -1,0 +1,33 @@
+{{ attach_library('dphi_base_theme/component.multi_column_listing') }}
+{%
+  set classes = [
+  'component',
+  'component--multi-column-listing',
+  'paragraph',
+  'nsw-container',
+  'paragraph--type--multi-column-listing',
+  view_mode ? 'paragraph--view-mode--' ~ view_mode|clean_class,
+  not microcontent.isPublished() ? 'paragraph--unpublished'
+]
+%}
+{% set multi_column_listing = microcontent.getComponent() %}
+{% set titleClass = 'no-title' %}
+<section class="nsw-section component--multi-column-listing--wrapper {{ elements['#padding_control'] }}">
+    <div{{ attributes.addClass(classes) }}>
+        {% if multi_column_listing.title is not empty %}
+          <h2 class="nsw-p-bottom-sm multi-column-title">{{ multi_column_listing.title }}</h2>
+          {% set titleClass = '' %}
+        {% endif %}
+
+        <div class="list-wrapper {{ titleClass }}">
+          <div class="nsw-container nsw-grid">
+            {% for list in multi_column_listing.lists %}
+              <div class="nsw-col nsw-col-md-6 nsw-col-lg-{{ multi_column_listing.number_of_column}} nsw-p-x-xs">
+                {% include '@dphi_base_theme/components/component--link-list.html.twig' with {list: list} %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+    </div>
+
+</section>

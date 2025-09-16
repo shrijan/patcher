@@ -1,0 +1,23 @@
+{
+  "items": [
+    {
+      "key": "$base-accent",
+      "value": "rgba(0, 62, 204, 1)"
+    }
+  ],
+  "baseTheme": "material.blue.light",
+  "outputColorScheme": "custom-scheme",
+  "makeSwatch": false,
+  "widgets": [
+    "Calendar",
+    "DataGrid",
+    "DateBox",
+    "DateRangeBox",
+    "DropDownBox",
+    "Sortable",
+    "Toast",
+    "TreeList",
+    "TreeView"
+  ],
+  "removeExternalResources": false
+}

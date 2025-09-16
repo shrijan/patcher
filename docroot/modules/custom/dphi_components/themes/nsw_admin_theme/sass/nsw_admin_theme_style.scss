@@ -1,0 +1,165 @@
+//CUSTOM ADMIN STYLES
+
+//add thumbnail of region positions on horizontal tabs for node edit page
+#main-page-sections--horizontal-tabs{
+
+	.horizontal-tab-button:not(.selected) a{
+		&[href="#edit-group-top-section"], &[href='#edit-group-middle-left-section'], &[href='#edit-group-middle-right-section'], &[href='#edit-group-bottom-section']{
+			&:before{
+				filter: grayscale(100%);
+				opacity: 0.3;
+			}
+		}
+	}
+
+	a{
+		&[href="#edit-group-top-section"], &[href='#edit-group-middle-left-section'], &[href='#edit-group-middle-right-section'], &[href='#edit-group-bottom-section']{
+			&:before{
+				content: "";
+				width: 53px;
+				height: 81px;
+				background-size: 100%;
+				background-repeat: no-repeat;
+				position: relative;
+				display: block;
+			    margin: 0 auto 5px auto;
+			    transition: filter 0.2s, opacity 0.2s;
+			}
+		}
+
+		&[href="#edit-group-top-section"]:before{
+			background-image: url('/modules/custom/dphi_components/themes/nsw_admin_theme/images/section-top.png');
+		}
+
+		&[href='#edit-group-middle-left-section']:before{
+			background-image: url('/modules/custom/dphi_components/themes/nsw_admin_theme/images/section-left.png');
+		}
+
+		&[href='#edit-group-middle-right-section']:before{
+			background-image: url('/modules/custom/dphi_components/themes/nsw_admin_theme/images/section-right.png');
+		}
+
+		&[href='#edit-group-bottom-section']:before{
+			background-image: url('/modules/custom/dphi_components/themes/nsw_admin_theme/images/section-bottom.png');
+		}
+
+	}//a
+}//#main-page-sections--horizontal-tabs
+
+
+//Remove whyiwyg editor from 'short description' field
+.claro-details__wrapper{
+	.field--name-field-short-description{
+		.form-textarea-wrapper{
+			.ck-editor__top, .ck-editor__bottom{
+				display: none;
+			}
+		}
+
+		[data-drupal-selector="edit-field-short-description-0-format"]{
+			display: none;
+		}
+
+		.ck_content{
+			max-height: 100px;
+		}
+	}
+
+
+
+
+
+	.field--name-field-hero-type{
+		#hero-example{
+		    max-width: 200px;
+		    display: inline;
+		    height: auto;
+		    float: right;
+		    margin: 0 0 1rem 0;
+		    clear: both;
+		}
+	}
+
+   @media (min-width: 61rem){
+    .layout-region--node-main, .layout-region--node-footer {
+      width: 100%!important;
+   }
+ }
+
+
+
+
+
+
+
+
+// js-form-item
+// form-item
+// js-form-type-select
+// form-type-select
+// js-form-item-field-bottom-section-0-subform-field-section-content-0-subform-field-tabs-0-subform-field-tab-content-0-subform-field-lists-1-subform-field-icon-0-family
+// form-item-field-bottom-section-0-subform-field-section-content-0-subform-field-tabs-0-subform-field-tab-content-0-subform-field-lists-1-subform-field-icon-0-family
+
+
+// js-form-item form-item
+// js-form-type-select form-type-select
+// js-form-item-field-bottom-section-0-subform-field-section-content-0-subform-field-tabs-0-subform-field-tab-content-0-subform-field-lists-2-subform-field-icon-0-family
+// form-item-field-bottom-section-0-subform-field-section-content-0-subform-field-tabs-0-subform-field-tab-content-0-subform-field-lists-2-subform-field-icon-0-family
+
+}//.claro-details__wrapper
+.js .paragraph-type-title{
+  flex-grow: 1;
+}
+._na.js-form-wrapper.form-wrapper,
+.form-item--field-preview-image-url-0-value{
+    display:none!important;
+}
+.form-select.form-element.form-element--type-select option[value="_na"] {
+     display: none!important;
+}
+.js-form-item.form-item.js-form-type-textfield.form-type--textfield.js-form-item-revision-log.form-item--revision-log{
+  display:none!important;
+}
+.publish-state{
+  font-style:italic;
+  font-weight:bold;
+  color:#333;
+}
+
+ol.lower-roman{
+  > li > ol li {
+    list-style-type: lower-roman;
+  }
+}
+
+// NSW DDS
+.nsw-table {
+  border: none !important;
+
+  &:not(.nsw-table--bordered) th,
+  &:not(.nsw-table--bordered) td {
+    border: none !important;
+  }
+
+  thead {
+    border-bottom: solid 2px #22272b;
+  }
+
+  th {
+    background: none !important;
+  }
+}
+
+.nsw-table--striped {
+  tr {
+    border-bottom: none;
+  }
+
+  tbody tr:nth-of-type(2n) {
+     background-color: #f2f2f2;
+  }
+}
+
+div.ck.ck-toolbar.ck-toolbar_grouping>.ck-toolbar__items {
+	flex-wrap: wrap;
+}

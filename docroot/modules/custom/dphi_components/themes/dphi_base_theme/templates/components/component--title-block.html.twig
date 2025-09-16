@@ -1,0 +1,15 @@
+{% if titleBlock.titleAsH1 %}
+  <h1>{{ titleBlock.title }}</h1>
+{% else %}
+  <h2>{{ titleBlock.title }}</h2>
+{% endif %}
+{% if titleBlock.date or titleBlock.tags %}
+  <div class="nsw-m-y-xs">
+  {% if titleBlock.date %}
+    <div class="nsw-m-y-xs">{{ titleBlock.date }}</div>
+  {% endif %}
+  {% if titleBlock.tags %}
+    {% include '@dphi_base_theme/components/component--tags.html.twig' with {tags: titleBlock.tags} %}
+  {% endif %}
+  </div>
+{% endif %}

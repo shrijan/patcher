@@ -23,3 +23,11 @@ function trash_update_9301(): void {
     $config->save();
   }
 }
+
+/**
+ * Add the compact_overview configuration.
+ */
+function trash_update_10301(): void {
+  $config = \Drupal::configFactory()->getEditable('trash.settings');
+  $config->set('compact_overview', FALSE)->save();
+}

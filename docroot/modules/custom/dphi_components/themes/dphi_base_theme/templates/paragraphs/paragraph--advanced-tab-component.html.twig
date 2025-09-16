@@ -1,0 +1,21 @@
+{% set advancedTab = paragraph.getComponent() %}
+<section
+    class="nsw-section{{ advancedTab.use_background_color ? ' nsw-bg--off-white' : '' }} {{ paragraph.getPaddingControlClass() }}">
+  <div class="nsw-container">
+    {% if advancedTab.title %}
+      <h2>{{ advancedTab.title }}</h2>
+    {% endif %}
+    {% if advancedTab.show_as_accordion %}<div class="hidden nsw-show-md"> {% endif %}
+
+      {% include '@dphi_base_theme/components/component--tabs.html.twig' with {tabs: advancedTab.items} %}
+
+    {% if advancedTab.show_as_accordion %}</div>
+    {% set accordion = {
+      items: advancedTab.items
+    } %}
+    <div class="nsw-hide-md">
+      {% include '@dphi_base_theme/components/component--accordion.html.twig' %}
+    </div>
+    {% endif %}
+  </div>
+</section>

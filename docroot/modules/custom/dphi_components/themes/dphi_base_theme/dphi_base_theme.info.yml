@@ -1,0 +1,19 @@
+name: DPHI Base Theme
+type: theme
+base theme: stark
+description: Base theme for DPHI Components
+favicon: 'favicon-32x32.png'
+package: DPHI
+core_version_requirement: ^10 || ^11
+libraries:
+  - dphi_base_theme/global
+regions:
+  header_branding: 'Header (branding / search)'
+  header_menu: 'Header (primary menu)'
+  breadcrumb: 'Breadcrumb'
+  messages: 'Status Messages'
+  page_top: 'Page top (title)'
+  sidebar_first: 'Submenu left sidebar'
+  content: 'Content'
+  footer_upper: 'Footer (upper)'
+  footer: 'Footer (lower)'

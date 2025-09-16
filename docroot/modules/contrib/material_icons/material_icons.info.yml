@@ -1,12 +1,12 @@
 name: Material Icons
 type: module
 description: Material Icons support for fields and WYSIWYG
-core_version_requirement: ^9.3 || ^10
+core_version_requirement: ^9.3 || ^10 || ^11
 configure: material_icons.settings
 dependencies:
   - drupal:editor
 
-# Information added by Drupal.org packaging script on 2023-09-07
-version: '2.0.2'
+# Information added by Drupal.org packaging script on 2025-05-27
+version: '2.0.3'
 project: 'material_icons'
-datestamp: 1694104576
+datestamp: 1748358620

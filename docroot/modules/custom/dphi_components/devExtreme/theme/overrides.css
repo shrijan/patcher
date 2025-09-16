@@ -1,0 +1,5 @@
+.dx-calendar-body {
+  th, td {
+    height: unset;
+  }
+}

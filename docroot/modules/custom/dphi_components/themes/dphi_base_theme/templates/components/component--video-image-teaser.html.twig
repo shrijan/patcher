@@ -1,0 +1,72 @@
+{{ attach_library('dphi_base_theme/component.video_image_teaser') }}
+{% set classes = [
+  'video-image-teaser',
+  videoImageTeaser.camera_icon ? 'show-camera-icon' : 'hide-camera-icon'
+] %}
+<div {{ attributes.addClass(classes) }}>
+  {% if videoImageTeaser.background_image %}
+    <div class="teaser-background-image">
+      {{ videoImageTeaser.background_image }}
+    </div>
+  {% endif %}
+
+  {% if videoImageTeaser.video_url or videoImageTeaser.image %}
+    <div class="card-sides {{ not videoImageTeaser.keep_description_on_left ? 'reverse' }}">
+  {% endif %}
+    {% if videoImageTeaser.link_url %}
+      <a href="{{ videoImageTeaser.link_url }}" class="nsw-display-block
+    {% else %}
+      <header class="
+    {% endif %}
+    nsw-bg--white nsw-p-md nsw-box-shadow">
+      {% if videoImageTeaser.title %}
+        <h2 class="nsw-h3">{{ videoImageTeaser.title }}</h2>
+      {% endif %}
+      {% if not videoImageTeaser.description_height_short %}
+        <div class="nsw-overflow-break">
+          {{ videoImageTeaser.description }}
+        </div>
+      {% endif %}
+      {% if videoImageTeaser.link_url %}
+        <div class="cta nsw-m-top-sm nsw-small
+          {% if videoImageTeaser.link_text and videoImageTeaser.link_type == "" %}
+            ">
+              {{ videoImageTeaser.link_text }}
+          {% elseif videoImageTeaser.link_text and videoImageTeaser.link_type == "0" %}
+            nsw-display-inline-flex nsw-align-items-center">
+              {{ videoImageTeaser.link_text }} &nbsp;&nbsp; <span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">east</span>
+          {% elseif videoImageTeaser.link_text and videoImageTeaser.link_type == "1" %}
+            nsw-button nsw-button--dark">
+              {{ videoImageTeaser.link_text }}
+          {% elseif not videoImageTeaser.link_text or videoImageTeaser.link_type == "2" %}
+            ">
+              <span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">east</span>
+          {% else %}
+            ">
+          {% endif %}
+        </div>
+      {% endif %}
+    {% if videoImageTeaser.link_url %}
+      </a>
+    {% else %}
+      </header>
+    {% endif %}
+  {% if videoImageTeaser.video_url or videoImageTeaser.image %}
+    {% if videoImageTeaser.video_url %}
+      <iframe title="YouTube video player" class="embed-responsive-item" src="{{ videoImageTeaser.video_url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    {% else %}
+      {{ videoImageTeaser.image }}
+    {% endif %}
+    </div>
+  {% endif %}
+
+  {% if videoImageTeaser.video_transcript %}
+    <div class="nsw-accordion js-accordion">
+      {% include '@dphi_base_theme/components/component--accordion-item.html.twig' with {accordionItem: {
+        title: 'Video Transcript',
+        titleTag: 'h3',
+        content: videoImageTeaser.video_transcript,
+      }} %}
+    </div>
+  {% endif %}
+</div>

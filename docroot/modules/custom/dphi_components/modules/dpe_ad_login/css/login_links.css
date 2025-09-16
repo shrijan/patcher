@@ -1,0 +1,75 @@
+@media (min-width: 62rem) {
+  ul.rs--local-tasks {
+    flex-wrap: nowrap;
+    gap: 2rem;
+  }
+
+  ul.rs--local-tasks li {
+    max-width: 50%;
+    padding-right: 0;
+  }
+}
+
+.dpe_ad_login_card {
+  position: relative;
+  display: block;
+  color: #22272b !important;
+  font-size: 24px;
+  text-decoration: none;
+  padding: 2rem 2rem 5.875rem;
+  border: 1px solid #cdd3d6;
+}
+
+.dpe_ad_login_card:hover {
+  outline: none;
+  background-color: #fff;
+}
+
+li.active:not(:hover) > .dpe_ad_login_card,
+li:not(.active):hover > .dpe_ad_login_card {
+  color: #fff !important;
+  background-color: #002664;
+}
+
+.dpe_ad_login_card::before {
+  content: "east";
+  font-family: 'Material Icons';
+  font-size: 1.875rem;
+  font-weight: normal;
+  position: absolute;
+  left: 2rem;
+  bottom: 2rem;
+}
+
+.dpe_ad_login_card::after {
+  content: attr(data-suffix);
+  display: block;
+  font-size: 1rem;
+  margin-top: 1rem;
+}
+
+.user-login-form {
+  visibility: hidden;
+}
+
+.user-login-form,
+.user-pass {
+  width: 100%;
+  max-width: var(--nsw-container-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.user-login-form .form-item-pass {
+  margin-top: 1rem;
+}
+
+@media (min-width: 62rem) {
+  .user-login-form .form-submit,
+  .user-pass .form-submit {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+}

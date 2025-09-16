@@ -1,0 +1,69 @@
+{% set content_category_value = node.field_content_category.0.value %}
+
+{% if content_category_value == 2 %}
+  {% set content_category = "events" %}
+{% elseif content_category_value == 3 %}
+  {% set content_category = "stories_and_case_studies" %}
+{% endif %}
+
+{% set text = node.field_short_description.value|render|striptags %}
+
+<div class="nsw-col nsw-p-x-xs nsw-col-md-6 nsw-col-lg-4 social-and-cases-grid" hidden>
+  {% set image %}
+    {{ node.getImageWithFallback() }}
+    {% if content_category == 'events' %}
+      {% include '@dphi_base_theme/components/component--event-note.html.twig' with {
+        date: node.field_publish_event_date,
+        content_category
+      } %}
+    {% endif %}
+  {% endset %}
+  {% include '@dphi_base_theme/components/component--card.html.twig' with {
+    card: {
+      highlight: true,
+      theme: 'white',
+      image,
+      title: node.label,
+      date: node.field_publish_event_date,
+      datePrefix: content_category == 'events' ? 'Event date:' : 'Published on:',
+      afterTitle,
+      link: node|entity_url,
+      tags: node.field_tags
+    }
+  } %}
+</div>
+
+<div class="nsw-col news-events-list">
+  <div class="nsw-list-item nsw-list-item--reversed nsw-list-item--block">
+    <div class="nsw-list-item__content">
+      {% if node.field_publish_event_date %}
+        <div class="nsw-list-item__info">
+          {{ content_category == 'events' ? 'Event date:' : 'Published on:' }}
+          {{ node.field_publish_event_date.value|date('d M Y') }}
+        </div>
+      {% endif %}
+      <div class="nsw-list-item__title">
+        <a href="{{ node|entity_url }}">{{ node.label }}</a>
+      </div>
+      <div class="nsw-list-item__copy">
+        {{ text|length > 150 ? text|slice(0, 150) ~ '...' : text }}
+      </div>
+      {% if node.field_tags %}
+        <div class="nsw-card__tag-wrapper">
+          {% for item in node.field_tags %}
+            <div class="nsw-card__tag nsw-tag">{{ item.entity.getName() }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+    <div class="nsw-list-item__image nsw-position-relative">
+      {{ node.getImageWithFallback() }}
+      {% if content_category == 'events' %}
+        {% include '@dphi_base_theme/components/component--event-note.html.twig' with {
+          date: node.field_publish_event_date,
+          content_category
+        } %}
+      {% endif %}
+    </div>
+  </div>
+</div>

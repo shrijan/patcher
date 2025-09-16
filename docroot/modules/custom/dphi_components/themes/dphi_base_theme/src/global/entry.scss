@@ -1,0 +1,120 @@
+// Core libraries.
+@import 'nsw-design-system/src/global/scss/settings/settings';
+@import 'nsw-design-system/src/global/scss/base/all';
+@import 'nsw-design-system/src/global/scss/helpers/all';
+@import 'nsw-design-system/src/global/scss/settings/palette';
+@import 'nsw-design-system/src/global/scss/settings/theme';
+@import 'nsw-design-system/src/core/all';
+
+@import 'nsw-design-system/src/components/in-page-nav/in-page-nav';
+
+@import '../theme';
+@import '../utilities';
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.nsw-button--dark {
+  &:hover {
+    background-image: linear-gradient(
+      rgba(var(--nsw-white-rgb), 0.15),
+      rgba(var(--nsw-white-rgb), 0.15)
+    );
+    outline: none;
+  }
+  &:visited {
+    color: var(--nsw-text-light);
+  }
+}
+.nsw-button--dark-outline:hover {
+  color: var(--nsw-text-light);
+  background-color: var(--nsw-brand-dark);
+  outline: none !important;
+}
+
+.nsw-button--grey-04 {
+  color: var(--nsw-text-dark);
+}
+
+.nsw-container-main {
+  overflow: hidden;
+}
+
+.nsw-layout {
+  margin-left: 0;
+  margin-right: 0;
+
+  &__main {
+    padding: 0;
+  }
+
+  &__sidebar {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+div.nsw-footer__upper {
+  padding-top: 0;
+
+  .nsw-container:not(:empty) {
+    padding-top: 24px;
+  }
+}
+
+.nsw-section {
+  > .nsw-container > h2:first-child {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  @include breakpoint(md, 'max-width') {
+    &.nsw-section--half-padding {
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+  }
+}
+
+// Mirror CKEditor preview in WYSIWYG
+ol {
+  list-style-type: decimal;
+
+  ol {
+    list-style-type: lower-latin;
+
+    ol {
+      list-style-type: lower-roman;
+
+      ol {
+        list-style-type: upper-latin;
+
+        ol {
+          list-style-type: upper-roman;
+        }
+      }
+    }
+  }
+}
+
+ol.lower-roman {
+  > li > ol li {
+    list-style-type: lower-roman;
+  }
+}
+
+.position-relative {
+  position: relative;
+}
+.node-preview-container {
+  background: #002664;
+  .node-preview-form-select {
+    color: #FFF;
+
+    a {
+      color: #FFF;
+    }
+  }
+}

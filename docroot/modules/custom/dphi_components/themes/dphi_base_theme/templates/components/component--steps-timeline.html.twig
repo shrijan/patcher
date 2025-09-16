@@ -1,0 +1,10 @@
+{{ attach_library('dphi_base_theme/component.steps_timeline') }}
+
+<ol class="stepsTimeline {{ stepsTimeline.heading_size }} {{ stepsTimeline.color }}{% if stepsTimeline.number %} number{% endif %}">
+  {% for item in stepsTimeline.items %}
+    <li{% if item.complete %} class="complete"{% endif %}>
+      <{{ stepsTimeline.heading_size ?: 'h2' }}>{{ item.heading }}</{{ stepsTimeline.heading_size ?: 'h2' }}>
+      {{ item.content }}
+    </li>
+  {% endfor %}
+</ol>

@@ -1,0 +1,33 @@
+{% if element['#checkboxes'] %}
+  {% set value = [] %}
+  {% set checkboxes = [] %}
+  {% for option in options %}
+    {% set checkboxes = checkboxes + {(option.value): option.label} %}
+    {% if option.selected %}
+      {% set value = value|merge([option.value]) %}
+    {% endif %}
+  {% endfor %}
+  {% include '@dphi_base_theme/templates/fields/checkboxes.html.twig' with {
+    element: {
+      '#name': element['#name'],
+      '#options': checkboxes,
+      '#value': value
+    }
+  } %}
+{% else %}
+  {% apply spaceless %}
+    <select{{ attributes.addClass('nsw-form__select') }}>
+      {% for option in options %}
+        {% if option.type == 'optgroup' %}
+          <optgroup label="{{ option.label }}">
+            {% for sub_option in option.options %}
+              <option value="{{ sub_option.value }}"{{ sub_option.selected ? ' selected="selected"' }}>{{ sub_option.label }}</option>
+            {% endfor %}
+          </optgroup>
+        {% elseif option.type == 'option' %}
+          <option value="{{ option.value }}"{{ option.selected ? ' selected="selected"' }}>{{ option.label }}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+  {% endapply %}
+{% endif %}

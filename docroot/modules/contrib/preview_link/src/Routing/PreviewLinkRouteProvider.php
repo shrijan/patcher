@@ -82,7 +82,7 @@ class PreviewLinkRouteProvider implements EntityRouteProviderInterface {
         '_controller' => 'Drupal\preview_link\Controller\PreviewLinkController::preview',
         '_title_callback' => 'Drupal\preview_link\Controller\PreviewLinkController::title',
       ])
-      ->setRequirement('_entity_access', $entity_type_id . '.view')
+      //->setRequirement('_entity_access', $entity_type_id . '.view')
       ->setRequirement('_access_preview_enabled', 'TRUE')
       ->setOption('preview_link.entity_type_id', $entity_type_id)
       ->setOption('parameters', [

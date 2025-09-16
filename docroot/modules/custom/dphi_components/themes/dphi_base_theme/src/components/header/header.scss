@@ -1,0 +1,16 @@
+@import '../../base';
+
+@import 'nsw-design-system/src/components/header/_header';
+
+.nsw-skip {
+  z-index: 1250; // Raise above admin toolbar
+}
+
+#block-dphi-base-theme-mainnavigation {
+  position: static;
+}
+
+.nsw-header__waratah svg {
+  // DDS sets the height, so this allows that to determine the width
+  width: auto;
+}

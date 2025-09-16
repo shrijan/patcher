@@ -1,0 +1,143 @@
+{% set total_filters = (exposed.sc_filter_one['#type'] == 'hidden' ? 0 : 1) +
+                       (exposed.sc_filter_two['#type'] == 'hidden' ? 0 : 1) +
+                       (exposed.sc_filter_three['#type'] == 'hidden' ? 0 : 1) +
+                       (exposed.sc_filter_four['#type'] == 'hidden' ? 0 : 1) +
+                       (exposed.sc_filter_five['#type'] == 'hidden' ? 0 : 1) %}
+
+{% if exposed %}
+  <div class="nsw-row">
+    <div class="nsw-col sc-filters-top">
+      <div id="searchPageFiltersTop" class="nsw-bg--off-white nsw-p-md">
+        <div class="{% if total_filters == 0 %} postcode-only {% endif %} {% if total_filters == 1 %} postcode-filter {% endif %}">
+
+          {% if total_filters <= 1 %}
+            {{ exposed }}
+          {% endif %}
+
+          {% if total_filters > 1 %}
+            <form class="views-exposed-form nsw-grid--exposed-form nsw-grid--flush nsw-grid" id="views-exposed-form-sc-list-top">
+              <div class="nsw-col nsw-col-lg-8">
+                <div class="nsw-form__textfield js-form-item form-item js-form-type-textfield form-item-postcode js-form-item-postcode">
+                  <label data-element-type="textfield" for="postcode" class="nsw-form__textfield-label">{{ 'Search by Postcode'|t }}</label>
+                  <input data-drupal-selector="postcode" type="text" id="postcode" name="postcode" value="{{ filter.postcode }}" size="30" maxlength="128" class="form-text form-text-postcode nsw-form__text-input nsw-form__input" autofocus>
+                </div>
+              </div>
+
+              <div data-drupal-selector="edit-actions" class="form-actions js-form-wrapper form-wrapper nsw-display-flex nsw-display nsw-align-items-end nsw-col nsw-col-lg-4" id="edit-actions">
+                <input type="submit" id="edit-submit-sc" value="Search" class="button js-form-submit form-submit nsw-button nsw-button--dark nsw-button--full-width">
+              </div>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<div class="nsw-layout">
+  {% if total_filters > 1 %}
+    <div class="nsw-layout__sidebar" id="search-result-filter">
+      <div class="nsw-filters nsw-filters--instant">
+        <div class="filters-wrapper">
+            <div class="nsw-filters__title sc-filters-title">
+                <span class="material-symbols-outlined material-icons nsw-material-icons">tune</span>
+                <span>{{ 'Filter results'|t }}</span>
+                <span class="total-filters">({{ total_filters }})</span>
+            </div>
+            <div id="searchPageFilters" class="nsw-filters__list nsw-display-none nsw-display-lg-block">
+              {{ exposed }}
+            </div>
+          </div>
+        </div>
+    </div>
+  {% endif %}
+
+  <div class="nsw-layout__main">
+    <div class="nsw-tabs js-tabs tabs-map-list {% if hide_view != 1 %} show-view {% endif %}">
+      <ul class="nsw-tabs__list sc-tabs">
+        {% if map_type %}<li><a href="#sectionMap">{{ 'Map view'|t }}</a></li>{% endif %}
+        <li><a href="#sectionList">{{ 'List view'|t }}</a></li>
+      </ul>
+      {% if map_type %}
+      <section id="sectionMap" class="nsw-tabs__content nsw-tabs__content--flush nsw-tabs__content--no-border">
+        <div class="nsw-map">
+          <div id="spatialmap" style="width: 100%; height: 480px;" class="mapboxgl-map" data-type="{{ map_type }}" data-mapbox="{{ mapbox }}"></div>
+        </div>
+
+        {% if legends %}
+          <div class="nsw-map-bar">
+            <div class="nsw-map-bar__key">
+              <span><strong>{{ 'Key'|t }}:</strong></span>
+              {% for key, legend in legends %}
+                {% if legend %}
+                  <span>
+                    <svg viewBox="0 0 27 41">
+                      <g fill-rule="nonzero">
+                        <g fill="{{ key }}">
+                          <path d="M27,13.5 C27,19.074644 20.250001,27.000002 14.75,34.500002 C14.016665,35.500004 12.983335,35.500004 12.25,34.500002 C6.7499993,27.000002 0,19.222562 0,13.5 C0,6.0441559 6.0441559,0 13.5,0 C20.955844,0 27,6.0441559 27,13.5 Z"></path>
+                        </g>
+                        <g opacity="0.25" fill="#000000">
+                          <path d="M13.5,0 C6.0441559,0 0,6.0441559 0,13.5 C0,19.222562 6.7499993,27 12.25,34.5 C13,35.522727 14.016664,35.500004 14.75,34.5 C20.250001,27 27,19.074644 27,13.5 C27,6.0441559 20.955844,0 13.5,0 Z M13.5,1 C20.415404,1 26,6.584596 26,13.5 C26,15.898657 24.495584,19.181431 22.220703,22.738281 C19.945823,26.295132 16.705119,30.142167 13.943359,33.908203 C13.743445,34.180814 13.612715,34.322738 13.5,34.441406 C13.387285,34.322738 13.256555,34.180814 13.056641,33.908203 C10.284481,30.127985 7.4148684,26.314159 5.015625,22.773438 C2.6163816,19.232715 1,15.953538 1,13.5 C1,6.584596 6.584596,1 13.5,1 Z"></path>
+                        </g>
+                        <g transform="translate(6.0, 7.0)" fill="#FFFFFF"></g><g transform="translate(8.0, 8.0)">
+                          <circle fill="#000000" opacity="0.25" cx="5.5" cy="5.5" r="5.4999962"></circle>
+                          <circle fill="#FFFFFF" cx="5.5" cy="5.5" r="5.4999962"></circle>
+                        </g>
+                      </g>
+                    </svg>
+                    <span>{{ legend }}</span>
+                  </span>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      </section>
+      {% endif %}
+
+      <section id="sectionList" class="nsw-tabs__content nsw-tabs__content--flush nsw-tabs__content--no-border">
+        <div class="nsw-map-bar">
+          <div class="nsw-m-top-md">
+            {% if header %}
+              <header>
+                {{ header }}
+              </header>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="nsw-results">
+          <div class="nsw-grid nsw-grid--flush">
+            <div class="nsw-col nsw-col-lg-12">
+              {% if rows -%}
+                {{ rows }}
+              {% elseif empty -%}
+                {{ empty }}
+              {% endif %}
+              <div class="nsw-pagination">
+                {{ pager }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {{ attachment_after }}
+        {{ more }}
+
+        {% if footer %}
+          <footer>
+            {{ footer }}
+          </footer>
+        {% endif %}
+      </section>
+    </div>
+
+  </div>
+</div>
+
+{% if gmap_api_key %}
+  <script>
+    (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})
+    ({key: "{{ gmap_api_key }}", v: "beta"});
+  </script>
+{% endif %}

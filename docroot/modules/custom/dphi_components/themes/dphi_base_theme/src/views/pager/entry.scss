@@ -1,0 +1,44 @@
+@import '../../base';
+
+.pager {
+  .is-active a::after {
+    content: "";
+    display: block;
+    margin-top: -2px;
+    height: 2px;
+    background-color: var(--nsw-brand-accent);
+  }
+
+  .pager__item--previous,
+  .pager__item--next {
+    position: relative;
+
+    span[aria-hidden] {
+      display: none;
+    }
+
+    a {
+      height: 32px;
+      &::after {
+        @include material-icons();
+        display: block;
+        font-size: 24px;
+        font-weight: normal;
+        margin-top: -6px;
+      }
+    }
+  }
+
+  .pager__item--previous a::after {
+    content: "keyboard_arrow_left";
+  }
+
+  .pager__item--next a::after {
+    content: "keyboard_arrow_right";
+  }
+
+  .pager__item--first,
+  .pager__item--last {
+    display: none;
+  }
+}

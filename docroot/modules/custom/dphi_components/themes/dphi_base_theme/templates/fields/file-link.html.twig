@@ -1,0 +1,9 @@
+{% set parts = file.filename.getValue()[0]['value']|split('.') %}
+{% if not description %}
+  {% set link = link|merge({'#title': parts|slice(0,-1)|join('.')}) %}
+{% endif %}
+{% set ext = parts|last %}
+<span{{ attributes }}>{{ link }}</span>
+{% if file_size %}
+  <span>({{ ext | upper }}, {{ file_size }})</span>
+{% endif %}

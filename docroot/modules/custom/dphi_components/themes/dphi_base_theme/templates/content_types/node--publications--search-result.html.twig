@@ -1,0 +1,60 @@
+{% set publication = node.getComponent() %}
+<div class="nsw-col nsw-col-lg-12 node {{ 'node--type-' ~ node.bundle|clean_class }} {{ 'node--view-mode-' ~ view_mode|clean_class }} clearfix">
+  <div class="nsw-card__title nsw-hide-md">
+    <p><a href="{{ url }}" rel="bookmark">{{ node.label }}</a></p>
+    <br>
+  </div>
+
+  <div class="nsw-card nsw-card--horizontal nsw-card--white">
+    <div class="nsw-card__image">
+      {% if content.field_media_image[0] %}
+        {{ content.field_media_image }}
+      {% else %}
+        <img src="{{ publication.image_url }}" alt="">
+      {% endif %}
+    </div>
+
+    <div class="nsw-card__content  nsw-card__content-icon">
+      <div class="nsw-card__title nsw-show-md">
+        <a href="{{ url }}" rel="bookmark">{{ node.label }}</a>
+      </div>
+
+      <div class="nsw-row nsw-meta-row">
+        <div class="nsw-col nsw-col-lg-6">
+          <div class="nsw-meta">
+            <span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">calendar_month</span>
+            <span>{{ publication.date|date("d M Y") }}</span>
+          </div>
+          <div class="nsw-meta">
+            <span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">attach_file</span>
+            <span>{{ publication.file_extension|upper }} {{ publication.file_size }} {% if publication.file_extension == 'pdf' %} / <strong>Pages</strong> {{ publication.num_of_pages }} {% endif %}</span>
+          </div>
+          <span class="material-link nsw-material-links link-left nsw-show-md" focusable="false" aria-hidden="true">
+            <a href="{{ publication.file_url }}" class="nsw-button nsw-button--dark" target="_blank">
+              <span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">download</span>
+              <span>{{ 'Download'|t }}</span>
+            </a>
+          </span>
+        </div>
+
+        <div class="nsw-col nsw-col-lg-6">
+          <div class="nsw-card__copy">
+            {{ node.body.summary }}
+          </div>
+          <div class="nsw-list">
+            {% for tag in publication.tags %}
+              <span class="nsw-tag">{{ tag }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <span class="material-link nsw-material-links link-left nsw-hide-md" focusable="false" aria-hidden="true">
+        <a href="{{ content.publication_file_url }}" class="nsw-button nsw-button--dark" target="_blank">
+          <span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">download</span>
+          <span>{{ 'Download'|t }}</span>
+        </a>
+      </span>
+    </div>
+  </div>
+</div>

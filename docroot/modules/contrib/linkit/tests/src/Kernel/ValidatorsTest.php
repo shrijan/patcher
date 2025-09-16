@@ -36,7 +36,7 @@ class ValidatorsTest extends CKEditor5CoreValidatorsTest {
   /**
    * {@inheritdoc}
    */
-  public function provider(): array {
+  public static function provider(): array {
     $linkit_test_cases_toolbar_settings = ['items' => ['link']];
 
     $data = [];
@@ -128,7 +128,7 @@ class ValidatorsTest extends CKEditor5CoreValidatorsTest {
   /**
    * {@inheritdoc}
    */
-  public function providerPair(): array {
+  public static function providerPair(): array {
     // Linkit is 100% independent of the text format, so no need for this test.
     return [];
   }

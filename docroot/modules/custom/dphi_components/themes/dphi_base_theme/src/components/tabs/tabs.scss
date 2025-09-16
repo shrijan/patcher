@@ -1,0 +1,96 @@
+@import '../../base';
+
+@import 'nsw-design-system/src/components/tabs/_tabs';
+
+.nsw-tabs__content {
+  // Overriding this because background colours are inside the tab components.
+  padding: 0;
+
+  > .nsw-section {
+    // Which means we need to make this a little larger for the inside of tabs.
+    padding: 1.5rem 0;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.image-tabs {
+  .nsw-tabs__list-wrapper {
+    height: auto;
+    background-color: transparent;
+    overflow: visible;
+  }
+
+  .nsw-tabs__list {
+    column-gap: 2rem;
+    padding-bottom: 0;
+    white-space: normal;
+    overflow: visible;
+
+    li {
+      width: 100%;
+      max-width: 25%;
+      margin-bottom: 1rem;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+      background-color: var(--nsw-palette-white);
+    }
+
+    a {
+      text-align: center;
+      padding: 2rem;
+
+      &.active {
+        color: var(--nsw-palette-white);
+        background-color: var(--nsw-brand-dark);
+
+        &::after {
+          bottom: -1rem;
+          border-bottom-width: 1rem;
+          border-color: var(--nsw-brand-dark);
+        }
+      }
+
+      &:focus {
+        outline: solid 3px var(--nsw-hover-blue);
+        outline-offset: 3px;
+      }
+
+      &.active .icon,
+      &:not(.active) .icon-active {
+        display: none;
+      }
+    }
+
+    img {
+      width: auto;
+      height: 50px;
+      margin-bottom: 4px;
+    }
+  }
+
+  // 992px.
+  @include breakpoint('md', 'max-width') {
+    .nsw-tabs__list {
+      flex-wrap: wrap;
+      gap: 1rem;
+
+      li {
+        width: calc(50% - 0.5rem);
+        max-width: unset;
+        margin: 0;
+
+        a {
+          &:after {
+            display: none;
+          }
+
+          img {
+            height: 32px;
+          }
+        }
+      }
+    }
+  }
+}

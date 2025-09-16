@@ -1,0 +1,224 @@
+.app-container .nsw-form__select {
+  font-size: 13px;
+  padding: 11px 16px;
+  border-radius: var(--nsw-border-radius);
+  background-color: var(--nsw-white);
+  color: var(--nsw-text-dark);
+  border: 1px solid var(--nsw-grey-01);
+  vertical-align: middle;
+  appearance: none;
+  width: 100%;
+  padding-right: 48px;
+  background: var(--nsw-white)
+    svg-url(
+      '<svg fill="#333333" version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M16 26l16-16-4-4-12 12-12-12-4 4 16 16z"></path></svg>'
+    )
+    no-repeat right 16px center;
+  background-size: 16px auto;
+}
+.nsw-form__select:hover {
+  background:
+    svg-url(
+        '<svg fill="#333333" version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M16 26l16-16-4-4-12 12-12-12-4 4 16 16z"></path></svg>'
+      )
+      no-repeat right 16px center,
+    linear-gradient(var(--nsw-text-hover), var(--nsw-text-hover));
+  background-size:
+    16px auto,
+    auto;
+  background-color: var(--nsw-white);
+}
+.nsw-form__select:disabled {
+  background: var(--nsw-off-white)
+    svg-url(
+      '<svg fill="#333333" version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M16 26l16-16-4-4-12 12-12-12-4 4 16 16z"></path></svg>'
+    )
+    no-repeat right 16px center;
+  background-size: 16px auto;
+  border-color: var(--nsw-grey-03);
+  color: var(--nsw-grey-03);
+  cursor: not-allowed;
+  opacity: 1;
+}
+.nsw-form__select[aria-invalid='true'],
+.nsw-form__select.has-error {
+  border-color: var(--nsw-status-error);
+  border-width: 2px;
+}
+.nsw-form__select[aria-invalid='true']:hover,
+.nsw-form__select.has-error:hover {
+  background: var(--nsw-status-error-bg)
+    svg-url(
+      '<svg fill="#333333" version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M16 26l16-16-4-4-12 12-12-12-4 4 16 16z"></path></svg>'
+    )
+    no-repeat right 16px center;
+  background-size: 16px auto;
+}
+.nsw-form__select option {
+  background-color: var(--nsw-white);
+}
+.nsw-multi-select {
+  position: relative;
+}
+.nsw-multi-select__button {
+  text-align: left;
+  background: var(--nsw-white);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 48px;
+  padding-right: 0.5rem;
+}
+.nsw-multi-select__button .nsw-material-icons {
+  font-size: 32px;
+  line-height: 0.8;
+  transform: rotate(0deg);
+  width: 2rem;
+}
+/* .nsw-multi-select__button:hover {
+  background: rgba(0, 0, 0);
+} */
+.nsw-multi-select__button[aria-invalid='true'],
+.nsw-multi-select__button.has-error {
+  border-color: var(--nsw-status-error);
+  border-width: 2px;
+}
+.nsw-multi-select__button[aria-invalid='true']:hover,
+.nsw-multi-select__button.has-error:hover {
+  background: var(--nsw-status-error-bg);
+  background-size: revert;
+}
+.nsw-multi-select__button[aria-expanded='true'] + .nsw-multi-select__dropdown {
+  visibility: visible;
+  opacity: 1;
+  transition:
+    visibility 0s,
+    opacity 0.2s;
+}
+.nsw-multi-select__button[aria-expanded='true'] .nsw-material-icons {
+  transform: rotate(180deg);
+}
+.nsw-multi-select__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.nsw-multi-select__list > li:first-child {
+  margin-top: 0;
+}
+.nsw-multi-select__list:not(:first-of-type) {
+  padding-top: 0.25rem;
+}
+.nsw-multi-select__list:not(:last-of-type) {
+  padding-bottom: 0.25rem;
+}
+.nsw-multi-select__label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nsw-multi-select__dropdown {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  width: 100%;
+  min-width: 200px;
+  max-height: 1px;
+  background-color: var(--nsw-white);
+  box-shadow: var(--nsw-box-shadow);
+  padding: 1rem;
+  border-radius: 0.25em;
+  z-index: 5;
+  overflow: auto;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    visibility 0s 0.2s,
+    opacity 0.2s;
+}
+.nsw-multi-select__dropdown--right {
+  right: 0;
+  left: auto;
+}
+.nsw-multi-select__dropdown--up {
+  bottom: 100%;
+  top: auto;
+}
+.nsw-multi-select__term + .nsw-multi-select__details::before {
+  content: ': ';
+}
+.nsw-multi-select__all {
+  font-size: 13px;
+  padding: 4px 0 4px 48px;
+  min-height: 32px;
+  display: block;
+  position: relative;
+  border: 0;
+  background: transparent;
+  appearance: none;
+}
+.nsw-multi-select__all:focus {
+  border: 0;
+  outline: 0;
+}
+.nsw-multi-select__all::before {
+  content: '';
+  width: 32px;
+  height: 32px;
+  margin-right: 16px;
+  border: 1px var(--nsw-grey-01) solid;
+  border-radius: var(--nsw-border-radius);
+  background-color: var(--nsw-white);
+  top: 0;
+  left: 0;
+  display: inline-block;
+  vertical-align: middle;
+  position: absolute;
+}
+.nsw-multi-select__all::after {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 16px auto;
+  left: 5px;
+  top: 5px;
+}
+.nsw-multi-select__all.active:hover::before {
+  background-image: linear-gradient(
+    var(--nsw-text-hover),
+    var(--nsw-text-hover)
+  );
+}
+.nsw-multi-select__all.active::after {
+  background-image: svg-url(
+    '<svg fill="#ffffff" version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M29.362 3.742l-18.867 19.204-7.857-7.997-2.638 2.685 9.175 9.34 1.319 1.284 1.318-1.284 20.187-20.547z"></path></svg>'
+  );
+  background-color: var(--nsw-brand-dark);
+}
+.nsw-multi-select__all.active:disabled {
+  cursor: not-allowed;
+}
+.nsw-multi-select__all.active:disabled::before,
+.nsw-multi-select__all.active:disabled::before {
+  border-color: var(--nsw-grey-03);
+  background-color: var(--nsw-off-white);
+}
+.nsw-multi-select__all.active:disabled::after,
+.nsw-multi-select__all.active:disabled::after {
+  background-color: var(--nsw-grey-03);
+}
+.nsw-multi-select__all.active[aria-invalid='true']:hover::before,
+.nsw-multi-select__all.active.has-error:hover::before {
+  background-image: linear-gradient(
+    var(--nsw-status-error-bg),
+    var(--nsw-status-error-bg)
+  );
+}
+.nsw-multi-select__all.active[aria-invalid='true']::before,
+.nsw-multi-select__all.active.has-error::before {
+  border-width: 2px;
+  border-color: var(--nsw-status-error);
+}

@@ -1,0 +1,13 @@
+{% set cardList = paragraph.getComponent() %}
+<section class="nsw-section cards{% if cardList.background_theme == 1 %}
+		nsw-bg--brand-light
+		{% elseif cardList.background_theme == 2 %}
+		nsw-bg--brand-dark nsw-text--light
+		{% elseif cardList.background_theme == 3 %}
+		nsw-bg--off-white
+		{% endif %}
+	{{ paragraph.getPaddingControlClass() }}">
+	<div class="nsw-container">
+    {% include '@dphi_base_theme/components/component--card-list.html.twig' %}
+	</div>
+</section>

@@ -157,12 +157,28 @@ class AdminModeration
           }
           $this->entity->set('moderation_state', $published_state);
           if ($this->entity instanceof RevisionLogInterface) {
-            // $now = time();
-            $this->entity->setRevisionCreationTime(\Drupal::time()->getRequestTime());
-            $msg = t('Bulk operation publish revision');
+            $now = \Drupal::time()->getRequestTime();
+            if ($this->getConfig()->get('retain_revision_info')) {
+              // Retain the original revision information.
+              // Modify the revision message to include publication information.
+              $revision_message = $this->entity->getRevisionLogMessage();
+              $publish_date = \Drupal::service('date.formatter')->format($now, 'short');
+              $publishing_user = \Drupal::currentUser()->getDisplayName();
+              $msg = t('@message -- Bulk published by @user on @date', [
+                '@message' => $revision_message,
+                '@user' => $publishing_user,
+                '@date' => $publish_date,
+              ]);
+            }
+            else {
+              // Update the revision to the bulk publish author and date.
+              $this->entity->setRevisionCreationTime($now);
+              $msg = t('Bulk operation publish revision');
+              $this->entity->setRevisionLogMessage($msg);
+              $current_uid = \Drupal::currentUser()->id();
+              $this->entity->setRevisionUserId($current_uid);
+            }
             $this->entity->setRevisionLogMessage($msg);
-            $current_uid = \Drupal::currentUser()->id();
-            $this->entity->setRevisionUserId($current_uid);
           }
           $this->entity->setSyncing(TRUE);
           $this->entity->setRevisionTranslationAffected(TRUE);

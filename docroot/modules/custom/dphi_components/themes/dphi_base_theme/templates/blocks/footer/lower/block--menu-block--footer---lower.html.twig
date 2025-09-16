@@ -1,0 +1,25 @@
+{{ attach_library('dphi_base_theme/component.footer') }}
+
+
+<div class="nsw-footer__lower">
+	<div class="nsw-container">
+		<p>We pay respect to the Traditional Custodians and First Peoples of NSW, and acknowledge their continued connection to their country and culture.</p>
+		<hr>
+		<div class="nsw-footer__links">
+			{{ content }}
+			{% if drupal_entity('block', 'dphi_base_theme_social') %}
+				{{ drupal_entity('block', 'dphi_base_theme_social', check_access=false) }}
+			{% endif %}
+		</div>
+		<div class="nsw-footer__info">
+			<div class="nsw-footer__copyright">Copyright &copy;
+				{{ "now"|date('Y') }}</div>
+			<div class="nsw-footer__built">Built by
+				<a href="https://www.digital.nsw.gov.au/digital-design-system" target="_blank" rel="noopener noreferrer">NSW Design System</a>
+			</div>
+		</div>
+
+	</div>
+	<!-- .nsw-container -->
+</div>
+<!-- nsw-footer__lower -->

@@ -3,11 +3,8 @@
 namespace Drupal\user_redirect\Form;
 
 use Drupal\Component\Utility\UrlHelper;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Path\PathValidatorInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Render\Element;
 use Drupal\user\RoleInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -41,30 +38,14 @@ class UserRedirectSettingsForm extends ConfigFormBase {
   protected $entityTypeManager;
 
   /**
-   * Constructs a new UserRedirectSettingsForm.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The factory for configuration objects.
-   * @param \Drupal\Core\Path\PathValidatorInterface $path_validator
-   *   The path validator.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   Entity type manager.
-   */
-  public function __construct(ConfigFactoryInterface $config_factory, PathValidatorInterface $path_validator, EntityTypeManagerInterface $entity_type_manager) {
-    parent::__construct($config_factory);
-    $this->pathValidator = $path_validator;
-    $this->entityTypeManager = $entity_type_manager;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('config.factory'),
-      $container->get('path.validator'),
-      $container->get('entity_type.manager')
-      );
+    $instance = parent::create($container);
+    $instance->pathValidator = $container->get('path.validator');
+    $instance->entityTypeManager = $container->get('entity_type.manager');
+
+    return $instance;
   }
 
   /**
@@ -146,7 +127,7 @@ class UserRedirectSettingsForm extends ConfigFormBase {
     foreach ($users_roles as $role_id => $role_name) {
       $data = $config->get('login.' . $role_id);
       $form['login_table']['login'][$role_id]['#attributes']['class'][] = 'draggable';
-      $form['login_table']['login'][$role_id]['#weight'] = isset($data['weight']) ? $data['weight'] : NULL;
+      $form['login_table']['login'][$role_id]['#weight'] = $data['weight'] ?? NULL;
 
       $form['login_table']['login'][$role_id]['role'] = [
         '#markup' => $role_name,
@@ -156,19 +137,19 @@ class UserRedirectSettingsForm extends ConfigFormBase {
         '#type' => 'textfield',
         '#title' => $this->t('Redirect URL'),
         '#title_display' => 'invisible',
-        '#default_value' => isset($data['redirect_url']) ? $data['redirect_url'] : '',
+        '#default_value' => $data['redirect_url'] ?? '',
       ];
       $form['login_table']['login'][$role_id]['weight'] = [
         '#type' => 'weight',
         '#title' => $this->t('Weight for @role', ['@role' => $role_name]),
         '#title_display' => 'invisible',
-        '#default_value' => isset($data['weight']) ? $data['weight'] : NULL,
+        '#default_value' => $data['weight'] ?? NULL,
         '#attributes' => ['class' => ['draggable-weight']],
       ];
 
       $data = $config->get('logout.' . $role_id);
       $form['logout_table']['logout'][$role_id]['#attributes']['class'][] = 'draggable';
-      $form['logout_table']['logout'][$role_id]['#weight'] = isset($data['weight']) ? $data['weight'] : NULL;
+      $form['logout_table']['logout'][$role_id]['#weight'] = $data['weight'] ?? NULL;
 
       $form['logout_table']['logout'][$role_id]['role'] = [
         '#markup' => $role_name,
@@ -178,20 +159,35 @@ class UserRedirectSettingsForm extends ConfigFormBase {
         '#type' => 'textfield',
         '#title' => $this->t('Redirect URL'),
         '#title_display' => 'invisible',
-        '#default_value' => isset($data['redirect_url']) ? $data['redirect_url'] : '',
+        '#default_value' => $data['redirect_url'] ?? '',
       ];
       $form['logout_table']['logout'][$role_id]['weight'] = [
         '#type' => 'weight',
         '#title' => $this->t('Weight for @role', ['@role' => $role_name]),
         '#title_display' => 'invisible',
-        '#default_value' => isset($data['weight']) ? $data['weight'] : NULL,
+        '#default_value' => $data['weight'] ?? NULL,
         '#attributes' => ['class' => ['draggable-weight']],
       ];
 
     }
     Element::children($form['login_table']['login'], TRUE);
     Element::children($form['logout_table']['logout'], TRUE);
+    $form['ignore'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Ignore paths'),
+      '#rows' => 5,
+      '#default_value' => $config->get('ignore') ? implode("\r\n", $config->get('ignore')) : '/user/reset/*',
+    ];
 
+    $form['ignore_for'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Ignore the above paths for'),
+      '#options' => [
+        'login' => $this->t('Login'),
+        'logout' => $this->t('Logout'),
+      ],
+      '#default_value' => $config->get('ignore_for') ?? ['login'],
+    ];
     return parent::buildForm($form, $form_state);
   }
 
@@ -231,6 +227,8 @@ class UserRedirectSettingsForm extends ConfigFormBase {
     $this->config(static::CONFIG_SETTINGS)
       ->set('login', $form_state->getValue('login'))
       ->set('logout', $form_state->getValue('logout'))
+      ->set('ignore', array_filter(explode("\r\n", $form_state->getValue('ignore'))))
+      ->set('ignore_for', $form_state->getValue('ignore_for'))
       ->save();
   }
 

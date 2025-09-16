@@ -1,0 +1,13 @@
+@import '../../base.scss';
+
+.wFormContainer .wForm form {
+  .inputWrapper textarea:focus,
+  .inputWrapper input[type]:focus,
+  .inputWrapper select:focus,
+  input[type=button]:focus,
+  input[type=checkbox]:focus + label::before,
+  input[type=radio]:focus + label::before {
+    outline: solid 3px var(--nsw-focus);
+    outline-offset: 3px;
+  }
+}

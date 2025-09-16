@@ -8,12 +8,14 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Link;
+use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Pager\PagerManagerInterface;
 use Drupal\Core\Path\CurrentPathStack;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
-use Drupal\path_alias\AliasManager;
+use Drupal\paragraphs\ParagraphInterface;
+use Drupal\path_alias\AliasManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
@@ -22,6 +24,7 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
  */
 class ParagraphsStats {
 
+  use MessengerTrait;
   use StringTranslationTrait;
 
   /**
@@ -55,7 +58,7 @@ class ParagraphsStats {
   /**
    * Alias manager.
    *
-   * @var \Drupal\path_alias\AliasManager
+   * @var \Drupal\path_alias\AliasManagerInterface
    */
   protected $aliasManager;
 
@@ -105,7 +108,7 @@ class ParagraphsStats {
    *   Entity type manager.
    * @param \Drupal\Core\Path\CurrentPathStack $currentPath
    *   Current path.
-   * @param \Drupal\path_alias\AliasManager $aliasManager
+   * @param \Drupal\path_alias\AliasManagerInterface $aliasManager
    *   Alias manager.
    * @param \Drupal\Core\Pager\PagerManagerInterface $pagerManager
    *   Pager manager.
@@ -116,7 +119,7 @@ class ParagraphsStats {
                               EntityFieldManager $entityFieldManager,
                               EntityTypeManagerInterface $entityTypeManager,
                               CurrentPathStack $currentPath,
-                              AliasManager $aliasManager,
+                              AliasManagerInterface $aliasManager,
                               PagerManagerInterface $pagerManager,
                               Connection $database) {
     $this->configFactory = $configFactory;
@@ -260,7 +263,7 @@ class ParagraphsStats {
    *   Formatted string.
    */
   private function setCsvHyperlink($string) {
-    return preg_replace('/<a href="(https:\/\/[\w.\/?=]+[\w\-\/?=]+)">([\s\w\[\]\(\)]+)?<\/a>/', '=HYPERLINK(""$1"", ""$2"")', $string);
+    return preg_replace('/<a href="(https:\/\/[\w\-.\/?=]+[\w\-\/?=]+)">([\s\w\[\]\(\)]+)?<\/a>/', '=HYPERLINK(""$1"", ""$2"")', $string);
   }
 
   /**
@@ -349,7 +352,7 @@ class ParagraphsStats {
   /**
    * Parses the dataset into tabular data.
    *
-   * @return array
+   * @return array|NULL
    *   Returns an array of tabular data.
    */
   protected function getUtilizationTabularData($show_links = TRUE) {
@@ -374,10 +377,13 @@ class ParagraphsStats {
 
     // Get the main dataset for the report.
     $sqlCore = $this->getSqlCore();
+    if (empty($sqlCore)) {
+      return NULL;
+    }
     $query = "SELECT t.*,
       IF(t.cnt > :ul4, 4, IF(t.cnt > :ul3, 3, IF(t.cnt > :ul2, 2, IF(t.cnt > :ul1, 1, 0)))) as usage_level
       FROM (
-        SELECT ti.*, COUNT(*) AS cnt
+        SELECT ti.type, ti.parent_type, ti.entity_type, COUNT(*) AS cnt
         FROM (" . $sqlCore . ") ti
         WHERE ti.entity_type IS NOT NULL
           AND ti.is_active <> ''
@@ -386,6 +392,7 @@ class ParagraphsStats {
       ) t";
 
     $minMaxRange = $this->getMinMax();
+
     $this->utilizationDateSet = $this->database->query($query, [
       ':ul4' => $minMaxRange['cnt_4'],
       ':ul3' => $minMaxRange['cnt_3'],
@@ -451,14 +458,14 @@ class ParagraphsStats {
 
     // Get the main dataset for the report.
     $sqlCore = $this->getSqlCore($type);
-    $query = "SELECT t.*, COUNT(*) AS occurrence
+    $query = "SELECT t.parent_id, t.parent_field_name, COUNT(*) AS occurrence
       FROM (" . $sqlCore . ") t
       WHERE t.entity_type IS NOT NULL
         AND t.is_active <> ''
         AND t.parent_type = :type
         AND t.type = :par
         AND t.entity_type = :bun
-      GROUP BY t.parent_id
+      GROUP BY t.parent_id, t.parent_field_name
       ORDER BY occurrence DESC";
 
     $ddData = $this->database->query($query, [
@@ -487,7 +494,8 @@ class ParagraphsStats {
         elseif ($type == 'paragraph') {
           //$link = $rec->parent_id . ' - todo -' ;
           $link = sprintf('Paragraph ID %s', $rec->parent_id);
-          $control = $this->t('<a href="/admin/content/paragraphs/@id/edit">@id/edit</a>', ['@id' => $rec->parent_id]);
+          //$control = $this->t('<a href="/admin/content/paragraphs/@id/edit">@id/edit</a>', ['@id' => $rec->parent_id]);
+          $control = $this->t('<a href="/admin/reports/paragraphs-stats-report/drill-down/paragraph/@id">Paragraph ID:@id usage report</a>', ['@id' => $rec->parent_id]);
         }
 
         $row = [
@@ -519,7 +527,106 @@ class ParagraphsStats {
       'url' => $this->t('URL/Title'),
       'field' => $this->t('Field'),
       'occurrence' => $this->t('Occurrence'),
-      'control' => $this->t('Edit link'),
+      'control' => $type === 'paragraph' ? $this->t('Usage report') : $this->t('Edit link'),
+    ];
+    return compact('header', 'rows');
+  }
+
+  /**
+   * Returns table data for the paragraph usage report.
+   *
+   * @param \Drupal\paragraphs\ParagraphInterface $paragraph
+   *   The paragraph entity to report on.
+   *
+   * @return array
+   *   Array of data to build report.
+   */
+  protected function getParagraphUsageTable(ParagraphInterface $paragraph) {
+    $rows = [];
+    $total = 0;
+
+    // Get the main dataset for the report.
+    $sqlCore = $this->getSqlCore();
+    $query = "SELECT t.id, t.parent_id, t.parent_type, t.entity_type as bundle, t.parent_field_name, COUNT(*) AS occurrence
+      FROM (" . $sqlCore . ") t
+      WHERE t.entity_type IS NOT NULL
+        AND t.is_active <> ''
+        AND t.id = :id
+      GROUP BY t.parent_id, t.parent_type, t.entity_type, t.parent_field_name
+      ORDER BY occurrence DESC";
+
+    $ddData = $this->database->query($query, [
+      ':id' => $paragraph->id(),
+    ])->fetchAll();
+    if (!empty($ddData)) {
+      foreach ($ddData as $i => $rec) {
+        $fieldName = $rec->parent_field_name ?? '-';
+        switch ($rec->parent_type) {
+          case 'node':
+            $alias = $this->aliasManager->getAliasByPath('/node/' . $rec->parent_id);
+            $link = $this->t('<a href="@alias">@alias</a>', ['@alias' => $alias]);
+            $control = $this->t('<a href="/node/@link/edit">/node/@link/edit</a>', [
+              '@link' => $rec->parent_id,
+            ]);
+            break;
+
+          case 'block_content':
+            $alias = $this->aliasManager->getAliasByPath('/block/' . $rec->parent_id);
+            $link = $this->t('<a href="@alias">@alias</a>', ['@alias' => $alias]);
+            $control = $this->t('<a href="/block/@link">@label</a>', [
+              '@link' => $rec->parent_id,
+              '@label' => $alias,
+            ]);
+            break;
+
+          case 'paragraph':
+            $link = sprintf('Paragraph ID %s', $rec->parent_id);
+            $control = $this->t('<a href="/admin/reports/paragraphs-stats-report/drill-down/paragraph/@id">Paragraph @id</a>', ['@id' => $rec->parent_id]);
+            break;
+
+          default:
+            // Other entity types are not yet supported.
+            $link = 'n/a';
+            $control = 'n/a';
+            break;
+        }
+
+        $row = [
+          'url' => $link,
+          'type' => $rec->parent_type,
+          'bundle' => $rec->bundle,
+          'field' => $fieldName,
+          'occurrence' => $rec->occurrence,
+          'control' => $control,
+        ];
+        $total = $total + $rec->occurrence;
+
+        $rows[] = $row;
+      }
+    }
+
+    $row = [
+      'data' => [
+        'url' => 'TOTAL',
+        'type' => '',
+        'bundle' => '',
+        'field' => '',
+        'occurrence' => $total,
+        'control' => '',
+      ],
+      'class' => ['footer-total'],
+    ];
+
+    $rows[] = $row;
+
+    // Prepare Header.
+    $header = [
+      'url' => $this->t('URL/Title'),
+      'type' => $this->t('Entity type'),
+      'bundle' => $this->t('Bundle'),
+      'field' => $this->t('Field'),
+      'occurrence' => $this->t('Occurrence'),
+      'control' => $this->t('Used on'),
     ];
     return compact('header', 'rows');
   }
@@ -556,6 +663,44 @@ class ParagraphsStats {
     $page['table'] = [
       '#type' => 'table',
       '#title' => $this->t('Paragraphs Drill Down Report'),
+      '#header' => $table['header'],
+      '#sticky' => TRUE,
+      '#rows' => $table['rows'],
+      '#attributes' => [
+        'id' => 'paragraphs-stats-report',
+      ],
+      '#empty' => $this->t('No data.'),
+    ];
+    return $page;
+  }
+
+  /**
+   * Show the paragraph usage report.
+   *
+   * @return array[]
+   *   Array for page render.
+   */
+  public function showParagraphUsage(ParagraphInterface $paragraph) {
+    $table = $this->getParagraphUsageTable($paragraph);
+    // Table output.
+    $page['back'] = [
+      '#type' => 'markup',
+      '#markup' => '<a href="/admin/reports/paragraphs-stats-report" class="button">< Back to main report</a>',
+    ];
+
+    $paragraphType = $paragraph->getType();
+
+    $page['header'] = [
+      '#type' => 'markup',
+      '#markup' => '<p>' . $this->t('Paragraph: <b>:p_label [:p_name] :p_id</b>.', [
+          ':p_name' => $paragraphType,
+          ':p_label' => $this->paraNames[$paragraphType],
+          ':p_id' => $paragraph->id(),
+        ]) . '</p>',
+    ];
+    $page['table'] = [
+      '#type' => 'table',
+      '#title' => $this->t('Paragraph usage report'),
       '#header' => $table['header'],
       '#sticky' => TRUE,
       '#rows' => $table['rows'],
@@ -694,7 +839,7 @@ class ParagraphsStats {
     $query = "SELECT tt.cnt_min, ROUND(tt.cnt_max * .4) AS cnt_2, ROUND(tt.cnt_max * .6) AS cnt_3, ROUND(tt.cnt_max * .8) AS cnt_4, tt.cnt_max
       FROM (
         SELECT MIN(t.cnt) AS cnt_min, MAX(t.cnt) AS cnt_max
-        FROM ( 
+        FROM (
           SELECT COUNT(*) AS cnt
           FROM (" . $sqlCore . ") t
 				WHERE t.entity_type IS NOT NULL
@@ -747,9 +892,9 @@ class ParagraphsStats {
    */
   private function getParentFields($type) {
     $list = [];
-    $query = "SELECT p.field_name, 
-      CONCAT(p.entity_type, '__', p.field_name) AS src_table_name, 
-      CONCAT(p.field_name, '_target_id') AS src_target_id, 
+    $query = "SELECT p.field_name,
+      CONCAT(p.entity_type, '__', p.field_name) AS src_table_name,
+      CONCAT(p.field_name, '_target_id') AS src_target_id,
       CONCAT(p.field_name, '_target_revision_id') AS src_target_revision_id
     FROM paragraphs_stats_inuse p
     WHERE p.entity_type = :type
@@ -770,12 +915,16 @@ class ParagraphsStats {
   private function getAllUsedBundleTypes() {
     $list = [];
     $sqlCore = $this->getSqlCore();
+    if (empty($sqlCore)) {
+      return $list;
+    }
     $query = "SELECT t.parent_type, t.entity_type, CONCAT(t.parent_type, ':', t.entity_type) AS composite_type
       FROM (" . $sqlCore . ") t
       WHERE t.entity_type IS NOT NULL
         AND t.is_active <> ''
-      GROUP BY composite_type
+      GROUP BY t.parent_type, t.entity_type, composite_type
       ORDER BY composite_type";
+
     $res = $this->database->query($query)->fetchAll();
     if (!empty($res)) {
       foreach ($res as $i => $rec) {
@@ -805,6 +954,11 @@ class ParagraphsStats {
       $types = [$type];
     }
 
+    if (empty($types)) {
+      $this->messenger()->addMessage($this->t('No paragraph content found.'));
+      return '';
+    }
+
     foreach ($types as $key => $type) {
       $sqlPart = $this->getSqlBundle($type);
       if (!empty($sqlPart)) {
@@ -829,7 +983,7 @@ class ParagraphsStats {
     $sql = '';
     if (in_array($type, $allowedTypes)) {
       $leftJoin = $this->getSqlLeftJoin($type);
-      $sql = "SELECT p.id, p.type, p.status, p.parent_id, p.parent_type, p.parent_field_name, n.type AS entity_type"
+      $sql = "SELECT DISTINCT p.id, p.type, p.status, p.parent_id, p.parent_type, p.parent_field_name, n.type AS entity_type"
         . $leftJoin['select'] . "
           FROM paragraphs_item_field_data AS p
             " . $leftJoin['join'] . "

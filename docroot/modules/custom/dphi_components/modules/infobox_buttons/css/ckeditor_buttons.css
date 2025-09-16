@@ -1,0 +1,155 @@
+.cke_dialog_ui_input_select{
+  background: url(../../../../core/misc/icons/333333/caret-down.svg) no-repeat 99% 63%, -webkit-linear-gradient(top, #f6f6f3, #e7e7df)!important;
+  padding: 1px 1.571em 1px 0.5em!important;
+}
+.ckeditor5-toolbar-button-buttons {
+  background-image: url(../icons/buttons.svg);
+}
+.nsw-button:not(.nsw-button--flex) {
+    min-width: 4.75rem;
+}
+.nsw-button {
+
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: .2rem;
+    font-weight: 700;
+    border: solid 2px transparent;
+    white-space: normal;
+    text-decoration: none;
+    padding: 0.625rem 1.375rem;
+    cursor: pointer;
+    -webkit-appearance: none;
+    text-decoration: none;
+    -webkit-font-smoothing: antialiased;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    display: inline-block;
+    font-family: Public Sans,sans-serif;
+}
+.nsw-button--dark{
+    color: #ffffff;
+    background-color: #002660;
+    border-color: transparent;
+}
+.nsw-button--dark:hover {
+    color: #ffffff;
+    background-color: #002664;
+    border-color: transparent;
+}
+.nsw-button--danger{
+  background-color: #B81237;
+  color: #fff;
+}
+
+.nsw-button--dark-outline {
+    outline: 2px solid !important;
+    outline-offset: -2px;
+    border: none;
+    color: #002664;
+    background-color: transparent;
+}
+
+.button-arrow-side-right::after {
+    font-family: 'Material Icons';
+    content: "east";
+    font-weight: normal;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    margin-left: 0.5rem;
+    font-size: 1.5rem;
+    line-height: .625rem;
+    position: relative;
+    bottom: -0.4375rem;
+}
+.button-arrow-side-left::before {
+    font-family: 'Material Icons';
+    content: "east";
+    font-weight: normal;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    margin-right: 0.5rem;
+    font-size: 1.5rem;
+    line-height: .625rem;
+    position: relative;
+    bottom: -0.4375rem;
+}
+.cke_dialog_ui_labeled_required {
+    color: red!important;
+}
+.ckeditor5-toolbar-button-outlinebuttons {
+    background-image: url(../icons/buttons1.svg);
+}
+.ckeditor5-toolbar-button-darkbuttons {
+    background-image: url(../icons/buttons2.svg);
+}
+
+.ckeditor5-toolbar-button-tooltipbuttons {
+    background-image: url(../icons/tooltip.svg);
+}
+.nsw-tooltip,
+.nsw-toggletip {
+  white-space: nowrap;
+  border-bottom: 2px dotted #002664;
+}
+.nsw-btn-ck5-after:after {
+    content: attr(icon);
+    font-family: 'Material Icons';
+    font-size: 1.5rem;
+    line-height: .625rem;
+    position: relative;
+    bottom: -0.4375rem;
+    margin-left: 0.5rem;
+    font-weight: normal;
+}
+.nsw-btn-ck5-before:before {
+    content: attr(icon);
+    font-family: 'Material Icons';
+    font-size: 1.5rem;
+    line-height: .625rem;
+    position: relative;
+    bottom: -0.4375rem;
+    margin-right: 0.5rem;
+    font-weight: normal;
+}
+
+.ck .nsw-button.ck-link_selected{
+    background-color: #0071b8;
+}
+
+.ck a.nsw-button:not([href]) {
+
+    visibility: hidden;
+    position:absolute;
+    left:-1000px;
+}
+
+[data-cke-tooltip-text="Button dark"] {
+}
+
+[data-cke-tooltip-text="Button outline"] {
+  color: transparent !important;
+}
+
+.error {
+  color: #FF0000;
+}
+.nsw-toggletip__element{
+    display: none;
+}
+

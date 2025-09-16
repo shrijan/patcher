@@ -13,6 +13,7 @@ use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\vite\Exception\LibraryNotFoundException;
 use GuzzleHttp\ClientInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Rewrites libraries to work with vite.
@@ -104,7 +105,7 @@ class Vite {
   /**
    * Instantiate AssetLibrary object.
    */
-  private function getAssetLibrary(mixed $extension, string $libraryId, mixed $library): AssetLibrary {
+  private function getAssetLibrary(string $extension, string $libraryId, array $library): AssetLibrary {
     $libraryExtension = $extension;
     $isSdc = $extension === 'core' && str_starts_with($libraryId, 'components.');
     if ($isSdc) {
@@ -151,52 +152,47 @@ class Vite {
 
     if (isset($library['css'])) {
       foreach ($library['css'] as $type => $paths) {
-        foreach ($paths as $path => $options) {
-          $originalPath = $path;
-          if (
-            $assetLibrary->isSdc()
-            && $this->shouldAssetBeManagedByVite($path, $options)
-          ) {
-            // Use path beginning from /components/ and remove leading slash.
-            $path = ltrim(strstr($path, '/components/'), '/');
+        foreach ($paths as $originalPath => $options) {
+          if (!$this->shouldAssetBeManagedByVite($originalPath, $options)) {
+            continue;
           }
-          $newPath = $manifest->getChunk($path);
+          $resolvedPath = $this->resolveSourceAssetPath($originalPath, $assetLibrary);
+          $newPath = $manifest->getChunk($resolvedPath);
           if ($newPath === NULL) {
             // Don't rewrite assets not present in the manifest.
             continue;
           }
+          $resolvedNewPath = $this->resolveDistAssetPath($newPath, $assetLibrary);
           unset($library['css'][$type][$originalPath]);
-          $library['css'][$type][$newPath] = $options;
+          $library['css'][$type][$resolvedNewPath] = $options;
 
         }
       }
     }
 
     if (isset($library['js'])) {
-      foreach ($library['js'] as $path => $options) {
-        $originalPath = $path;
-        if (
-          $assetLibrary->isSdc()
-          && $this->shouldAssetBeManagedByVite($path, $options)
-        ) {
-          // Use path beginning from /components/ and remove leading slash.
-          $path = ltrim(strstr($path, '/components/'), '/');
+      foreach ($library['js'] as $originalPath => $options) {
+        if (!$this->shouldAssetBeManagedByVite($originalPath, $options)) {
+          continue;
         }
-        $newPath = $manifest->getChunk($path);
+        $resolvedPath = $this->resolveSourceAssetPath($originalPath, $assetLibrary);
+        $newPath = $manifest->getChunk($resolvedPath);
         if ($newPath === NULL) {
           // Don't rewrite assets not present in the manifest.
           continue;
         }
+        $resolvedNewPath = $this->resolveDistAssetPath($newPath, $assetLibrary);
         unset($library['js'][$originalPath]);
 
         $attributes = $options['attributes'] ?? [];
         $attributes['type'] = 'module';
         $options['attributes'] = $attributes;
-        $library['js'][$newPath] = $options;
+        $library['js'][$resolvedNewPath] = $options;
 
-        $styles = $manifest->getStyles($path);
+        $styles = $manifest->getStyles($resolvedPath);
         foreach ($styles as $stylePath) {
-          $library['css']['component'][$stylePath] = [];
+          $resolvedStylePath = $this->resolveDistAssetPath($stylePath, $assetLibrary);
+          $library['css']['component'][$resolvedStylePath] = [];
         }
       }
     }
@@ -216,20 +212,17 @@ class Vite {
     $devServerBaseUrl = $assetLibrary->getDevServerBaseUrl();
     if (isset($library['css'])) {
       foreach ($library['css'] as $type => $paths) {
-        foreach ($paths as $path => $options) {
-          if (!$this->shouldAssetBeManagedByVite($path, $options)) {
+        foreach ($paths as $originalPath => $options) {
+          if (!$this->shouldAssetBeManagedByVite($originalPath, $options)) {
             continue;
           }
-          $originalPath = $path;
-          if ($assetLibrary->isSdc()) {
-            $path = strstr($path, '/components/');
-          }
+          $resolvedPath = $this->resolveSourceAssetPath($originalPath, $assetLibrary);
           unset($library['css'][$type][$originalPath]);
           $options['type'] = 'external';
           $attributes = $options['attributes'] ?? [];
           $attributes['type'] = 'module';
           $options['attributes'] = $attributes;
-          $newPath = $devServerBaseUrl . '/' . ltrim($path, '/');
+          $newPath = $devServerBaseUrl . '/' . ltrim($resolvedPath, '/');
           $library['js'][$newPath] = $options;
 
         }
@@ -237,20 +230,17 @@ class Vite {
     }
 
     if (isset($library['js'])) {
-      foreach ($library['js'] as $path => $options) {
-        if (!$this->shouldAssetBeManagedByVite($path, $options)) {
+      foreach ($library['js'] as $originalPath => $options) {
+        if (!$this->shouldAssetBeManagedByVite($originalPath, $options)) {
           continue;
         }
-        $originalPath = $path;
-        if ($assetLibrary->isSdc()) {
-          $path = strstr($path, '/components/');
-        }
+        $resolvedPath = $this->resolveSourceAssetPath($originalPath, $assetLibrary);
         unset($library['js'][$originalPath]);
         $options['type'] = 'external';
         $attributes = $options['attributes'] ?? [];
         $attributes['type'] = 'module';
         $options['attributes'] = $attributes;
-        $newPath = $devServerBaseUrl . '/' . ltrim($path, '/');
+        $newPath = $devServerBaseUrl . '/' . ltrim($resolvedPath, '/');
         $library['js'][$newPath] = $options;
         if (count($assetLibrary->getDevDependencies()) > 0) {
           $library['dependencies'] = array_merge($library['dependencies'], $assetLibrary->getDevDependencies());
@@ -270,6 +260,73 @@ class Vite {
       && (!isset($options['type']) || $options['type'] !== 'external')
       && (!isset($options['vite']) || $options['vite'] !== FALSE)
       && (!isset($options['vite']['enabled']) || $options['vite']['enabled'] !== FALSE);
+  }
+
+  /**
+   * Resolve source asset path relative to vite root.
+   */
+  private function resolveSourceAssetPath(string $path, AssetLibrary $assetLibrary): string {
+    // Special case for @vite development client.
+    if (str_starts_with($path, '@vite')) {
+      return $path;
+    }
+    // Resolve sdc specific paths.
+    if ($assetLibrary->isSdc()) {
+      $extensionRelativePath = strstr($path, '/components/');
+      if ($extensionRelativePath === FALSE) {
+        return $path;
+      }
+      $path = ltrim($extensionRelativePath, '/');
+    }
+
+    $viteRoot = $assetLibrary->getViteRoot();
+    $absolutePath = static::getAbsolutePath($this->appRoot . '/' . $assetLibrary->getExtensionBasePath() . '/' . $path);
+
+    // Resolve path relative to vite root.
+    $resolvedPath = str_replace($viteRoot, '', $absolutePath);
+    // Normalize path.
+    $resolvedPath = ltrim($resolvedPath, '/');
+
+    return $resolvedPath;
+  }
+
+  /**
+   * Resolve dist asset path.
+   */
+  private function resolveDistAssetPath(string $path, AssetLibrary $assetLibrary): string {
+    // If base URL is set use it.
+    $baseUrl = $assetLibrary->getBaseUrl();
+    if (is_string($baseUrl)) {
+      return $baseUrl . '/' . ltrim($path, '/');
+    }
+
+    // Otherwise resolve path relative to drupal app root.
+    $distDir = $assetLibrary->getDistDir();
+    $distAssetPath = $distDir . '/' . $path;
+    $extensionDir = $this->appRoot . '/' . ($assetLibrary->isSdc() ? 'core' : $assetLibrary->getExtensionBasePath());
+    $resolvedDistAssetPath = (new Filesystem())->makePathRelative($distAssetPath, $extensionDir);
+
+    return rtrim($resolvedDistAssetPath, '/');
+  }
+
+  /**
+   * Resolve relative parts of path to make it absolute.
+   */
+  public static function getAbsolutePath(string $path): string {
+    $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
+    $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), fn($val) => strlen($val) > 0);
+    $absolutes = [];
+    foreach ($parts as $part) {
+      if ('.' === $part) {
+        continue;
+      }
+      if ('..' === $part) {
+        array_pop($absolutes);
+        continue;
+      }
+      $absolutes[] = $part;
+    }
+    return DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $absolutes);
   }
 
 }

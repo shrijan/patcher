@@ -1,0 +1,77 @@
+@import '../../base';
+
+.img-txt-50 {
+  @include breakpoint('sm') {
+    padding: 3rem 0;
+  }
+  .nsw-hero-banner {
+    background-color: transparent;
+  }
+  .nsw-hero-banner::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 0;
+  }
+  .nsw-hero-banner__box {
+    display: block;
+    width: 100%;
+    height: rem(200px);
+    padding-left: 0;
+    position: relative;
+    @include breakpoint('sm') {
+      position: absolute;
+      width: 50%;
+      overflow: hidden;
+      height: auto;
+    }
+    @include breakpoint('lg', 'max-width') {
+      padding: 0.5rem;
+    }
+  }
+  .nsw-hero-banner__content {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    padding-right: 4rem;
+    @include breakpoint('sm') {
+      width: 50%;
+    }
+  }
+  .nsw-hero-banner__container {
+    padding: 0;
+  }
+}
+
+.image_on_left {
+  .nsw-hero-banner__wrapper {
+    flex-direction: row-reverse;
+    flex-wrap: wrap-reverse;
+  }
+  .nsw-hero-banner__content {
+    padding-right: 1rem;
+    padding-left: 4rem;
+  }
+  .nsw-hero-banner__box {
+    left: 0;
+    position: relative;
+    @include breakpoint('sm') {
+      position: absolute;
+    }
+  }
+}
+.text-width-60 {
+  @include breakpoint('xl') {
+    .nsw-hero-banner__box {
+      position: absolute;
+      right: 0;
+      width: 40%;
+      padding-left: 0;
+    }
+    .nsw-hero-banner__content {
+      max-width: 60%;
+      width: 60%;
+    }
+  }
+}

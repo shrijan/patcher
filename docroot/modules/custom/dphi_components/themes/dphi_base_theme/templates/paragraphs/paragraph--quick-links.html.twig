@@ -1,0 +1,6 @@
+{% set quickLinks = paragraph.getComponent() %}
+<section class="nsw-section {{ paragraph.getPaddingControlClass() }}">
+  <div{{ attributes.addClass(classes) }}>
+    {% include '@dphi_base_theme/components/component--quick-links.html.twig' %}
+  </div>
+</section>

@@ -1,0 +1,14 @@
+@import '../../base';
+
+@import 'nsw-design-system/src/components/in-page-alert/_in-page-alert';
+
+.paragraph--type--in-page-alert.nsw-container{
+  padding:0;
+
+  .title-none {
+    p:nth-child(2) {
+      margin-top: 0;
+    }
+  }
+
+}

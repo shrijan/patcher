@@ -1,0 +1,87 @@
+@import '../../base';
+
+.statisticsItem {
+  display: flex;
+  padding: 1rem 1rem 1.375rem 1rem;
+  .statisticsImage {
+    margin-right: 1.5rem;
+    margin-bottom: 1.5rem;
+    img {
+      width: 4rem;
+      height: 4rem;
+    }
+  }
+  .statisticsText{
+    flex: 1;
+  }
+  .count {
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    font-size: 3rem;
+    line-height: 3.75rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.statistics {
+  &.border {
+    .nsw-col {
+      border: 1px solid var(--nsw-grey-03);
+      &:not(:first-child) {
+        border-top: none;
+      }
+    }
+    .nsw-col-12 {
+      border-top: none;
+    }
+    @include breakpoint('md') {
+      .nsw-col:nth-child(2) {
+        border-top: 1px solid var(--nsw-grey-03);
+      }
+    }
+    @include breakpoint('lg') {
+      .nsw-col-lg-4 {
+        &:nth-child(2):not(:last-child) {
+          border-right: none;
+        }
+        &:nth-child(3) {
+          border-top: 1px solid var(--nsw-grey-03);
+        }
+      }
+    }
+  }
+
+  .nsw-col {
+    padding: 0;
+  }
+
+  .center {
+    .statisticsImage img {
+      width: 9rem;
+      height: 9rem;
+    }
+    @include breakpoint('md') {
+      .statisticsItem {
+        justify-content: center;
+      }
+      .statisticsText,
+      .statisticsImage {
+        width: 340px;
+      }
+      .statisticsImage {
+        justify-content: end;
+      }
+    }
+    @include breakpoint('md', 'max-width') {
+      .statisticsItem {
+        display: block;
+        text-align: center;
+      }
+      .statisticsImage {
+        display: inline-block;
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+      }
+    }
+  }
+}

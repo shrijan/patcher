@@ -1,0 +1,44 @@
+devExtreme.theme:
+  css:
+    base:
+      devExtreme/theme/theme.css: {}
+    component:
+      devExtreme/theme/overrides.css: {}
+
+devExtreme.mediaHierarchyView:
+  vite: &vite
+    enabled: true
+    baseUrl: /modules/custom/dphi_components/devExtreme/dist/
+    devServerUrl: https://rapid-start.ddev.site:5175
+    manifest: devExtreme/dist/.vite/manifest.json
+    devDependencies:
+      - dphi_components/react_refresh
+  js:
+    src/mediaHierarchyView/entry.jsx: {}
+  dependencies:
+    - dphi_components/devExtreme.theme
+
+devExtreme.menuParentSelector:
+  vite: *vite
+  js:
+    src/menuParentSelector/entry.jsx: {}
+  dependencies:
+    - dphi_components/devExtreme.theme
+
+devExtreme.contentHierarchyView:
+  vite: *vite
+  js:
+    src/contentHierarchyView/entry.jsx: {}
+  dependencies:
+    - dphi_components/devExtreme.theme
+
+react_refresh:
+  js:
+    js/react-refresh.js: {}
+
+videoGalleryFilterWidget:
+  js:
+    js/videoGalleryFilterWidget.js: {}
+  dependencies:
+    - core/drupal
+    - core/once

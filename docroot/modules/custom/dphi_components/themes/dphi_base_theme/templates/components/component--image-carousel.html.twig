@@ -1,0 +1,21 @@
+{{ attach_library('dphi_base_theme/component.image_carousel') }}
+
+{% set classes = [
+  imageCarousel.camera_icon ? 'show-camera-icon' : 'hide-camera-icon'
+] %}
+<figure class="component--image-carousel {{ classes|join(' ') }}">
+  {% if imageCarousel.video %}
+    {{ imageCarousel.video }}
+  {% elseif imageCarousel.image %}
+    {{ imageCarousel.image }}
+  {% endif %}
+  {% if imageCarousel.text %}
+    <figcaption class="nsw-small nsw-p-sm{% if imageCarousel.text_background == 'grey' %}
+  nsw-bg--off-white
+{% elseif imageCarousel.text_background == 'light' %}
+  nsw-bg--brand-light
+{% elseif imageCarousel.text_background == 'dark' %}
+  nsw-bg--brand-dark nsw-text--light
+{% endif %}">{{ imageCarousel.text }}</figcaption>
+  {% endif %}
+</figure>

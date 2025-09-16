@@ -1,0 +1,8 @@
+{{ attach_library('dphi_base_theme/component.link') }}
+
+<a href="{{ link.url }}" class="{{ link.classes }}" {% if link.target %} target="{{ link.target }}"{% endif %}>
+  <span>{{ link.text }}</span>
+  {% if link.icon %}
+    <span class="material-icons nsw-align-bottom" focusable="false" aria-hidden="true">{{ link.icon }}</span>
+  {% endif %}
+</a>

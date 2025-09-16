@@ -1,0 +1,17 @@
+@import '../../base.scss';
+
+@import 'nsw-design-system/src/components/form/form';
+
+.nsw-form__checkbox-input.option + label.option {
+  @extend .nsw-form__checkbox-label;
+}
+
+.nsw-filters__list input[type=submit][id^="edit-reset"] {
+  background-color: transparent;
+  color: var(--nsw-brand-dark);
+  border: none;
+  margin: 0;
+  padding: 0;
+  text-decoration: underline;
+  width: auto;
+}

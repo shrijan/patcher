@@ -1,0 +1,35 @@
+{
+  "name": "dphi_components",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "trace": "VITE_CJS_TRACE=true vite build",
+    "dev": "npm run build && vite --host --port=5175",
+    "build": "npm run build:libs && npm run build:theme",
+    "build:libs": "vite build",
+    "build:theme": "npx devextreme-cli build-theme --input-file=theme/theme_metadata.json --output-file=theme/theme.css",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "devextreme": "^24.1.4",
+    "devextreme-react": "^24.1.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^4.0.3",
+    "devextreme-cli": "^1.6.9",
+    "devextreme-themebuilder": "^24.1.4",
+    "glob": "^11.0.0",
+    "prettier": "^3.2.4",
+    "vite": "^5.2.12"
+  },
+  "prettier": {
+    "arrowParens": "avoid",
+    "semi": false,
+    "singleQuote": true
+  }
+}

@@ -1,0 +1,22 @@
+{% set callout = microcontent.getComponent() %}
+
+{%
+  set classes = [
+  'nsw-section',
+  'paragraph',
+  'paragraph--type--callout',
+  view_mode ? 'paragraph--view-mode--' ~ view_mode|clean_class,
+  not microcontent.isPublished() ? 'paragraph--unpublished',
+  elements['#padding_control'],
+]
+%}
+<section{{ attributes.addClass(classes, 'callout-background-' ~ callout.background) }}>
+  <div class="nsw-container">
+    <div class="nsw-content-block">
+      {% include '@dphi_base_theme/components/component--callout.html.twig' %}
+    </div>
+  </div>
+</section>
+
+
+

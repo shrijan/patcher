@@ -1,0 +1,112 @@
+infobox_buttons_darkbuttons:
+  ckeditor5:
+    plugins:
+      - darkbuttons.DarkButtons
+    config:
+      darkbuttons:
+        openDialog:
+          func:
+            name: Drupal.ckeditor5.openDialog
+            invoke: false
+        dialogSettings:
+          height: 75%
+          dialogClass: infobox-widget-modal
+          title: Insert Dark button
+
+  # Configuration that will be used directly by Drupal.
+  drupal:
+    label: CKEditor Buttons
+    library: infobox_buttons/editor
+    admin_library: infobox_buttons/admin.cke5
+    toolbar_items:
+      darkbuttons:
+        label: Button dark
+    elements:
+      - <a class href icon >
+
+infobox_buttons_outlinebuttons:
+  ckeditor5:
+    plugins:
+      - outlinebuttons.OutlineButtons
+    config:
+      outlinebuttons:
+        openDialog:
+          func:
+            name: Drupal.ckeditor5.openDialog
+            invoke: false
+        dialogSettings:
+          height: 75%
+          dialogClass: infobox-widget-modal
+          title: Insert Outline button
+
+  # Configuration that will be used directly by Drupal.
+  drupal:
+    label: CKEditor Buttons
+    library: infobox_buttons/editor
+    admin_library: infobox_buttons/admin.cke5
+    toolbar_items:
+      outlinebuttons:
+        label: Button Outline
+    elements:
+      - <a class href >
+
+infobox_buttons_tooltipbuttons:
+  ckeditor5:
+    plugins:
+      - tooltipbuttons.TooltipButtons
+    config:
+      tooltipbuttons:
+        openDialog:
+          func:
+            name: Drupal.ckeditor5.openDialog
+            invoke: false
+        dialogSettings:
+          height: 75%
+          dialogClass: infobox-widget-modal
+          title: Insert Tooltip
+
+  # Configuration that will be used directly by Drupal.
+  drupal:
+    label: CKEditor Buttons
+    library: infobox_buttons/editor
+    admin_library: infobox_buttons/admin.cke5
+    toolbar_items:
+      tooltipbuttons:
+        label: Button Tooltip
+    elements:
+      - <a class href >
+
+infobox_buttons_removetabledimensions:
+  ckeditor5:
+    plugins:
+      - removetabledimensions.RemoveTableDimensions
+
+  # Configuration that will be used directly by Drupal.
+  drupal:
+    label: CKEditor Buttons
+    library: infobox_buttons/removetabledimensions
+    admin_library: infobox_buttons/admin.cke5
+    elements:
+      - <a class href >
+    conditions:
+      plugins:
+        - ckeditor5_table
+        # When arbitrary HTML is already allowed, it's harmless to enable CKEditor 5's UI for table cell properties.
+        - ckeditor5_arbitraryHtmlSupport
+
+infobox_buttons_limittableproperties:
+  ckeditor5:
+    plugins:
+      - limittableproperties.LimitTableProperties
+
+  # Configuration that will be used directly by Drupal.
+  drupal:
+    label: CKEditor Buttons
+    library: infobox_buttons/limittableproperties
+    class: Drupal\infobox_buttons\Plugin\LimitTableProperties
+    admin_library: infobox_buttons/admin.cke5
+    elements:
+      - <a class href >
+    conditions:
+      requiresConfiguration:
+        limit_table_properties: true

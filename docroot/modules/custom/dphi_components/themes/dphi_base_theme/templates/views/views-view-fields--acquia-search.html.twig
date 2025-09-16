@@ -1,0 +1,19 @@
+{% if fields.field_content_category.content|striptags|trim %}
+  {% set content_category = fields.field_content_category.content %}
+{% else %}
+  {% set content_category = "Content Page" %}
+{% endif %}
+
+<div class="nsw-list-item nsw-list-item--reversed nsw-list-item--block">
+  <div class="nsw-list-item__content">
+    <div class="nsw-list-item__label">{{ content_category }}</div>
+    <div class="nsw-list-item__info">{{ fields.field_publish_event_date.content }}</div>
+    <h3 class="nsw-list-item__title">{{ fields.title.content }}</h3>
+    {% if fields.field_short_description.content|striptags|trim %}
+      <div class="nsw-list-item__copy">{{ fields.field_short_description.content }}</div>
+    {% endif %}
+  </div>
+  <div class="nsw-list-item__image">
+    {{ row._entity.getImageWithFallback() }}
+  </div>
+</div>

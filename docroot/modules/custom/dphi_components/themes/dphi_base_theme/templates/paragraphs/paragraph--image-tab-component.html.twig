@@ -1,0 +1,9 @@
+{% set imageTab = paragraph.getComponent() %}
+<section class="nsw-section image-tabs{{ imageTab.use_background_color ? ' nsw-bg--off-white' : '' }} {{ paragraph.getPaddingControlClass() }}">
+  <div class="nsw-container">
+    {% if imageTab.title %}
+      <h2>{{ imageTab.title }}</h2>
+    {% endif %}
+    {% include '@dphi_base_theme/components/component--tabs.html.twig' with {tabs: imageTab.items} %}
+  </div>
+</section>

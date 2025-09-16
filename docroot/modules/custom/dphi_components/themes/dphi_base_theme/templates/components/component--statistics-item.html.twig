@@ -1,0 +1,22 @@
+{{ attach_library('dphi_base_theme/component.statistics') }}
+
+<div class="statisticsItem hide-camera-icon">
+  {% if statisticsItem.image %}
+    <div class="statisticsImage">
+      {{ statisticsItem.image }}
+    </div>
+  {% endif %}
+  <div class="statisticsText">
+    {% set classes = [
+    'count',
+      'nsw-text-bold',
+      statisticsItem.color ? 'nsw-text--' ~ statisticsItem.color
+    ] %}
+    <div {{ create_attribute({class: classes}) }}>
+      <span class="number">{{ statisticsItem.title }}</span>{{ statisticsItem.suffix }}
+    </div>
+    <div class="description">
+      {{ statisticsItem.content }}
+    </div>
+  </div>
+</div>

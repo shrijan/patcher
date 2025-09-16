@@ -1,0 +1,24 @@
+<?php
+
+use Drupal\editor\Entity\Editor;
+
+/**
+ * Implements hook_page_attachments().
+ */
+function infobox_buttons_page_attachments(array &$page) {
+  $page['#attached']['library'][] = 'infobox_buttons/admin.cke5';
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function infobox_buttons_form_alter(&$form, &$form_state, $form_id) {
+  $form['#attached']['library'][] = 'infobox_buttons/admin.cke5';
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function infobox_buttons_ckeditor5_css_alter(array &$css, Editor $editor) {
+  $css[] = \Drupal::service('extension.list.module')->getPath('infobox_buttons') . '/css/ckeditor_buttons.css';
+}

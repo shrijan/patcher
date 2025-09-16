@@ -11,7 +11,7 @@ use Drupal\Tests\vite\ViteKernelTestBase;
  */
 class ViteDevModeTest extends ViteKernelTestBase {
 
-  protected const string TEST_EXTENSION = 'test_module_vite5';
+  protected const TEST_EXTENSION = 'test_module_vite5';
 
   /**
    * {@inheritdoc}

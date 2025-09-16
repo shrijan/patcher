@@ -1,0 +1,25 @@
+<div class="nsw-forms{% if element['#options']|length > 4 %} check-limit{% endif %}">
+  <div{{ attributes.addClass('form-checkboxes nsw-form-group') }}>
+    {% for value, label in element['#options'] %}
+      <input
+        type="checkbox"
+        class="nsw-form__checkbox-input"
+        id="edit-{{ element['#name'] }}-{{ value }}"
+        name="{{ element['#name'] }}[{{ value }}]"
+        value="{{ value }}"
+        {% if value in element['#value'] %}checked{% endif %}
+      />
+      <label
+        class="nsw-form__checkbox-label"
+        for="edit-{{ element['#name'] }}-{{ value }}"
+      >{{ label }}</label>
+
+      {% if element['#options']|length > 4 and loop.index == 4 %}
+        <a href="#" class="all-options">Show all ({{ element['#options']|length }}) {{ element['#title'] }}</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% if element['#options']|length > 4 %}
+    <a href="#" class="less-options" hidden>Show less</a>
+  {% endif %}
+</div>

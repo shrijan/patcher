@@ -5,8 +5,8 @@
  * Module file for the User Redirect module.
  */
 
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  * Implements hook_help().
@@ -33,7 +33,7 @@ function user_redirect_help($route_name, RouteMatchInterface $route_match) {
  * Implements hook_user_login().
  */
 function user_redirect_user_login(AccountInterface $account) {
-    \Drupal::service('user_redirect.service')->setLoginRedirection($account);
+  \Drupal::service('user_redirect.service')->setLoginRedirection($account);
 }
 
 /**

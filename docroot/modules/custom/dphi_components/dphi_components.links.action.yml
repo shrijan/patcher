@@ -1,0 +1,11 @@
+map_pin.type_add:
+  title: 'Add map pin type'
+  route_name: entity.map_pin_type.add_form
+  appears_on:
+    - entity.map_pin_type.collection
+
+map_pin.add_page:
+  title: 'Add map pin'
+  route_name: entity.map_pin.add_page
+  appears_on:
+    - entity.map_pin.collection

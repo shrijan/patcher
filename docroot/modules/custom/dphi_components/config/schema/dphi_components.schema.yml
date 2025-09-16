@@ -1,0 +1,17 @@
+# Schema file for the configuration files of the dphi_components module.
+dphi_components.settings:
+  type: config_object
+  label: 'DPHI Rapid Start Settings'
+  mapping:
+    left_side_nav_expand_collapse:
+      type: boolean
+      label: Left side navigation expandable feature
+    menu_widget_enabled:
+      type: boolean
+      label: Menu widget enabled
+    fallback_image_path:
+      type: string
+      label: Fallback image path
+    fallback_image_alt_text:
+      type: string
+      label: Fallback image alt text

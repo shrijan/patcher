@@ -1,0 +1,30 @@
+{{ attach_library('dphi_base_theme/component.tabs') }}
+
+{% if tabs %}
+  <div class="nsw-tabs js-tabs">
+    <ul class="nsw-tabs__list">
+      {% for tab in tabs %}
+        <li>
+          <a href="#section{{ paragraph.id() }}{{ loop.index }}" class="js-tabs-fixed">
+            {% if tab.icon %}
+              <div class="icon">
+                {{ tab.icon }}
+              </div>
+              {% if tab.icon_active %}
+                <div class="icon-active">
+                  {{ tab.icon_active }}
+                </div>
+              {% endif %}
+            {% endif %}
+            <div>{{ tab.title }}</div>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+    {% for tab in tabs %}
+      <section id="section{{ paragraph.id() }}{{ loop.index }}" class="nsw-tabs__content">
+        {{ tab.content }}
+      </section>
+    {% endfor %}
+  </div>
+{% endif %}

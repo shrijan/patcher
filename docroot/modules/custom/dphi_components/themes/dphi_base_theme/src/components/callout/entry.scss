@@ -1,0 +1,85 @@
+@import '../../base';
+
+@import 'nsw-design-system/src/components/callout/_callout';
+
+@mixin callout-background {
+  &.callout-background-dark {
+    background: var(--nsw-brand-dark);
+    color: var(--nsw-white);
+    & a {
+      color: var(--nsw-white);
+    }
+    & a:hover {
+      background-color: var(--nsw-brand-light);
+      color: var(--nsw-brand-dark);
+      border-bottom: 2px var(--nsw-brand-dark) solid;
+      text-decoration: none;
+      & svg.ext {
+        filter: invert(80%) sepia(99999%) saturate(99999%) hue-rotate(196deg) brightness(87%) contrast(144%);
+      }
+    }
+    & svg.ext {
+      filter: invert(99%) sepia(99%) saturate(2%) hue-rotate(222deg) brightness(109%) contrast(129%);
+      margin-left: 5px;
+    }
+  }
+
+  &.callout-background-light {
+    background: var(--nsw-brand-light);
+    & a:hover {
+      background-color: var(--nsw-brand-dark);
+      color: var(--nsw-white);
+      border-bottom: 2px var(--nsw-brand-dark) solid;
+      text-decoration: none;
+      & svg.ext {
+        filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(325deg) brightness(110%) contrast(100);
+      }
+    }
+  }
+
+  &.callout-background-grey {
+    background: var(--nsw-off-white);
+  }
+
+  &.callout-background-transparent {
+    background: transparent;
+  }
+}
+
+@mixin callout-highlight {
+  &.callout-highlight-dark {
+    border-left: solid 4px var(--nsw-brand-dark);
+  }
+
+  &.callout-highlight-light {
+    border-left: solid 4px var(--nsw-brand-light);
+  }
+
+  &.callout-highlight-accent {
+    border-left: solid 4px var(--nsw-brand-accent);
+  }
+
+  &.callout-highlight-supplementary {
+    border-left: solid 4px var(--nsw-brand-supplementary);
+  }
+}
+
+.paragraph--type--callout {
+  @include callout-background;
+
+  .nsw-container {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+}
+
+.nsw-callout {
+  @include callout-highlight;
+  @include callout-background;
+
+  .nsw-callout__icon {
+    font-size: rem(map-get($nsw-icon-sizes, 30));
+    margin-right: rem(16px);
+    margin-top: rem(-2px);
+  }
+}

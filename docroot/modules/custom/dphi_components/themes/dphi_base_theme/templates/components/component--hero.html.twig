@@ -1,0 +1,114 @@
+{{ attach_library('dphi_base_theme/component.hero') }}
+
+{% set classes = [
+  'nsw-hero-banner',
+  hero.card_color ? 'hero-card-bg-' ~ hero.card_color,
+  hero.type in ['2', '4'] ? 'hero-card',
+  hero.type == '3' ? 'featured-list',
+  hero.type == '4' ? 'homepage-banner',
+  hero.type == '5' ? 'full-width-text',
+  hero.type == '6' ? 'image-on-top',
+  hero.text_alignment ? 'text-align-' ~ hero.text_alignment,
+  hero.camera_icon ? 'show-camera-icon' : 'hide-camera-icon'
+] %}
+{% if hero.theme == 'dark' %}
+  {% set classes = classes|merge(['nsw-bg--brand-dark nsw-text--light']) %}
+{% elseif hero.theme == 'light' %}
+  {% set classes = classes|merge(['nsw-bg--brand-light']) %}
+{% elseif hero.theme == 'grey' %}
+  {% set classes = classes|merge(['nsw-bg--off-white']) %}
+{% endif %}
+
+<div class="{{ classes|join(' ') }}">
+  {% if hero.type == 6 %}
+    <div class="hero-background"
+         style="background-image: url('{{ hero.image_url }}'); background-position: {{ hero.focal_x }} {{ hero.focal_y }}">
+      {% if hero.camera_icon %}
+        {% include '@dphi_base_theme/components/component--source.html.twig' with {
+          imageCredit: hero.image_credit|striptags,
+          imageDescription: hero.image_description|striptags
+        } %}
+      {% endif %}
+    </div>
+    <div class="nsw-hero-6-image-spacing"></div>
+  {% endif %}
+  <div class="nsw-hero-banner__container">
+    <div class="nsw-hero-banner__wrapper">
+      <div class="nsw-hero-banner__content">
+        {% if hero.title or hero.intro or hero.description or hero.link %}
+          {% if hero.type in ['2', '4'] %}
+            {% if hero.link %}
+              <a href="{{ hero.link.url }}"
+            {% else %}
+              <div
+            {% endif %}
+                class="nsw-card{% if hero.center_align %} hero-center{% endif %}">
+          {% endif %}
+            <{{ heading_size ?: 'h2' }}>{{ hero.title }}</{{ heading_size ?: 'h2' }}>
+            {% if hero.intro %}
+              <p class="nsw-intro">{{ hero.intro }}</p>
+            {% endif %}
+            {% if hero.description %}
+              <div class="nsw-overflow-break">{{ hero.description }}</div>
+            {% endif %}
+            {% if hero.link %}
+              {% if hero.type in ['2', '4'] %}
+                <div class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">east</div>
+              {% else %}
+                <div class="nsw-hero-banner__button">
+                  {% set link_classes = ['nsw-button'] %}
+                  {% if hero.type == 6 %}
+                    {% set link_classes = link_classes|merge([hero.card_color in ['black', '3'] ? 'nsw-button--white' : 'nsw-button--dark']) %}
+                  {% else %}
+                    {% set link_classes = link_classes|merge([hero.theme == 'dark' ? 'nsw-button--white' : 'nsw-button--dark']) %}
+                  {% endif %}
+                  {% set link = {
+                    ...hero.link,
+                    classes: link_classes|join(' ')
+                  } %}
+                  {% include '@dphi_base_theme/components/component--link.html.twig' %}
+                </div>
+              {% endif %}
+            {% endif %}
+          {% if hero.type in ['2', '4'] %}
+            {% if hero.link %}
+              </a>
+            {% else %}
+              </div>
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      </div>
+      {% if hero.sub_header or hero.links %}
+        <div class="nsw-hero-banner__links">
+          <div class="nsw-hero-banner__list">
+            {% if hero.sub_header %}
+              <div class="nsw-hero-banner__sub-title">{{ hero.sub_header }}</div>
+            {% endif %}
+            {% if hero.links %}
+              <ul>
+                {% for link in hero.links %}
+                  <li>{% include '@dphi_base_theme/components/component--link.html.twig' %}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+      {% if hero.image %}
+        {% if hero.type == '0' %}<div class="nsw-hero-banner__box">{% endif %}
+        <div>
+          <img src="{{ hero.image_url }}" alt="{{ hero.alt_text }}" width="{{ hero.width }}" height="{{ hero.height }}"
+               loading="lazy" typeof="foaf:Image" style="object-position:  {{ hero.focal_x }} {{ hero.focal_y }};">
+          {% if hero.camera_icon %}
+            {% include '@dphi_base_theme/components/component--source.html.twig' with {
+              imageCredit: hero.image_credit|striptags,
+              imageDescription: hero.image_description|striptags
+            } %}
+          {% endif %}
+        </div>
+        {% if hero.type == '0' %}</div>{% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,48 @@
+{{ attach_library('dphi_base_theme/component.card') }}
+<div
+    class="nsw-card {% if card.theme %}nsw-card--{{ card.theme }}{% endif %} {% if card.highlight and card.theme == 'white' %}nsw-card--highlight{% endif %} {% if card.configuration in ['horizontal', 'fullwidth'] and card.image %}nsw-card--horizontal{% endif %}">
+  {% if card.image %}
+    {% set classes = [
+      'nsw-card__image',
+      card.camera_icon ? 'show-camera-icon' : 'hide-camera-icon',
+      card.image_fullHeight ? 'fullHeight' : ''
+    ] %}
+    <div class="{{ classes|join(' ') }}">
+      {% if card.image.url %}
+        <img src="{{ card.image.url }}" alt="{{ card.image.alt }}"/>
+      {% else %}
+        {{ card.image }}
+      {% endif %}
+    </div>
+  {% endif %}
+  <div class="nsw-card__content">
+    {% if card.date %}
+      <div class="nsw-card__date nsw-m-y-sm">
+        {{ card.datePrefix }}
+        {{ card.date.value|date('d M Y') }}
+      </div>
+    {% endif %}
+    <div class="nsw-card__title">
+      {% if card.number %}
+        <div class="nsw-m-bottom-sm nsw-h2">{{ card.number }}</div>
+      {% endif %}
+      {% if card.icon %}
+        <span class="nsw-material-icons nsw-position-static nsw-m-bottom-md {{ card.iconClasses }} {{ card.iconOutlined ? 'material-symbols-outlined' : 'material-icons' }}"
+              focusable="false" aria-hidden="true">{{ card.icon }}</span>
+      {% endif %}
+      <a href="{{ card.link }}" class="nsw-display-block">{{ card.title }}</a>
+      {% if card.tags %}
+        {% include '@dphi_base_theme/components/component--tags.html.twig' with {tags: card.tags} %}
+      {% endif %}
+    </div>
+    {% if card.description %}
+      <div class="nsw-card__copy">
+        {{ card.description }}
+      </div>
+    {% endif %}
+    {% if card.endIcon %}
+      <span class="material-icons nsw-material-icons"
+            focusable="false" aria-hidden="true">{{ card.endIcon }}</span>
+    {% endif %}
+  </div>
+</div>

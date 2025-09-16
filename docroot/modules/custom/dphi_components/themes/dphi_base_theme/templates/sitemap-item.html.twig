@@ -1,0 +1,17 @@
+{%
+  set classes = [
+    'sitemap-item',
+    plugin_type ? 'sitemap-plugin--' ~ plugin_type|clean_class,
+    plugin_id ? 'sitemap-item--' ~ plugin_id|clean_class,
+  ]
+ %}
+{% if content %}
+<div{{ attributes.addClass(classes) }}>
+  {% if title %}
+    <h1>{{ title }}</h1>
+  {% endif %}
+  <div>
+    {{ content }}
+  </div>
+</div>
+{% endif %}

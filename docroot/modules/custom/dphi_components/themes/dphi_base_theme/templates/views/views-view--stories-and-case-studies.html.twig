@@ -1,0 +1,97 @@
+{{ attach_library('dphi_base_theme/view.stories_and_case_studies') }}
+
+<div class="nsw-hero-banner nsw-hero-banner--dark width-100">
+  <div class="nsw-hero-banner__container">
+    <div class="nsw-hero-banner__wrapper">
+      <div class="nsw-hero-banner__content">
+        <h1 class="nsw-hero-banner__title">{{ view.title }}</h1>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nsw-p-top-sm nsw-p-bottom-lg nsw-container width-100 stories-and-case-studies">
+  <div class="nsw-layout">
+    {% if exposed['#info'] %}
+      <div class="nsw-layout__sidebar" id="functional-template--col-left">
+
+        <!-- begin title and filters -->
+        <div class="filters-wrapper">
+          <h2 class="filter-title nsw-show-lg">After something specific?</h2>
+          <button class="nsw-button nsw-button--grey-04 nsw-width-100 nsw-display-flex nsw-justify-content-between" id="toggle-filters" aria-expanded="false" aria-controls="nsw-filters">After something specific? <span class="material-icons" focusable="false" aria-hidden="true">expand_more</span></button>
+          <div class="filters" id="nsw-filters">
+            <!-- begin top "apply filters" button -->
+            <div data-drupal-selector="edit-actions" class="form-actions js-form-wrapper form-wrapper">
+              <input data-drupal-selector="edit-submit-stories-and-case-studies" type="submit" value="Apply filters" class="nsw-button nsw-button--full-width nsw-button--dark nsw-m-y-md apply-filter-btn-top">
+            </div>
+            <div class="nsw-filters__list">
+              <!-- end top "apply filters" button -->
+
+              <!-- begin filter form -->
+              {{ exposed }}
+              <!-- end filter form -->
+            </div>
+          </div>
+        </div>
+        <!-- end title and filters -->
+
+      </div><!-- .left-col -->
+    {% endif %}
+    <div class="nsw-layout__main" id="functional-template--col-right">
+
+        {{ title_prefix }}
+
+        <div class="nsw-display-flex nsw-justify-content-between nsw-m-y-xs">
+          <div>
+            {% if header %}
+              <div class="nsw-docs__box nsw-m-xs">{{ header }}</div>
+            {% endif %}
+          </div>
+          <div class="nsw-docs__box tabbify-view-by nsw-show-lg">
+            <div class="nsw-display-flex nsw-flex-row">
+              <div class="nsw-m-xs">View by</div>
+              <div class="nsw-m-xs option-wrapper option--cards"  data-viewby="nsw-col-md-6 nsw-col-lg-4">
+                <button class="option" alt="card view" title="card view" data-viewby="nsw-col-md-6 nsw-col-lg-4">
+                  <span class="material-icons" focusable="false" aria-hidden="true">apps</span>
+                </button>
+              </div>
+              <div class="nsw-m-y-xs option-wrapper option--list"  data-viewby="nsw-col-md-12 nsw-col-lg-12">
+                <button class="option" alt="list view" title="list view" data-viewby="nsw-col-md-12 nsw-col-lg-12">
+                  <span class="material-icons" focusable="false" aria-hidden="true">menu</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+          {{ title_suffix }}
+
+          <div class="nsw-grid content-row">
+            {% if rows %}
+              {# RESULTS #}
+              {{ rows }}
+            {% else %}
+              {# NO RESULTS #}
+              <div class="nsw-sitewide-message nsw-sitewide-message--light" role="alert">
+                <div class="nsw-sitewide-message__wrapper">
+                  <div class="nsw-sitewide-message__content">
+                    <h2 class="nsw-sitewide-message__title">No results available</h2>
+                    <p>Please try refining your search.</p>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          </div><!-- .results-content -->
+
+          <div class="pagination">
+            {{ pager }}
+          </div>
+
+          {% if footer %}
+            <footer class="right-col-footer">
+              {{ footer }}
+            </footer>
+          {% endif %}
+    </div><!-- .right-col -->
+  </div><!-- .nsw-container -->
+</div><!-- .background-lighten10 -->

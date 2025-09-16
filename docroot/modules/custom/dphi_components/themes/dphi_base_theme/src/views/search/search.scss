@@ -1,0 +1,136 @@
+@import '../../base';
+
+.tabbify {
+  display: flex;
+  button {
+    flex-grow: 1;
+    color: var(--nsw-brand-dark);
+    background-color: var(--nsw-white);
+    transition: background-color .2s, color .2s;
+    font-size: 1rem;
+    min-height: 51px;
+    font-weight: var(--nsw-font-bold);
+    border: 1px solid var(--nsw-brand-dark);
+    &:first-child {
+      border-radius: .25rem 0 0 .25rem;
+    }
+    &:not(:last-child) {
+      border-right: none;
+    }
+    &:last-child {
+      border-radius: 0 .25rem .25rem 0;
+    }
+    &:focus {
+      position: relative;
+      @include nsw-focus;
+    }
+    &.selected {
+      color: var(--nsw-text-light);
+      background-color: var(--nsw-brand-dark);
+    }
+  }
+
+  + select {
+    display: none;
+  }
+}
+
+.form-item-input-autocomplete {
+  display: none;
+}
+
+#toggle-filters {
+  @include breakpoint(lg) {
+    display: none !important;
+  }
+
+  + .filters {
+    transition: height .5s;
+    height: 0;
+    overflow: hidden;
+    @include breakpoint(lg) {
+      height: auto !important;
+      overflow: visible;
+    }
+  }
+}
+
+.js-form-item-daterange {
+  ~ .js-date-input {
+    margin-top: 0;
+    height: 137px;
+    transition-property: height, padding-top, padding-bottom;
+    transition-duration: .5s;
+  }
+
+  &:not(.active) ~ .js-date-input {
+    height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-top: none;
+  }
+  &:not(.open) ~ .js-date-input {
+    overflow: hidden;
+  }
+}
+
+.nsw-filters__list {
+  input[type=submit] {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    @include breakpoint(lg) {
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+    }
+  }
+
+  .form-item {
+    border-top: 1px solid var(--nsw-grey-04);
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+
+    > label {
+      display: block;
+      font-weight: var(--nsw-font-bold);
+      margin-bottom: 1rem;
+    }
+  }
+
+  fieldset.form-item {
+    padding-top: 4rem;
+    position: relative;
+
+    legend {
+      font-weight: var(--nsw-font-bold);
+      padding-left: 0;
+      position: absolute;
+      top: 1.5rem;
+    }
+  }
+}
+
+.nsw-results-bar {
+  margin: rem(24px) 0;
+
+  @include breakpoint(lg) {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  &__sorting {
+    display: flex;
+    align-items: center;
+    padding-top: rem(24px);
+
+    @include breakpoint(lg) {
+      padding-top: 0;
+    }
+
+    select {
+      min-width: rem(200px);
+    }
+  }
+}

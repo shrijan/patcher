@@ -1,0 +1,24 @@
+{% set contentBlock = microcontent.getComponent() %}
+{%
+  set classes = [
+  'paragraph',
+  'nsw-section',
+  'paragraph--type--content-block',
+  view_mode ? 'paragraph--view-mode--' ~ view_mode|clean_class,
+  not microcontent.isPublished() ? 'paragraph--unpublished',
+  elements['#padding_control'],
+]
+%}
+{% if contentBlock.use_background_colour == 1 %}
+  {% set classes = classes|merge([
+    'background--light10',
+    'nsw-palette-grey-04'
+  ]) %}
+{% endif %}
+
+
+<section {{ attributes.addClass(classes) }}>
+  <div class="nsw-container">
+    {% include '@dphi_base_theme/components/component--content-block.html.twig' %}
+  </div>
+</section>

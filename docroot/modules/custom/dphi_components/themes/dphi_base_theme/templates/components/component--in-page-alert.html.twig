@@ -1,0 +1,35 @@
+{{ attach_library('dphi_base_theme/component.in_page_alert') }}
+
+{% set compact = "" %}
+{% if alert.compact == 1 %}
+  {% set compact = 'nsw-in-page-alert--compact' %}
+{% endif %}
+{% if alert.title == '' %}
+  {% set title = 'title-none' %}
+{% endif %}
+{% if alert.type == 'info' %}
+  {% set icon = 'info' %}
+{% endif %}
+{% if alert.type == 'error' %}
+  {% set icon = 'cancel' %}
+{% endif %}
+{% if alert.type == 'warning' %}
+  {% set icon = 'error' %}
+{% endif %}
+{% if alert.type == 'success' %}
+  {% set icon = 'check_circle' %}
+{% endif %}
+
+<div class="nsw-in-page-alert nsw-in-page-alert--{{ alert.type }} {{ compact }} {{ title }}">
+  <span class="material-icons nsw-material-icons nsw-in-page-alert__icon" focusable="false" aria-hidden="true">{{ icon }}</span>
+  <div class="nsw-in-page-alert__content">
+    {% if not compact %}
+      {% if alert.title is not empty %}
+        <h5>{{ alert.title }}</h5>
+      {% endif %}
+      <div class="{{ title }}"><p>{{ alert.content }}</p></div>
+    {% else %}
+      <p class="nsw-small"><strong>{{ alert.title }}</strong>{{ alert.content }}</p>
+    {% endif %}
+  </div>
+</div>

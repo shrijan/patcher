@@ -55,6 +55,7 @@
                 },
                 beforeClose: false,
                 close: function (event) {
+                  confirmationDialog.close();
                   $(event.target).remove();
                 }
               });
@@ -110,6 +111,7 @@
                 },
                 beforeClose: false,
                 close: function (event) {
+                  confirmationDialog.close();
                   $(event.target).parent().parent().find('.ui-widget-overlay').remove();
                   $(event.target).remove();
                 }
@@ -170,6 +172,7 @@
                   },
                   beforeClose: false,
                   close: function (event) {
+                    confirmationDialog_publish.close();
                     $(event.target).parent().parent().find('.ui-widget-overlay').remove();
                     $(event.target).remove();
                   }

@@ -1,0 +1,25 @@
+{
+  "name": "dphi-base-theme",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite build && vite --host --port=5177",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "glob": "^10.3.15",
+    "path": "^0.12.7",
+    "prettier": "^3.2.5",
+    "sass": "^1.77.1",
+    "vite": "^5.2.0",
+    "vite-plugin-watch-and-run": "^1.7.0"
+  },
+  "dependencies": {
+  },
+  "prettier": {
+    "arrowParens": "avoid",
+    "semi": false,
+    "singleQuote": true
+  }
+}

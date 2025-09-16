@@ -1,0 +1,91 @@
+{% if dataTableCSV.data %}
+  {{ attach_library('dphi_base_theme/component.data_table_csv') }}
+
+  <div class="nsw-container nsw-table nsw-table--striped cl--data-table" tabindex="0">
+    <table class="tab-data-table" data-filter1Name="{{ dataTableCSV.filter_1.name }}" data-filter2Name="{{ dataTableCSV.filter_2.name }}" data-filter1Index="{{ dataTableCSV.filter_1.index }}" data-filter2Index="{{ dataTableCSV.filter_2.index }}">
+      <thead>
+        <tr>
+          <th width="25%">{{ dataTableCSV.headers.0 }}</th>
+          <th width="25%">{{ dataTableCSV.headers.1 }}</th>
+          <th width="25%">{{ dataTableCSV.headers.2 }}</th>
+          {% if dataTableCSV.headers.h1 %}
+            <th width="25%" class="h1-active">{{ dataTableCSV.headers.h1 }}</th>
+          {% endif %}
+          {% if  dataTableCSV.headers.h2 %}
+            <th width="25%"  class="h2-active">{{ dataTableCSV.headers.h2 }}</th>
+          {% endif %}
+          <th width="10%">Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ces in dataTableCSV.data %}
+          <tr data-loop-index="{{ ces.0 }}">
+            <td>{{ ces.0 }}</td>
+            <td>{{ ces.1 }}</td>
+            <td>{{ ces.2 }}</td>
+            {% if dataTableCSV.headers.h1 %}
+              <td>{{ ces.h1 }}</td>
+            {% endif %}
+            {% if dataTableCSV.headers.h2 %}
+              <td>{{ ces.h2 }}</td>
+            {% endif %}
+            <td class="text-center">
+              <button type="button" class="cl--button-none js-open-dialog-{{ dataTableCSV.id }}-cl--dialog-{{ loop.index }}">
+                <span class="sr-only">Click for more information about {{ dataTableCSV.headers.0 }}</span>
+                <!-- md-48 sets the size. Needs to be big for hit zone purposes in mobile for wcag -->
+                <span class="material-icons md-48 nsw-material-icons" focusable="false" aria-hidden="true">info</span>
+              </button>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% for ces in dataTableCSV.data %}
+    <div class="hidden d-none" id="dialog-{{ loop.index }}-description">More details for {{ ces.0 }}.</div>
+    <div class="hidden d-none" id="dialog-{{ loop.index }}-title">View full entry details.</div>
+
+    <div class="nsw-dialog js-dialog" role="dialog" id="{{ dataTableCSV.id }}-cl--dialog-{{ loop.index }}" aria-labelledby="dialog-{{ loop.index }}-title" aria-describedby="dialog-{{ loop.index }}-description">
+      <div class="nsw-dialog__wrapper">
+        <div class="nsw-dialog__container">
+          <div class="nsw-dialog__top">
+            <div class="nsw-dialog__title">
+              <h2 id="dismissible-title-{{ ces.0 }}">{{ ces.location }}</h2>
+            </div>
+            <div class="nsw-dialog__close">
+              <button class="nsw-icon-button js-close-dialog">
+                <span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">close</span>
+                <span class="sr-only">Close</span>
+              </button>
+            </div>
+          </div>
+          <div class="nsw-dialog__content" role="document">
+            <div class="nsw-table nsw-table--striped" tabindex="0">
+              <table>
+                <caption>Full details for entry {{ ces.0 }}</caption>
+                <tbody>
+                {% for key, value in ces %}
+                  {% if key != 'h1' and key != 'h2' %}
+                    <tr class="tcol-{{ key }}">
+                      <th>
+                        <p>{{ dataTableCSV.headers[key] }}</p>
+                      </th>
+                      <td>
+                        <p>{{ value }}</p>
+                      </td>
+                    </tr>
+                  {% endif %}
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="nsw-dialog__bottom">
+          <button class="nsw-button nsw-button--dark-outline-solid js-close-dialog" type="button">Close</button>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+{% endif %}

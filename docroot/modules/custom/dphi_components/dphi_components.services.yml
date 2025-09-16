@@ -1,0 +1,34 @@
+services:
+  dphi_components.content_listing.content_types_terms_service:
+    class: Drupal\dphi_components\Service\ContentTypesTermsService
+    arguments: ['@entity_type.manager', '@entity_field.manager', '@config.factory']
+  dphi_components.content_listing.node_query_service:
+    class: Drupal\dphi_components\Service\NodeQueryService
+    arguments: ['@entity_type.manager']
+  dphi_components.media:
+    class: Drupal\dphi_components\Service\MediaData
+    arguments: ['@entity_type.bundle.info', '@entity_type.manager']
+  dphi_components.nodes:
+    class: Drupal\dphi_components\Service\NodesByMenuData
+    arguments: ['@entity.repository', '@entity_type.manager', '@menu.link_tree']
+  dphi_components.parent_form_selector:
+    class: Drupal\dphi_components\Menu\MenuParentFormSelector
+    arguments:
+      ['@menu.link_tree', '@entity_type.manager', '@string_translation']
+  dphi_components.video_gallery_data:
+    class: Drupal\dphi_components\Service\VideoGalleryData
+  dphi_components.map_pin_data_service:
+    class: Drupal\dphi_components\MapPinDataService
+    arguments: ['@entity_type.manager']
+  dphi_components.route_subscriber:
+    class: Drupal\dphi_components\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }
+  dphi_components.delete_map_pins_command:
+    class: Drupal\dphi_components\Commands\DeleteMapPinsCommand
+    arguments: ['@entity_type.manager']
+    tags:
+      - { name: drush.command }
+  dphi_components.node_menu_widget:
+    class: Drupal\dphi_components\Service\NodeMenuWidget
+    arguments: ['@config.factory', '@menu.parent_form_selector', '@entity_type.manager', '@current_user', '@dphi_components.parent_form_selector']

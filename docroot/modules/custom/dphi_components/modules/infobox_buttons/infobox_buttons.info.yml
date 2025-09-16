@@ -1,0 +1,9 @@
+name: Infobox buttons
+type: module
+description: 'Provides CKEditor5 plugin to embed Dark and outline buttons.'
+core_version_requirement: ^9.3 || ^10
+dependencies:
+  - drupal:editor
+# Information added by Drupal.org packaging script on 2020-06-18
+project: 'infobox_buttons'
+datestamp: 1592487130

@@ -1,0 +1,9 @@
+{% include '@dphi_base_theme/components/component--global-alert.html.twig' with {
+  globalAlert: {
+    title: node.title[0].value,
+    content: content.body,
+    cta: content.field_cta[0]['#title'],
+    url: content.field_cta[0]['#url'].toString(),
+    type: node.field_alert_type[0].value
+  }
+} %}

@@ -1,0 +1,35 @@
+{{ attach_library('dphi_base_theme/component.case_study') }}
+
+{% set classes = [
+  'caseStudy nsw-display-flex nsw-flex-wrap',
+  caseStudy.show_border ? 'border',
+] %}
+<div class="{{ classes|join(' ') }}">
+  {% for item in caseStudy.items %}
+    {% set classes = [
+      'nsw-display-flex nsw-col',
+      caseStudy.column_layout == '4' ? 'nsw-col-lg-4',
+      (caseStudy.column_layout == '4' and loop.index != 3) ? 'nsw-col-md-6',
+      caseStudy.column_layout == '6' ? (loop.index == 3 ? 'nsw-col-12' : 'nsw-col-md-6'),
+      (caseStudy.column_layout == '12' and caseStudy.column_alignment == 'centre') ? 'nsw-justify-content-center'
+    ] %}
+    <div class="{{ classes|join(' ') }}">
+      {% if item.image %}
+        <div class="icon hide-camera-icon nsw-flex-shrink-0">
+          {{ item.image }}
+        </div>
+      {% elseif item.icon %}
+        <div class="icon nsw-material-icons {{ item.iconOutlined ? 'material-symbols-outlined' : 'material-icons' }}" focusable="false" aria-hidden="true">{{ item.icon }}</div>
+      {% endif %}
+
+      <div>
+        <div class="heading {{ caseStudy.colour }}">
+          {{ item.heading }}
+        </div>
+        <div class="content">
+          {{ item.content }}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>

@@ -23,3 +23,6 @@ trash.settings:
           nullable: true
           constraints:
             ValidAutoPurgePeriod: []
+    compact_overview:
+      label: 'Simplify the Trash overview page when there are many entity types enabled'
+      type: boolean

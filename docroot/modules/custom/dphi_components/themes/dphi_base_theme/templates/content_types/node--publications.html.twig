@@ -1,0 +1,169 @@
+{{ attach_library('dphi_base_theme/content.publication') }}
+
+{% set publication = node.getComponent() %}
+{% set side_bar_class = '' %}
+{% set has_sidebar_right = content.field_middle_right_section|render|striptags|trim|length %}
+{% if has_sidebar_right %}
+  {% set side_bar_class = 'multi-column-layout' %}
+{% endif %}
+{%
+  set classes = [
+  'node',
+  'node--type-' ~ node.bundle|clean_class,
+  not node.isPublished() ? 'node--unpublished',
+  view_mode ? 'node--view-mode-' ~ view_mode|clean_class,
+  'clearfix',
+]
+%}
+
+{% set download_button %}
+  <a href="{{ publication.file_url }}" class="nsw-button nsw-button--dark{% if view_mode == 'full' %}-outline{% endif %}" target="_blank">
+    <span class="material-icons" focusable="false" aria-hidden="true" style="vertical-align: middle;">{{ 'download' }}</span>
+    <span>{{ 'Download'|t }}</span>
+  </a>
+{% endset %}
+
+{% set card_image %}
+  <div class="nsw-card__image">
+    {% if not content.field_media_image[0] and publication.image_url %}
+      <img src="{{ publication.image_url }}" alt="">
+    {% else %}
+      {{ node.getImageWithFallback() }}
+    {% endif %}
+  </div>
+{% endset %}
+
+<article {{ attributes.addClass(classes) }}>
+  <div class="nsw-section-start">
+    {% if has_sidebar_right %}
+      <div class="nsw-container {{ side_bar_class }}">
+    {% elseif view_mode == 'full' %}
+      <div class="nsw-container">
+    {% endif %}
+      {% if view_mode == 'full' %}
+        <div class="nsw-layout">
+          <div class="nsw-layout__main">
+            <!-- START: Main content -->
+            <h1 class="nsw-card__title">{{ node.label }}</h1>
+      {% else %}
+        <div class="nsw-col">
+          <!-- START: Main content -->
+          <div class="nsw-card__title nsw-hide-md nsw-m-bottom-md">
+            <a href="{{ url }}">{{ node.label }}</a>
+          </div>
+      {% endif %}
+      {% if view_mode == 'full' %}
+        {% if node.field_subtitle.value %}
+          <p class="nsw-intro">{{ node.field_subtitle.value }}</p>
+        {% endif %}
+        {% if publication.summary %}
+          <div class="summary nsw-m-top-sm nsw-intro">{{ publication.summary }}</div>
+        {% endif %}
+      {% endif %}
+      <div class="publication-details{% if view_mode == 'full' %} full{% endif %}">
+        {% if view_mode == 'full' %}
+          <div class="left-col">
+            {{ card_image }}
+            {{ download_button }}
+          </div>
+          <div class="right-col">
+            {% if publication.date is not empty %}
+              <div>
+                <time datetime="{{ publication.date|date("d M Y") }}">
+                  <p class="nsw-datetime">
+                    <strong>{{ 'Date:'|t }}</strong> {{ publication.date|date("d M Y") }}
+                  </p>
+                </time>
+              </div>
+            {% endif %}
+            {% if node.field_publisher.value %}
+              <div><strong>Publisher:</strong> {{ node.field_publisher.value }}</div>
+            {% endif %}
+            {% if publication.types %}
+              <div><strong>Type:</strong> {{ publication.types }}</div>
+            {% endif %}
+            {% if node.field_cost.value %}
+              <div><strong>Cost:</strong> {{ node.field_cost.value }}</div>
+            {% endif %}
+            {% if node.field_language.value %}
+              <div><strong>Language:</strong> {{ node.field_language.value }}</div>
+            {% endif %}
+            {% if node.field_isbn.value %}
+              <div><strong>ISBN:</strong> {{ node.field_isbn.value }} {% if node.field_publication_id.value %} / <strong>ID:</strong> {{ node.field_publication_id.value }} {% endif %}</div>
+            {% elseif node.field_issn.value%}
+              <div><strong>ISSN:</strong> {{ node.field_issn.value }} {% if node.field_publication_id.value %} / <strong>ID:</strong> {{ node.field_publication_id.value }} {% endif %}</div>
+            {% endif %}
+            {% if content.field_publication_file %}
+              <div><strong>File:</strong> {{ publication.file_extension|upper }} {{ publication.file_size }} {% if publication.file_extension == 'pdf' %} / <strong>Pages</strong> {{ publication.num_of_pages }} {% endif %}</div>
+              <div><strong>Name:</strong> {{ publication.file_name }}</div>
+            {% endif %}
+            {% if publication.tags %}
+              <div>&nbsp;</div>
+              <div class="tags"><strong>Tags:</strong> {% for tag in publication.tags %}<span>{{ tag }}</span>{% endfor %}</div>
+            {% endif %}
+          </div>
+        {% else %}
+          {{ card_image }}
+          <div class="nsw-card__content">
+            <div class="nsw-card__title nsw-show-md">
+              <a href="{{ url }}">{{ node.label }}</a>
+            </div>
+            <div class="cols">
+              <div class="left-col">
+                {% if publication.date is not empty %}
+                  <div class="nsw-meta nsw-display-flex">
+                    <span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">calendar_month</span>
+                    <span>{{ publication.date|date("d M Y") }}</span>
+                  </div>
+                {% endif %}
+                {% if content.field_publication_file %}
+                  <div class="nsw-meta nsw-display-flex">
+                    <span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">attach_file</span>
+                    <span>{{ publication.file_extension|upper }} {{ publication.file_size }}</span>
+                  </div>
+                {% endif %}
+                <span class="nsw-show-md">{{ download_button }}</span>
+              </div>
+              <div>
+                {% if publication.summary %}
+                  <div class="summary">{{ publication.summary }}</div>
+                {% endif %}
+                {% if publication.tags %}
+                  <div class="tags">{% for tag in publication.tags %}<span>{{ tag }}</span>{% endfor %}</div>
+                {% endif %}
+              </div>
+              <span class="nsw-hide-md">{{ download_button }}</span>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+      {% if view_mode == 'full' %}
+        <div class="nsw-card__copy">
+          {{ publication.content }}
+        </div>
+      {% endif %}
+      <!-- END: Main content -->
+    </div>
+    {% if content.field_middle_right_section|render|striptags|trim is not empty %}
+      <div class="nsw-layout__sidebar">
+        <!-- START: Right sidebar content -->
+        <div class="nsw-docs__box nsw-docs__box--large"> {{ content.field_middle_right_section }}</div>
+        <!-- END: Right sidebar content -->
+      </div>
+    {% endif %}
+    {% if view_mode == 'full' %}
+        </div>
+      </div>
+    {% elseif has_sidebar_right %}
+      </div>
+    {% endif %}
+
+    {% if node.field_show_last_updated.value and node.field_publish_event_date.value is not empty %}
+      <div class="nsw-container">
+        <time datetime="{{ node.field_publish_event_date.value|date("Y-m-d") }}" class="nsw-display-block nsw-m-y-sm nsw-small">
+          {{ 'Updated'|t }} {{ node.field_publish_event_date.value|date("d F Y") }}
+        </time>
+      </div>
+    {% endif %}
+  </div>
+</article>

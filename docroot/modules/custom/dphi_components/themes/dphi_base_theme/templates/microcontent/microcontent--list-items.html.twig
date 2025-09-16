@@ -1,0 +1,25 @@
+{%
+  set classes = [
+  'nsw-section',
+  'paragraph',
+  'paragraph--type--callout',
+  view_mode ? 'paragraph--view-mode--' ~ view_mode|clean_class,
+  not microcontent.isPublished() ? 'paragraph--unpublished',
+  elements['#padding_control'],
+]
+%}
+<section{{ attributes.addClass(classes) }}>
+  <div class="nsw-container">
+    <header class="nsw-card-list-header">
+      {% if content.field_title is not empty %}
+        <h2 class="component-heading nsw-m-y-sm">
+          {{ content.field_title }}
+        </h2>
+      {% endif %}
+      {{ content.field_description }}
+    </header>
+
+    {{ content.field_list_items }}
+
+  </div>
+</section>

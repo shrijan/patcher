@@ -14,7 +14,7 @@ use Drupal\Core\TypedData\DataDefinition;
  *   id = "material_icons",
  *   label = @Translation("Material Icons"),
  *   module = "material_icons",
- *   category = @Translation("Icons"),
+ *   category = "icons",
  *   description = @Translation("A Material Design icon"),
  *   default_formatter = "material_icons",
  *   default_widget = "material_icons",

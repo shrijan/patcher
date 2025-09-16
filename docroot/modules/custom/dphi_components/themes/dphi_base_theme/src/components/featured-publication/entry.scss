@@ -1,0 +1,267 @@
+@import '../../base';
+
+.nsw-featured-publication {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  padding: 0;
+  // border-bottom: 1px solid var(--nsw-grey-04);
+
+  @include breakpoint("lg") {
+    padding: rem(24px) 0;
+  }
+
+  &:first-child {
+    // border-top: 1px solid var(--nsw-grey-04);
+  }
+
+  &__title {
+    @include font-size("md");
+    font-weight: var(--nsw-font-bold);
+
+    .featured-publication-heading-desktop {
+      display: none;
+
+      @include breakpoint("lg") {
+        display: inline-block;
+      }
+    }
+
+    .featured-publication-heading-mobile {
+      display: block;
+
+      @include breakpoint("lg") {
+        display: none;
+      }
+    }
+  }
+
+  &__flex-container {
+    display: flex;
+    flex-direction: column-reverse;
+
+    @include breakpoint("lg") {
+      flex-direction: row;
+    }
+  }
+
+  &__info-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin-top: 0.2rem;
+
+    .nsw-featured-publication__info-file {
+      padding-bottom: rem(10px);
+
+      .attachment-icon {
+        transform: rotate(-45deg);
+      }
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+
+    .nsw-featured-publication__title a {
+      color: var(--nsw-text-dark);
+      text-decoration: none;
+
+      &:hover {
+        background-color: transparent;
+        outline: none;
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &__label,
+  &__info,
+  &__title,
+  &__copy,
+  &__tags {
+    margin-top: rem(8px);
+
+    .material-icons {
+      font-size: rem(20px);
+    }
+  }
+
+  &__label,
+  &__info {
+    @include font-size("xs");
+  }
+
+  &__info {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    color: #6d7079;
+
+    span:first-child {
+      padding-right: rem(5px);
+    }
+
+    span {
+      white-space: nowrap;
+    }
+  }
+
+  &__info-date {
+    display: none;
+
+    @include breakpoint("lg") {
+      display: flex;
+      padding-bottom: rem(10px);
+    }
+  }
+
+  &__copy {
+    padding-left: 0;
+
+    @include breakpoint("lg") {
+      padding-left: rem(20px);
+    }
+  }
+
+  &__label {
+    font-weight: var(--nsw-font-bold);
+  }
+
+  &__image {
+    min-width: rem(150px);
+    width: rem(150px);
+    height: rem(210px);
+    margin: 0 0 0 rem(24px);
+    display: none;
+
+    @include breakpoint("lg") {
+      display: block;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border: 1px solid;
+    }
+  }
+
+  &__image-mobile,
+  .nsw-button-mobile {
+    display: none;
+  }
+
+  &--block {
+    &:focus-within {
+      @include nsw-focus($offset: false);
+    }
+
+    &:hover {
+      .nsw-featured-publication__title a {
+        @include nsw-hover;
+      }
+    }
+
+    .nsw-featured-publication__title a {
+      @include pseudo-clickable-block;
+
+      &:focus {
+        outline: none;
+      }
+    }
+  }
+
+  &--reversed {
+    flex-direction: row-reverse;
+
+    .nsw-featured-publication__image {
+      margin: 0 rem(24px) 0 0;
+    }
+  }
+
+  .nsw-button-mobile {
+    display: block;
+    margin-top: rem(10px);
+    width: 100%;
+
+    @include breakpoint("lg") {
+      display: none;
+    }
+  }
+
+  .nsw-button:not(.nsw-button-mobile) {
+    display: none;
+
+    @include breakpoint("lg") {
+      display: flex;
+      align-self: flex-start;
+    }
+  }
+}
+
+//Custom styling for this component in a Middle Right Paragraph
+.paragraph--type--middle-right-section {
+  .paragraph--type--featured-publication-list {
+    .nsw-container {
+      padding: 0;
+    }
+  }
+
+  .nsw-featured-publication {
+    padding: 0;
+
+    &__image {
+      display: none;
+    }
+
+    &__image-mobile {
+      display: none;
+
+      @include breakpoint("lg") {
+        display: block;
+        width: 100%;
+        height: 100%;
+        align-self: center;
+        border: 1px solid;
+      }
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    &__flex-container {
+      flex-direction: column-reverse;
+    }
+
+    &__info-file {
+      padding-bottom: 10px;
+
+      .attachment-icon {
+        transform: rotate(-45deg);
+      }
+    }
+
+    &__copy {
+      padding: 0;
+    }
+
+    .nsw-button-mobile {
+      display: block;
+      margin-top: rem(10px);
+      width: 100%;
+    }
+
+    .nsw-button:not(.nsw-button-mobile) {
+      display: none;
+    }
+  }
+}
+

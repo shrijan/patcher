@@ -1,0 +1,18 @@
+{{ attach_library('dphi_base_theme/component.breadcrumb') }}
+{% if breadcrumb %}
+<nav aria-label="Breadcrumbs" class="nsw-breadcrumbs nsw-container nsw-m-bottom-sm">
+  <ol>
+    {% for item in breadcrumb %}
+      {% if item.url %}
+        <li>
+          <a href="{{ item.url }}">{{ item.text }}</a>
+        </li>
+      {% else %}
+        <li >
+          <a href="#" class="current" aria-current="page">{{ item.text }}</a>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ol>
+</nav>
+{% endif %}

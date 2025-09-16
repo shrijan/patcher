@@ -1,0 +1,29 @@
+[class*='maps-pin-view'] {
+  svg {
+    scale: 1.5;
+    z-index: 1;
+    position: relative;
+  }
+
+  .map-pin-icon {
+    filter: brightness(0) invert(1) saturate(0);
+    position: relative;
+    z-index: 10;
+    transition: all 0.3s ease-in-out;
+  }
+
+  [class*='maps-pin-view-background'] {
+    transition: all 0.3s ease-in-out;
+    fill: inherit;
+  }
+
+  &.is-hover {
+    [class*='maps-pin-view-background'] {
+      fill: white;
+    }
+
+    .map-pin-icon {
+      filter: invert(0);
+    }
+  }
+}

@@ -1,0 +1,38 @@
+@import '../../base';
+
+@import 'nsw-design-system/src/components/media/media';
+
+// We don't want all media center-aligned by default.
+.nsw-media {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.component--media {
+  @include media-breakpoint-up(md) {
+    .nsw-media--100 {
+      width: 100%;
+    }
+  }
+
+  .media-oembed-content {
+    display: block;
+    aspect-ratio: 16 / 9;
+    height: auto;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+  }
+}
+
+.media-youtube {
+  padding-top: 1rem;
+}
+
+.media-oembed-content {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}

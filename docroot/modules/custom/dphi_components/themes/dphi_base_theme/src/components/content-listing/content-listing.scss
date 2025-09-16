@@ -1,0 +1,75 @@
+@import '../../base';
+
+@import 'nsw-design-system/src/components/card/card';
+@import 'nsw-design-system/src/components/select/_select';
+@import 'nsw-design-system/src/components/list-item/_list-item';
+
+.nsw-card__image .contextual-region {
+  height: 100%;
+}
+
+.nsw-content-listing {
+  .nsw-content-listing-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    container-type: inline-size;
+    container-name: header;
+    margin-bottom: 1rem;
+  }
+
+  .nsw-header-title-wrapper,
+  .description {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .nsw-header-title-wrapper {
+    align-items: center;
+  }
+
+  .description {
+    flex-direction: column;
+    @include breakpoint('md') {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    > form {
+      margin-left: 2rem;
+      flex-shrink: 0;
+      align-self: end;
+
+      @include breakpoint('md') {
+        align-self: auto;
+      }
+    }
+  }
+
+  .nsw-view-all-link {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+
+    &__title {
+      text-decoration: underline;
+      margin-right: 8px;
+    }
+
+    .nsw-material-icons {
+      text-decoration: none;
+    }
+  }
+}
+
+@container header (width < 800px) {
+  .description > form {
+    margin-top: 1rem;
+    margin-left: unset;
+    select {
+      margin-inline: auto 0;
+      width: auto;
+    }
+  }
+}

@@ -1,0 +1,6 @@
+ckeditor5.plugin.infobox_buttons_limittableproperties:
+  type: mapping
+  mapping:
+    limit_table_properties:
+      type: boolean
+      label: 'Limit Table Properties'

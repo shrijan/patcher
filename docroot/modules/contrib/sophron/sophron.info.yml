@@ -4,7 +4,7 @@ name: Sophron
 description: 'Provides an extensive MIME types management API.'
 configure: sophron.settings
 
-# Information added by Drupal.org packaging script on 2024-12-17
-version: '2.2.0'
+# Information added by Drupal.org packaging script on 2025-04-16
+version: '2.2.1'
 project: 'sophron'
-datestamp: 1734432601
+datestamp: 1744800238

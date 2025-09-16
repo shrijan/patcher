@@ -1,0 +1,33 @@
+{{ attach_library('dphi_base_theme/component.hero_banner_search') }}
+
+{% set classes = [
+  heroBannerSearch.camera_icon ? 'show-camera-icon' : 'hide-camera-icon'
+] %}
+<div class="nsw-section hero-banner-search {{ classes|join(' ') }}"{% if heroBannerSearch.image %} style="background-image:url({{ heroBannerSearch.image }}); background-position: {{ heroBannerSearch.focal_x }} {{ heroBannerSearch.focal_y }}"{% endif %}>
+  <div class="nsw-container">
+    <div class="hero-search__wrapper">
+      <div class="hero-search__content{% if heroBannerSearch.prefilters %} prefilters{% endif %}">
+        {% if heroBannerSearch.title %}
+          <h1>{{ heroBannerSearch.title }}</h1>
+        {% endif %}
+        {% if heroBannerSearch.description %}
+        <p class="nsw-intro">{{ heroBannerSearch.description }}</p>
+        {% endif %}
+        {{ heroBannerSearch.form }}
+        {% if heroBannerSearch.links %}
+          <ul>
+            {% for link in heroBannerSearch.links %}
+              <li>{% include '@dphi_base_theme/components/component--link.html.twig' %}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% if heroBannerSearch.camera_icon == '1' %}
+    {% include '@dphi_base_theme/components/component--source.html.twig' with {
+      imageCredit: heroBannerSearch.image_credit|striptags,
+      imageDescription: heroBannerSearch.image_description|striptags
+    } %}
+  {% endif %}
+</div>

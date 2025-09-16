@@ -1,0 +1,44 @@
+{{ attach_library('dphi_base_theme/component.content_block') }}
+{% if contentBlock.type =='icon' %}
+  {% set classes = 'hide-camera-icon' %}
+{% else %}
+  {% set classes = [
+     contentBlock.camera_icon ? 'show-camera-icon' : 'hide-camera-icon'
+  ] %}
+{% endif %}
+<div class="nsw-content-block">
+  {% if contentBlock.type in ['icon', 'image'] and contentBlock.image %}
+    <div class="nsw-content-block__image {{ classes|join(' ') }}">
+      {% if contentBlock.type == 'icon' %}<div class="nsw-content-block__icon">{% endif %}
+      {{ contentBlock.image }}
+      {% if contentBlock.type == 'icon' %}</div>{% endif %}
+    </div>
+  {% endif %}
+  <div class="nsw-content-block__content">
+    {% if contentBlock.title %}
+      <{{ contentBlock.titleAsH2 ? 'h2' : 'h3' }} class="{{ contentBlock.titleAsH2 ? '' : 'nsw-content-block__title ' }}nsw-p-{{ contentBlock.type == 'icon' and contentBlock.image ? 'bottom' : 'y' }}-sm">
+        {{ contentBlock.title }}
+      </{{ contentBlock.titleAsH2 ? 'h2' : 'h3' }}>
+    {% endif %}
+    {% if contentBlock.date %}
+      <p>{{ contentBlock.date | date("d F Y") }}</p>
+    {% endif %}
+    {% if contentBlock.content %}
+      <div class="nsw-content-block__copy">{{ contentBlock.content }}</div>
+    {% endif %}
+    {% if contentBlock.links %}
+      <ul class="nsw-content-block__list">
+        {% for link in contentBlock.links %}
+          <li>
+            <a href="{{ link.url }}"{% if contentBlock.background == 'dark' %} class="nsw-text--white"{% endif %}>{{ link.title }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% if contentBlock.viewMore %}
+      <div class="nsw-content-block__link">
+        <a href="{{ contentBlock.viewMore.url }}"{% if contentBlock.background == 'dark' %} class="nsw-text--white"{% endif %}>{{ contentBlock.viewMore.title }}</a>
+      </div>
+    {% endif %}
+  </div>
+</div>

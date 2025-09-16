@@ -3,7 +3,46 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com)
-and this project adheres to [Semantic Versioning](https://semver.org).
+and this project adheres to [Semantic Versioning](https://semver.org). This is always true of the master branch. Some earlier branches, including the branch from which you are reading this file, remain supported and security fixes are applied to them; if the security fix represents a breaking change, it may have to be applied as a minor or patch version.
+
+## 2025-09-03 - 2.4.1
+
+### Added
+
+- Option for Readers to create a new blank sheet if none match LoadSheetsOnly list. [PR #4622](https://github.com/PHPOffice/PhpSpreadsheet/pull/4622) Backport of [PR #4618](https://github.com/PHPOffice/PhpSpreadsheet/pull/4618).
+- Remove `imagedestroy` from MemoryDrawing. Backport of [PR #4625](https://github.com/PHPOffice/PhpSpreadsheet/pull/4625).
+
+### Fixed
+
+ - Compatibility changes for Php 8.5. [Issue #4600](https://github.com/PHPOffice/PhpSpreadsheet/issues/4600) [PR #4614](https://github.com/PHPOffice/PhpSpreadsheet/pull/4614) [PR #4594](https://github.com/PHPOffice/PhpSpreadsheet/pull/4594) [PR #4588](https://github.com/PHPOffice/PhpSpreadsheet/pull/4588)
+
+## 2025-08-10 - 2.4.0
+
+### Breaking Changes
+
+- Images will be loaded from an external source (e.g. http://example.com/img.png) only if the reader is explicitly set to allow it via `$reader->setAllowExternalImages(true)`. We do not believe that loading of external images is a widely used feature. This is a necessary change for security purposes. It unfortunately breaks Semantic Versioning for reasons described above; there is no way to start a new major version for this branch.
+
+# 2025-07-23 - 2.3.10
+
+### Added
+
+- Add to all readers the option to allow or forbid fetching external images. This is unconditionally allowed now. The default will be set to "allow", so no code changes are necessary. However, we are giving consideration to changing the default. [PR #4547](https://github.com/PHPOffice/PhpSpreadsheet/pull/4547)
+
+# 2025-06-22 - 2.3.9
+
+### Changed
+
+- Allow php-cs-fixer to Handle Implicit Backslashes.
+
+### Added
+
+- Allow spreadsheet to be serialized. [PR #4407](https://github.com/PHPOffice/PhpSpreadsheet/pull/4407)
+
+### Fixed
+
+- TEXT and TIMEVALUE functions. [Issue #4249](https://github.com/PHPOffice/PhpSpreadsheet/issues/4249) [PR #4354](https://github.com/PHPOffice/PhpSpreadsheet/pull/4354)
+- Removing Columns/Rows Containing Merged Cells. Backport of [PR #4465](https://github.com/PHPOffice/PhpSpreadsheet/pull/4465)
+- Allow Xlsx Reader to Specify ParseHuge. [Issue #4260](https://github.com/PHPOffice/PhpSpreadsheet/issues/4260) [PR #4517](https://github.com/PHPOffice/PhpSpreadsheet/pull/4517)
 
 # 2025-02-07 - 2.3.8
 

@@ -1,0 +1,20 @@
+hide_links:
+  js:
+    js/hide_link.js: {}
+update_links:
+  js:
+    js/update_links.js: {}
+hide_policy:
+  css:
+    theme:
+      css/hide.css: {}
+login_links:
+  css:
+    theme:
+      css/login_links.css: {}
+  js:
+    js/login_links.js: {}
+  dependencies:
+    - core/once
+    - dphi_base_theme/component.form
+    - dphi_base_theme/component.in_page_alert

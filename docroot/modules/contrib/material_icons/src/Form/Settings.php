@@ -2,11 +2,9 @@
 
 namespace Drupal\material_icons\Form;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\material_icons\Traits\MaterialIconsSettings;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Admin settings for Material Icons.

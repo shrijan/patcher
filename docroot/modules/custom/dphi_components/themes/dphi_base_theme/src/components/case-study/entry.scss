@@ -1,0 +1,54 @@
+@import '../../base';
+
+.caseStudy {
+  &.border {
+    .nsw-col {
+      border: 1px solid var(--nsw-grey-03);
+      &:not(:first-child) {
+        border-top: none;
+      }
+    }
+    .nsw-col-12 {
+      border-top: none;
+    }
+    @include breakpoint('md') {
+      .nsw-col:nth-child(2) {
+        border-top: 1px solid var(--nsw-grey-03);
+      }
+    }
+    @include breakpoint('lg') {
+      .nsw-col-lg-4 {
+        &:nth-child(2):not(:last-child) {
+          border-right: none;
+        }
+        &:nth-child(3) {
+          border-top: 1px solid var(--nsw-grey-03);
+        }
+      }
+    }
+  }
+
+  .icon {
+    display: flex;
+    align-items: center;
+    font-size: 2.5rem;
+    width: 2.5rem;
+    height: 4rem;
+    margin-right: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .heading {
+    font-weight: var(--nsw-font-bold);
+    font-size: 1.2rem;
+    line-height: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--nsw-brand-accent);
+    &.brand-dark {
+      color: var(--nsw-brand-dark);
+    }
+    &.brand-supplementary {
+      color: var(--nsw-brand-supplementary);
+    }
+  }
+}

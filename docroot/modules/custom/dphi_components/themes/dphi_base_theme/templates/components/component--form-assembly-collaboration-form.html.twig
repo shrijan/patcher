@@ -1,0 +1,5 @@
+{{ attach_library('dphi_base_theme/component.form_assembly') }}
+
+{# Despite the danger, 'raw' is used here as fields include both inline and external JS #}
+{{ formAssembly.head|raw }}
+{{ formAssembly.body|raw }}

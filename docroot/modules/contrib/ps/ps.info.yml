@@ -2,11 +2,11 @@ name: Paragraphs Stats
 type: module
 description: Generates reports on paragraph types and builds usage metrics.
 package: Paragraphs
-core_version_requirement: ^9 || ^10
+core_version_requirement: ^9 || ^10 || ^11
 dependencies:
   - drupal:paragraphs
 
-# Information added by Drupal.org packaging script on 2023-09-29
-version: '1.0.0'
+# Information added by Drupal.org packaging script on 2025-03-28
+version: '1.0.2'
 project: 'ps'
-datestamp: 1696004710
+datestamp: 1743182127

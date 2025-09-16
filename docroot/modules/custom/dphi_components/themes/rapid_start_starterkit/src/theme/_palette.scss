@@ -1,0 +1,44 @@
+/*
+
+This file allows you to configure/override any values that are set in the standard DDS colour themes.
+
+It is also possible to add new colour variables in this section, as everything that is defined will be output into the generated CSS file as a CSS variable, with the name `--nsw-[variable-name]`.
+
+Note that if you don't wish to override a colour from the DDS you can either remove the line from here or comment it out, and a new version will not be generated.
+*/
+
+$brand-dark: #002664;
+$brand-supplementary: #146cfd;
+$brand-accent: #d7153a;
+$black: #000;
+$grey-01: #22272b;
+$grey-02: #495054;
+$grey-event: #4c4f55;
+$grey-03: #cdd3d6;
+$grey-04: #ebebeb;
+$off-white: #f2f2f2;
+$white: #fff;
+$text-dark: #22272b;
+$text-light: #fff;
+$text-hover-light: rgba($text-light, 0.2);
+$link: #002664;
+$link-light: #e6e9f0;
+$visited: #551a8b;
+$visited-light: #ddd1e8;
+$focus: #0086b3;
+$focus-light: #cce7f0;
+$disabled: #8093b2;
+$status-success: #008a07;
+$status-success-bg: #e5f6e6;
+$status-info: #2e5299;
+$status-info-bg: #eaedf4;
+$status-warning: #c95000;
+$status-warning-bg: #fbeee5;
+$status-error: #b81237;
+$status-error-bg: #f7e7eb;
+$hover: rgba(#0085b3, 0.2);
+$active: rgba($link, 0.2);
+$hover-light: rgba($link-light, 0.1);
+$active-light: rgba($link-light, 0.2);
+$link: #002664;
+$link-light: #e6e9f0;

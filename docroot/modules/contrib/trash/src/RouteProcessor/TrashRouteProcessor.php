@@ -33,14 +33,12 @@ class TrashRouteProcessor implements OutboundRouteProcessorInterface {
     // displayed on the page (e.g. local tasks) have the proper trash context.
     $request = $this->requestStack->getCurrentRequest();
     $current_route = $this->routeMatch->getRouteObject();
-    if (!$request || $current_route) {
+    if (!$request || !$current_route) {
       return;
     }
 
-    // Ensure that the code can also be executed when there is no active route
-    // match, like on exception responses.
-    if (($route_name = $this->routeMatch->getRouteName()) && $request->query->has('in_trash')) {
-      $parts = explode('.', $route_name);
+    if ($request->query->has('in_trash')) {
+      $parts = explode('.', $this->routeMatch->getRouteName());
       if ($parts[0] === 'entity') {
         $entity_type_id = $parts[1];
         $entity_id = $this->routeMatch->getRawParameter($entity_type_id);

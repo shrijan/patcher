@@ -1,0 +1,125 @@
+@import '../../base';
+
+.stepsTimeline {
+  counter-reset: step;
+  list-style: none;
+  margin-top: .3rem;
+  padding-left: 0;
+  --color: var(--nsw-brand-accent);
+
+  &.brand-dark {
+    --color: var(--nsw-brand-dark);
+  }
+  &.brand-supplementary {
+    --color: var(--nsw-brand-supplementary);
+  }
+
+  &.h3 > li {
+    @include breakpoint('lg') {
+      padding-left: rem(64px);
+    }
+    &::before {
+      top: rem(-2px);
+
+      @include breakpoint('lg') {
+        width: rem(40px);
+        height: rem(40px);
+        top: rem(-4px);
+      }
+    }
+    &::after {
+      top: rem(30px);
+      bottom: rem(2px);
+
+      @include breakpoint('lg') {
+        top: rem(36px);
+        bottom: rem(4px);
+        left: rem(18px);
+      }
+    }
+  }
+  &.h4 > li {
+    @include breakpoint('lg') {
+      padding-left: rem(56px);
+    }
+
+    &::before {
+      top: rem(-4px);
+
+      @include breakpoint('lg') {
+        width: rem(32px);
+        height: rem(32px);
+        top: rem(-2px);
+      }
+    }
+    &::after {
+      top: rem(28px);
+      bottom: rem(4px);
+
+      @include breakpoint('lg') {
+        top: rem(30px);
+        bottom: rem(2px);
+        left: rem(14px);
+      }
+    }
+  }
+  &.number > li::before {
+    counter-increment: step;
+    content: counter(step);
+    color: var(--color);
+    font-weight: var(--nsw-font-bold);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  > li {
+    position: relative;
+    margin-top: 0;
+    padding: 0 0 rem(24px) rem(48px);
+
+    @include breakpoint('lg') {
+      padding: 0 0 rem(32px) rem(72px);
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: rem(1px);
+      left: 0;
+      width: rem(32px);
+      height: rem(32px);
+      border: rem(4px) solid var(--color);
+      border-radius: 100%;
+
+      @include breakpoint('lg') {
+        width: rem(48px);
+        height: rem(48px);
+        top: rem(-4px);
+      }
+    }
+    &.complete::before {
+      color: var(--nsw-white);
+      background-color: var(--color);
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: rem(33px);
+      bottom: rem(-1px);
+      left: rem(14px);
+      width: rem(4px);
+      background-color: var(--color);
+
+      @include breakpoint('lg') {
+        top: rem(44px);
+        left: rem(22px);
+        bottom: rem(4px);
+      }
+    }
+    &:last-child::after {
+      bottom: 0;
+    }
+  }
+}

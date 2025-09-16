@@ -1,0 +1,9 @@
+<div class="component--content-blocks">
+  <div class="nsw-grid nsw-grid--spaced">
+    {% for contentBlock in contentBlocks.varients %}
+      <div class="nsw-col nsw-col-md-6 nsw-col-lg-{{ contentBlocks.layout }}">
+        {% include '@dphi_base_theme/components/component--content-block.html.twig' %}
+      </div>
+    {% endfor %}
+  </div>
+</div>

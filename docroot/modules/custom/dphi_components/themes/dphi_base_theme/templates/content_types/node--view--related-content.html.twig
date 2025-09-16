@@ -1,0 +1,31 @@
+{{ attach_library('dphi_base_theme/component.card') }}
+<div class="nsw-col nsw-col-md-6 nsw-col-lg-4">
+  <div class="nsw-card nsw-card--highlight">
+    {% if content.image %}
+      <div class="nsw-card__image">
+        {{ content.image }}
+      </div>
+    {% endif %}
+    <div class="nsw-card__content">
+      {% if content.field_tags %}
+        <div class="nsw-card__tag-wrapper">
+          {% for item in content.field_tags['#items'] %}
+            <div class="nsw-card__tag nsw-tag nsw-bg--white">{{ item.entity.getName() }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% if content.field_publish_event_date %}
+        <div class="nsw-card__date">{{ content.field_publish_event_date }}</div>
+      {% endif %}
+      <div class="nsw-card__title">
+        {% if node.label %}<a href="{{ url }}">{% endif %}
+        {{ node.label }}
+        {% if node.label %}</a>{% endif %}
+      </div>
+      {% if content.field_short_description %}
+        <div class="nsw-card__copy">{{ content.field_short_description }}</div>
+      {% endif %}
+      <span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">east</span>
+    </div>
+  </div>
+</div>

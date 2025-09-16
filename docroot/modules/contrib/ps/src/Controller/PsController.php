@@ -3,6 +3,7 @@
 namespace Drupal\ps\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\paragraphs\ParagraphInterface;
 use Drupal\ps\ParagraphsStats;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -50,6 +51,13 @@ class PsController extends ControllerBase {
    */
   public function showStatsDrillDownReport(Request $request, $contentType, $paragraph, $bundle) {
     return $this->paragraphsStats->showUtilizationDrillDown($contentType, $paragraph, $bundle);
+  }
+
+  /**
+   * Outputs a report indicating where the given paragraph is used.
+   */
+  public function showParagraphUsage(ParagraphInterface $paragraph) {
+    return $this->paragraphsStats->showParagraphUsage($paragraph);
   }
 
   /**

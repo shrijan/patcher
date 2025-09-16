@@ -1,0 +1,20 @@
+name: Rapid Start Theme
+type: theme
+base theme: dphi_base_theme
+description: Sub-theme to make adjustments to Rapid Start for this site.
+package: DPHI
+core_version_requirement: ^10 || ^11
+version: 1.0.0
+starterkit: true
+libraries:
+  - rapid_start_starterkit/global
+regions:
+  header_branding: 'Header (branding / search)'
+  header_menu: 'Header (primary menu)'
+  breadcrumb: 'Breadcrumb'
+  messages: 'Status Messages'
+  page_top: 'Page top (title)'
+  sidebar_first: 'Submenu left sidebar'
+  content: 'Content'
+  footer_upper: 'Footer (upper)'
+  footer: 'Footer (lower)'

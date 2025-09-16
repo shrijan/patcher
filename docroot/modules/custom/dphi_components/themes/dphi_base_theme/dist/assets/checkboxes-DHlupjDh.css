@@ -1,0 +1,1 @@
+.check-limit{padding:5px}.check-limit:not(.active) .form-checkboxes input:nth-child(n+9),.check-limit:not(.active) .form-checkboxes label:nth-child(n+9){display:none}.check-limit .all-options,.check-limit .less-options{margin-top:20px}.check-limit .all-options:not([hidden]),.check-limit .less-options:not([hidden]){display:inline-block}

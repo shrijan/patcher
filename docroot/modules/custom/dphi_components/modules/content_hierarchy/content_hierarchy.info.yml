@@ -1,0 +1,5 @@
+name: 'Content Hierarchy (Deprecated)'
+type: module
+description: 'Placeholder to allow uninstallation of the stand-alone content hierarchy module which has been deprecated.'
+package: DPHI
+core_version_requirement: ^10 || ^11

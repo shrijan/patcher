@@ -1,0 +1,37 @@
+{{ attach_library('dphi_base_theme/component.list_item') }}
+
+<div class="nsw-list-item {{ item.image_position }} nsw-list-item--block">
+  <div class="nsw-list-item__content">
+
+    {% if item.label %}
+      <div class="nsw-list-item__label">{{ item.label }}</div>
+    {% endif %}
+
+    {% if item.date %}
+      <div class="nsw-list-item__info">{{ item.date | date("d M Y") }}</div>
+    {% endif %}
+
+    {% if item.title %}
+      <div class="nsw-list-item__title">
+        <a href="{{ item.url.getGeneratedUrl() }}" {% if item.type == 1 %}target="_blank" {% endif %}
+           class="multi-link"><span>{{ item.title }}</span></a>
+      </div>
+    {% endif %}
+
+    {% if item.description %}
+      <div class="nsw-list-item__copy">{{ item.description }}</div>
+    {% endif %}
+
+    {% if item.tags %}
+      {% include '@dphi_base_theme/components/component--tags.html.twig' with {tags: item.tags} %}
+    {% endif %}
+
+  </div>
+
+  {% if item.image %}
+    <div class="nsw-list-item__image">
+      {{ item.image }}
+    </div>
+  {% endif %}
+
+</div>

@@ -1,0 +1,21 @@
+administer map_pin types:
+  title: 'Administer map pin types'
+  description: 'Maintain the types of map pin entity.'
+  restrict access: true
+administer map pin:
+  title: 'Administer map pin settings'
+  restrict access: true
+delete map pin:
+  title: Delete map pin
+create map pin:
+  title: Create map pin
+view map pin:
+  title: View map pin
+edit map pin:
+  title: Edit map pin
+view map pin revisions:
+  title: 'View map pin revisions'
+revert map pin revisions:
+  title: 'Revert map pin revisions'
+delete map pin revisions:
+  title: 'Delete map pin revisions'

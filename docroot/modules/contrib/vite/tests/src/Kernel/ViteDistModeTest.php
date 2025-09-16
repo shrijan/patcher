@@ -11,7 +11,7 @@ use Drupal\Tests\vite\ViteKernelTestBase;
  */
 class ViteDistModeTest extends ViteKernelTestBase {
 
-  protected const string TEST_EXTENSION = 'test_module_vite5';
+  protected const TEST_EXTENSION = 'test_module_vite5';
 
   /**
    * {@inheritdoc}
@@ -38,6 +38,7 @@ class ViteDistModeTest extends ViteKernelTestBase {
     $this->assertLibraryCssAssetPath(
       '/dist/assets/button-D8pfZ1QP.css',
       $this->getComponentLibraryDefinition('button'),
+      isSDC: TRUE,
     );
   }
 
@@ -45,6 +46,7 @@ class ViteDistModeTest extends ViteKernelTestBase {
     $this->assertLibraryJsAssetPath(
       '/dist/assets/button-FEBBvLX1.js',
       $this->getComponentLibraryDefinition('button'),
+      isSDC: TRUE,
     );
   }
 

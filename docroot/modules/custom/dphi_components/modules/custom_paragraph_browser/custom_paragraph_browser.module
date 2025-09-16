@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * @file
+ * Contains custom_paragraph_browser.module.
+ */
+ 
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function custom_paragraph_browser_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+    if(str_starts_with($form_id, 'paragraphs_browser_form')){
+        $form['paragraph_types']['pb_modal_text'] = [
+            '#title' => t('Search'),
+            '#type' => 'textfield',
+            '#size' => 20,
+            '#placeholder' => t('Enter a keyword'),
+            ];
+    }
+}

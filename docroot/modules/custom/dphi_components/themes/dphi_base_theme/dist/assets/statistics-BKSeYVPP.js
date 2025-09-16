@@ -1,0 +1,1 @@
+Drupal.behaviors.statistics={attach:()=>{once("statistics",".statistics .dynamicCounter .number").forEach(e=>{let t=0;const i=parseInt(e.innerText.replace(/[^0-9]/g,"")),s=()=>{t+=1,e.innerText=t,t<i&&setTimeout(s,50)};s()})}};

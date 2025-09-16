@@ -26,10 +26,9 @@ class Manifest {
    */
   public function __construct(
     string $manifestPath,
-    protected string $baseUri,
   ) {
-    $realManifestPath = realpath($manifestPath);
-    if ($realManifestPath === FALSE) {
+    $realManifestPath = Vite::getAbsolutePath($manifestPath);
+    if (!file_exists($realManifestPath)) {
       throw new ManifestNotFoundException("Manifest file was not found under path: $manifestPath");
     }
 
@@ -44,33 +43,29 @@ class Manifest {
     }
 
     $this->manifest = $manifest;
-
-    if (!is_array(parse_url($baseUri))) {
-      throw new \InvalidArgumentException("Failed to parse base uri: $baseUri");
-    }
   }
 
   /**
    * Returns resolved path of given chunk.
    */
-  public function getChunk(string $chunk, bool $prependBaseUri = TRUE): ?string {
+  public function getChunk(string $chunk): ?string {
     if (!$this->chunkExists($chunk)) {
       return NULL;
     }
-    return $this->getPath($this->manifest[$chunk]['file'], $prependBaseUri);
+    return $this->manifest[$chunk]['file'];
   }
 
   /**
    * Returns imports paths of given chunk.
    */
-  public function getImports(string $chunk, bool $prependBaseUri = TRUE): array {
-    return $this->getChunkPropertyPaths('imports', $chunk, $prependBaseUri);
+  public function getImports(string $chunk): array {
+    return $this->getChunkPropertyPaths('imports', $chunk);
   }
 
   /**
    * Returns styles paths of given chunk.
    */
-  public function getStyles(string $chunk, bool $prependBaseUri = TRUE): array {
+  public function getStyles(string $chunk): array {
     if (
       !$this->chunkExists($chunk)
       || !isset($this->manifest[$chunk]['css'])
@@ -79,17 +74,14 @@ class Manifest {
       return [];
     }
 
-    return array_filter(array_map(
-      fn($import) => $this->getPath($import, $prependBaseUri),
-      $this->manifest[$chunk]['css'],
-    ));
+    return array_filter($this->manifest[$chunk]['css'], fn($path) => is_string($path));
   }
 
   /**
    * Returns assets paths of given chunk.
    */
-  public function getAssets(string $chunk, bool $prependBaseUri = TRUE): array {
-    return $this->getChunkPropertyPaths('assets', $chunk, $prependBaseUri);
+  public function getAssets(string $chunk): array {
+    return $this->getChunkPropertyPaths('assets', $chunk);
   }
 
   /**
@@ -100,16 +92,9 @@ class Manifest {
   }
 
   /**
-   * Resolves asset path.
-   */
-  private function getPath(string $assetPath, bool $prependBaseUri = TRUE): string {
-    return ($prependBaseUri ? $this->baseUri : '') . $assetPath;
-  }
-
-  /**
    * Returns resolved paths of given chunk's property.
    */
-  private function getChunkPropertyPaths(string $property, string $chunk, bool $prependBaseUri = TRUE): array {
+  private function getChunkPropertyPaths(string $property, string $chunk): array {
     if (
       !$this->chunkExists($chunk)
       || !isset($this->manifest[$chunk][$property])
@@ -119,9 +104,9 @@ class Manifest {
     }
 
     return array_filter(array_map(
-      fn($import) => $this->getChunk($import, $prependBaseUri),
+      fn($import) => $this->getChunk($import),
       $this->manifest[$chunk][$property],
-    ));
+    ), fn($path) => is_string($path));
   }
 
 }

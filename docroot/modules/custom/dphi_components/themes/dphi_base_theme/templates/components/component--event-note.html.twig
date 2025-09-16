@@ -1,0 +1,15 @@
+{% if date %}
+  {% set date_diff = (date.value|date('U') - 'now'|date('m/d/y')|date('U')) / 86400 %}
+  <div class="nsw-m-bottom-xs event-note event-note--{{ date_diff >= 0 ? 'upcoming' : 'past' }}">
+    <span class="material-icons" focusable="false" aria-hidden="true">insert_invitation</span>
+    <span>
+      {% if date_diff > 0 %}
+        Event in {{ date_diff|round(0, 'ceil') }} day{% if date_diff > 1 %}s{% endif %}
+      {% elseif date_diff == 0 %}
+        Event today
+      {% else %}
+        {{ 'Past event'|t }}
+      {% endif %}
+    </span>
+  </div>
+{% endif %}

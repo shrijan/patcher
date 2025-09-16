@@ -1,0 +1,25 @@
+{{ attach_library('dphi_base_theme/component.media') }}
+
+{% set classes = [
+  media.camera_icon ? 'show-camera-icon' : 'hide-camera-icon',
+  (media.link or media.description_caption) ? 'has-caption'
+] %}
+<div class="nsw-display-flex nsw-justify-content-center component--media {{ classes|join(' ') }}">
+  <div class="{{ media.media_width }} nsw-display-flex nsw-flex-column">
+    {{ media.media }}
+    {% if media.link or media.description_caption %}
+      <figcaption class="nsw-p-sm xs nsw-small {% if media.text_background == 'grey' %}
+        nsw-bg--off-white
+      {% elseif media.text_background == 'light' %}
+        nsw-bg--brand-light
+      {% elseif media.text_background == 'dark' %}
+        nsw-bg--brand-dark nsw-text--light
+      {% endif %}">
+        {{ media.description_caption }}
+        {% if media.link %}
+          <a href="{{ media.link.url }}" class="nsw-display-block nsw-m-top-xs{% if media.text_background == 'dark' %} nsw-text--light{% endif %}">{{ media.link.text }}</a>
+        {% endif %}
+      </figcaption>
+    {% endif %}
+  </div>
+</div>

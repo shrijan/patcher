@@ -1,0 +1,11 @@
+global-styling:
+  version: VERSION
+  js: 
+    js/nsw_admin_scripts.js: {}
+  css:
+    base:
+      css/nsw_admin_theme_style.css: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+

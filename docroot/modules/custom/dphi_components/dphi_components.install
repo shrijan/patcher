@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * Install map pin entities.
+ */
+function dphi_components_update_10200() {
+  $entity_type = \Drupal::entityTypeManager()->getDefinition('map_pin');
+  \Drupal::entityDefinitionUpdateManager()->installEntityType($entity_type);
+}
+
+/**
+ * Fix UUID mismatches.
+ */
+function dphi_components_update_10201() {
+  \Drupal\dphi_components\Updates\ConfigUUIDMismatchResolver::update10201();
+}
+
+/**
+ * Install map pin type entities.
+ */
+function dphi_components_update_10202(&$sandbox) {
+  \Drupal\dphi_components\Updates\MapPinTypeInstaller::installMapPinType();
+  \Drupal\dphi_components\Updates\MapPinTypeInstaller::updateMapPins($sandbox);
+}
+
+/**
+ * Update search views.
+ */
+function dphi_components_update_10203(&$sandbox) {
+  \Drupal\dphi_components\Updates\ContentSearchFilterFieldsets::update10203();
+  \Drupal\dphi_components\Updates\AcquiaSearchFilterFieldsets::update10203();
+}

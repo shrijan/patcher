@@ -71,6 +71,12 @@ class Autocomplete extends ControllerBase {
 
   /**
    * Handler for autocomplete request.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The current request.
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *   The JSON response.
    */
   public function handleAutocomplete(Request $request) {
     $font_family = $request->query->get('font_family');
@@ -143,15 +149,16 @@ class Autocomplete extends ControllerBase {
    * Grabs icons from Google.
    *
    * @todo create a fallback.
-   * @param $request
-   *    The current request.
-   * @param $font_set
-   *    The active font set being used.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The current request.
+   * @param string $font_set
+   *   The active font set being used.
+   *
    * @return array
    *   The icon list.
    */
-  protected function getIconMeta($request, $font_set) {
-
+  protected function getIconMeta(Request $request, $font_set) {
     // Gets default font set information.
     $cache_string = $this->getCacheString($font_set);
     $meta_url = $this->getFontSetMetaUrl($font_set);
@@ -192,6 +199,8 @@ class Autocomplete extends ControllerBase {
    *
    * @param string $icon
    *   The icon.
+   * @param string $font_set
+   *   The font set.
    *
    * @return \Drupal\Component\Render\FormattableMarkup
    *   A renderable markup object.
@@ -209,7 +218,7 @@ class Autocomplete extends ControllerBase {
       $icons_html .= '<i class="' . $class_name . '" title="' . $family . '">:icon</i>';
     }
 
-      return new FormattableMarkup('<div class="mi-result">' . $icons_html . '<span>:icon</span></div>', [
+    return new FormattableMarkup('<div class="mi-result">' . $icons_html . '<span>:icon</span></div>', [
       ':icon' => $icon,
     ]);
   }

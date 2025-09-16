@@ -1,0 +1,11 @@
+@import '../../base';
+@import 'nsw-design-system/src/components/main-nav/_main-nav';
+.nsw-main-nav {
+  z-index: 300;
+}
+.nsw-main-nav__sub-nav {
+  &.active {
+    // the local tasks menu is being given a z-index of 200
+    z-index: 220;
+  }
+}

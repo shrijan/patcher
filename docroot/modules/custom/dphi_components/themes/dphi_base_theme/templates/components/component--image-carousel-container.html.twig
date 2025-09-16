@@ -1,0 +1,25 @@
+{{ attach_library('dphi_base_theme/component.image_carousel_container') }}
+
+<div class="component--image-carousel-container {{ imageCarouselContainer.width }} splide">
+  <div class="splide__track">
+    <ul class="splide__list">
+      {% for imageCarousel in imageCarouselContainer.items %}
+        <li class="splide__slide">
+          {% include '@dphi_base_theme/components/component--image-carousel.html.twig' %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% if imageCarouselContainer.items|length != 1 %}
+    <div class="splide__arrows">
+      <button class="splide__arrow splide__arrow--prev nsw-icon-button">
+        <span class="material-icons nsw-material-icons" role="button" focusable="false" aria-hidden="true">keyboard_arrow_left</span>
+        <span class="sr-only">Previous Slide</span>
+      </button>
+      <button class="splide__arrow splide__arrow--next nsw-icon-button">
+        <span class="material-icons nsw-material-icons" role="button" focusable="false" aria-hidden="true">keyboard_arrow_right</span>
+        <span class="sr-only">Next Slide</span>
+      </button>
+    </div>
+  {% endif %}
+</div>

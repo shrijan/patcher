@@ -1,0 +1,17 @@
+{{ attach_library('dphi_base_theme/component.button_set') }}
+<header class="nsw-card-list-header">
+  {% if button_set.title is not empty %}
+    <h2 class="component-heading nsw-m-y-sm">
+      {{ button_set.title }}
+    </h2>
+  {% endif %}
+  {% if button_set.description is not empty %}
+    <div class="description">{{ button_set.description }}</div>
+  {% endif %}
+</header>
+<div class="buttons">
+  {% for button in button_set.buttons %}
+    <a class="nsw-button nsw-button-flex nsw-button--dark-outline button_count_{{ button_set.buttons_count }}"
+       href="{{ button.url }}"><span>{{ button.text }}</span></a>
+  {% endfor %}
+</div>

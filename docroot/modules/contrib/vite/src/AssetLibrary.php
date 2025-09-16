@@ -23,12 +23,14 @@ class AssetLibrary {
 
   use StringTranslationTrait;
 
-  const string DEFAULT_VITE_DEV_SERVER_URL = 'http://localhost:5173';
+  const DEFAULT_VITE_DEV_SERVER_URL = 'http://localhost:5173';
 
-  const array DEFAULT_MANIFEST_LOOKUP_PATHS = [
-    'dist/manifest.json',
-    'dist/.vite/manifest.json',
-  ];
+  /**
+   * Manifest path relative to the vite dist directory.
+   */
+  const MANIFEST_PATH = '.vite/manifest.json';
+
+  const DEFAULT_DIST_PATH = 'dist';
 
   /**
    * Constructs AssetLibrary object.
@@ -67,17 +69,17 @@ class AssetLibrary {
     }
 
     $manifestPath = $this->getManifestPath();
-    $baseUrl = $this->getBaseUrl();
 
     try {
-      return new Manifest($manifestPath, $baseUrl);
+      return new Manifest($manifestPath);
     }
     catch (ManifestNotFoundException | ManifestCouldNotBeLoadedException $e) {
       $args = [
         '@extension' => $this->extension,
         '@library' => $this->libraryId,
-        '@path_to_manifest' => $this->getManifestRelativePath(),
+        '@path_to_manifest' => $this->getManifestPath(),
       ];
+      // @todo Update error message to add reference to remove reference to deprecated manifest setting.
       $this->messenger->addError($this->t("Could not load vite manifest for the library `@extension/@library` (@path_to_manifest). Perhaps you forgot to build frontend assets, try running `vite build` in the `@extension` theme/module. Also ensure that vite is configured to output manifest to `dist/manifest.json` in the theme/module main directory or that a different path is correctly set in `@extension.libraries.yml` in `@library.vite.manifest`.", $args));
       $this->logger->error("Could not load vite manifest for the library `@extension/@library` (@path_to_manifest). Perhaps you forgot to build frontend assets, try running `vite build` in the `@extension` theme/module. Also ensure that vite is configured to output manifest to `dist/manifest.json` in the theme/module main directory or that a different path is correctly set in `@extension.libraries.yml` in `@library.vite.manifest`.", $args);
     }
@@ -87,49 +89,22 @@ class AssetLibrary {
   /**
    * Returns base url used in rewriting library for dist.
    */
-  private function getBaseUrl(): string {
-    $baseUrl = $this->resolveViteSetting('baseUrl');
-
-    // Fallback.
-    if (!is_string($baseUrl)) {
-      $baseUrl = '/' . $this->getExtensionBasePath() . '/dist/';
-    }
-    return $baseUrl;
+  public function getBaseUrl(): ?string {
+    return $this->resolveViteSetting('baseUrl');
   }
 
   /**
    * Returns absolute vite manifest path.
    */
-  private function getManifestPath(): string {
-    $manifestPath = $this->getManifestRelativePath();
-    $basePath = $this->getExtensionBasePath();
-    return $this->appRoot . '/' . $basePath . '/' . $manifestPath;
-  }
-
-  /**
-   * Returns relative vite manifest path.
-   */
-  private function getManifestRelativePath(): string {
-    // Get configured value.
-    $manifestPath = $this->resolveViteSetting('manifest');
-    if (is_string($manifestPath)) {
-      return $manifestPath;
-    }
-    // Or fallback to hardcoded defaults.
-    // Check if manifest is present in one of the default locations.
-    foreach (self::DEFAULT_MANIFEST_LOOKUP_PATHS as $path) {
-      if (file_exists($this->appRoot . '/' . $this->getExtensionBasePath() . '/' . $path)) {
-        return $path;
-      }
-    }
-    // Return last default manifest lookup path.
-    return self::DEFAULT_MANIFEST_LOOKUP_PATHS[array_key_last(self::DEFAULT_MANIFEST_LOOKUP_PATHS)];
+  public function getManifestPath(): string {
+    $distDir = $this->getDistDir();
+    return $distDir . '/' . self::MANIFEST_PATH;
   }
 
   /**
    * Returns library extension (module/theme) base path.
    */
-  private function getExtensionBasePath(): string {
+  public function getExtensionBasePath(): string {
     if ($this->themes->exists($this->extension)) {
       return $this->themes->getPath($this->extension);
     }
@@ -374,6 +349,74 @@ class AssetLibrary {
    */
   public function isSdc(): bool {
     return $this->isSdc;
+  }
+
+  /**
+   * Get vite root path.
+   */
+  public function getViteRoot(): string {
+    // Get configured value.
+    $viteRoot = $this->resolveViteSetting('viteRoot');
+    // Fallback to extension root.
+    if (!is_string($viteRoot)) {
+      $viteRoot = '.';
+    }
+
+    // Resolve vite root path relative to the app root.
+    if ($viteRoot === '.') {
+      $viteRootPath = $this->getExtensionBasePath();
+    }
+    elseif (str_starts_with($viteRoot, '/')) {
+      $viteRootPath = $viteRoot;
+    }
+    else {
+      $viteRootPath = $this->getExtensionBasePath() . '/' . $viteRoot;
+    }
+
+    $viteRootPath = ltrim($viteRootPath, '/');
+    $realViteRootPath = Vite::getAbsolutePath($this->appRoot . '/' . $viteRootPath);
+    if (!is_string($realViteRootPath)) {
+      throw new \Exception('Could not resolve vite root path.');
+    }
+
+    return $realViteRootPath;
+  }
+
+  /**
+   * Get absolute vite dist directory path.
+   */
+  public function getDistDir(): string {
+    $distDirPath = $this->resolveViteSetting('distDir');
+
+    // If dist path is not explicitly set, try to resolve it based on deprecated manifest path setting.
+    $manifestPath = $this->resolveViteSetting('manifest');
+    if (is_null($distDirPath) && is_string($manifestPath)) {
+      $args = ['@library' => $this->extension . '/' . $this->libraryId];
+      $this->messenger->addWarning($this->t("Vite module 'manifest' config option is deprecated. Use 'distDir' instead. (@library)", $args));
+      $this->logger->warning("Vite module 'manifest' config option is deprecated. Use 'distDir' instead. (@library)", $args);
+      $realManifestPath = Vite::getAbsolutePath(
+        $this->getViteRoot() . '/' . ltrim($manifestPath, '/')
+      );
+      if (is_string($realManifestPath)) {
+        $distDotVitePath = dirname($realManifestPath);
+        $distDirPath = Vite::getAbsolutePath($distDotVitePath . '/..');
+        if (is_string($distDirPath)) {
+          return $distDirPath;
+        }
+      }
+    }
+
+    // Fallback to default dist path.
+    $distDirPath = $distDirPath ?? self::DEFAULT_DIST_PATH;
+    // Normalize dist path.
+    $distDirPath = trim($distDirPath, '/');
+
+    $absoluteDistDirPath = Vite::getAbsolutePath($this->getViteRoot() . '/' . $distDirPath);
+    // If configured dist path is not valid, fallback to default.
+    if (!is_string($absoluteDistDirPath)) {
+      $absoluteDistDirPath = $this->appRoot . '/' . $this->getExtensionBasePath() . '/' . self::DEFAULT_DIST_PATH;
+    }
+    return $absoluteDistDirPath;
   }
 
 }

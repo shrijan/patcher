@@ -1,0 +1,17 @@
+{{ attach_library('dphi_base_theme/component.global_alert') }}
+
+<div class="nsw-global-alert js-global-alert {% if globalAlert.type %}nsw-global-alert--{{ globalAlert.type }}{% endif %}" role="alert">
+  <div class="nsw-global-alert__wrapper">
+    <div class="nsw-global-alert__content">
+      <div class="nsw-global-alert__title">{{ globalAlert.title }}</div>
+      {{ globalAlert.content }}
+    </div>
+    {% if globalAlert.cta %}
+      <p><a href="{{ globalAlert.url }}" class="nsw-button nsw-button--{% if globalAlert.type == 'light' %}info{% else %}white{% endif %}">{{ globalAlert.cta }}</a></p>
+    {% endif %}
+    <button class="nsw-icon-button js-close-alert" type="button" aria-expanded="true">
+      <span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">close</span>
+      <span class="sr-only">Close message</span>
+    </button>
+  </div>
+</div>

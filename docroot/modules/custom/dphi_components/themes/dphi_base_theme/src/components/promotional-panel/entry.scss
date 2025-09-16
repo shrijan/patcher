@@ -1,0 +1,98 @@
+@use 'sass:map';
+@import '../../base';
+
+.component_promotional_panel {
+  overflow: hidden;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
+
+  &.parallax {
+    background-attachment: fixed;
+  }
+
+  @media screen and (max-width: 767px) {
+    background-image: var(--rs-parallax-mobile-bg, 'none');
+  }
+  @media screen and (min-width: 768px) {
+    background-image: var(--rs-parallax-desktop-bg, 'none');
+  }
+
+  &__wrapper {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4.5rem 0;
+    color: inherit;
+
+    @include breakpoint(lg) {
+      padding-top: 7.5rem;
+      padding-bottom: 7.5rem;
+    }
+  }
+
+  &__card {
+    position: relative;
+    z-index: 1;
+    padding: 1rem;
+    width: 95%;
+    text-align: center;
+    color: inherit;
+    border-radius: var(--nsw-border-radius);
+
+    &.opacity {
+      opacity: .9;
+    }
+
+    p {
+      margin-top: 1rem;
+    }
+
+    @include media-breakpoint-up(lg) {
+      max-width: 1168px;
+      padding: 2.5rem 3.25rem;
+    }
+
+    a {
+      margin-top: 1rem;
+    }
+  }
+
+  &__title {
+    h3 {
+      font-size: 2rem;
+    }
+  }
+}
+
+$page-themes: (
+  'dark': 'light',
+  'light': 'dark',
+  'supplementary': 'light',
+  'accent': 'light',
+  'white': 'dark',
+);
+
+.component_promotional_panel {
+  &__card {
+    background-color: var(--nsw-palette-white);
+    color: var(--nsw-text-dark);
+  }
+
+  @each $theme, $text in $page-themes {
+    $amp: &;
+    &.brand-#{$theme} {
+      #{$amp}__card {
+        @if $theme == 'white' {
+          background-color: var(--nsw-palette-white);
+        } @else {
+          background-color: var(--nsw-brand-#{$theme});
+        }
+        color: var(--nsw-text-#{$text});
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+@import '../../base';
+
+@import 'nsw-design-system/src/components/tooltip/tooltip';
+.nsw-bg--brand-dark {
+  .nsw-tooltip, .nsw-toggletip {
+    border-bottom: 2px dotted var(--nsw-white) !important;
+  }
+}

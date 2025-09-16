@@ -1,0 +1,40 @@
+<div class="nsw-display-flex nsw-justify-content-between nsw-align-items-center">
+  {% if listing.title %}
+    <h2>{{ listing.title }}</h2>
+  {% endif %}
+  {% if listing.link_url %}
+    <a href="{{ listing.link_url }}">
+      {{ listing.link_text ?: 'View all' }}<span class="material-icons nsw-material-icons nsw-align-top nsw-m-left-xs" focusable="false" aria-hidden="true">east</span>
+    </a>
+  {% endif %}
+</div>
+{% if listing.list %}
+  <div class="nsw-grid">
+    {% for item in listing.list %}
+      <div class="nsw-col nsw-col-md-6 nsw-col-lg-4">
+        {% set image %}
+          {{ item.image }}
+          {% if item.content_category_value == 2 %}
+            {% include '@dphi_base_theme/components/component--event-note.html.twig' with {
+              date: item.date,
+              content_category: 'events'
+            } %}
+          {% endif %}
+        {% endset %}
+        {% include '@dphi_base_theme/components/component--card.html.twig' with {
+          card: {
+            highlight: true,
+            theme: 'white',
+            image,
+            title: item.title,
+            description: item.description,
+            date: item.date,
+            link: item.link,
+            tags: item.tags,
+            endIcon: 'east'
+          }
+        } %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}

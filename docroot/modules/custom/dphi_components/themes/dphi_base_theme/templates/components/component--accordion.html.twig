@@ -1,0 +1,12 @@
+{% if accordion.title %}
+  <h2>{{ accordion.title }}</h2>
+{% endif %}
+<div class="nsw-accordion js-accordion nsw-m-top-0">
+  <div class="nsw-accordion__toggle">
+    <button type="button">Expand all</button>
+    <button type="button">Collapse all</button>
+  </div>
+  {% for accordionItem in accordion.items %}
+    {% include '@dphi_base_theme/components/component--accordion-item.html.twig' %}
+  {% endfor %}
+</div>

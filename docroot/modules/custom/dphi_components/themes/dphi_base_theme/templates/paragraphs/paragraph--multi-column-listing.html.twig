@@ -1,0 +1,16 @@
+{%
+  set classes = [
+  'component',
+  'component--multi-column-listing',
+  'paragraph',
+  'nsw-container',
+  'paragraph--type--multi-column-listing',
+  view_mode ? 'paragraph--view-mode--' ~ view_mode|clean_class,
+  not paragraph.isPublished() ? 'paragraph--unpublished'
+]
+%}
+<section class="nsw-section component--multi-column-listing--wrapper {{ paragraph.getPaddingControlClass() }}">
+  <div{{ attributes.addClass(classes) }}>
+    {% include '@dphi_base_theme/components/component--multi-column-listing.html.twig' with {multiColumnListing: paragraph.getComponent()} %}
+  </div>
+</section>

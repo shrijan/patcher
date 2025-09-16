@@ -1,0 +1,12 @@
+@import '../../base';
+
+@import 'nsw-design-system/src/components/table/_table';
+
+.nsw-table table {
+  min-width: auto;
+
+  th,
+  td {
+    vertical-align: top;
+  }
+}

@@ -1,0 +1,98 @@
+#main-page-sections--horizontal-tabs .horizontal-tab-button:not(.selected) a[href="#edit-group-top-section"]:before, #main-page-sections--horizontal-tabs .horizontal-tab-button:not(.selected) a[href="#edit-group-middle-left-section"]:before, #main-page-sections--horizontal-tabs .horizontal-tab-button:not(.selected) a[href="#edit-group-middle-right-section"]:before, #main-page-sections--horizontal-tabs .horizontal-tab-button:not(.selected) a[href="#edit-group-bottom-section"]:before {
+  filter: grayscale(100%);
+  opacity: 0.3;
+}
+#main-page-sections--horizontal-tabs a[href="#edit-group-top-section"]:before, #main-page-sections--horizontal-tabs a[href="#edit-group-middle-left-section"]:before, #main-page-sections--horizontal-tabs a[href="#edit-group-middle-right-section"]:before, #main-page-sections--horizontal-tabs a[href="#edit-group-bottom-section"]:before {
+  content: "";
+  width: 53px;
+  height: 81px;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  position: relative;
+  display: block;
+  margin: 0 auto 5px auto;
+  transition: filter 0.2s, opacity 0.2s;
+}
+#main-page-sections--horizontal-tabs a[href="#edit-group-top-section"]:before {
+  background-image: url("/modules/custom/dphi_components/themes/nsw_admin_theme/images/section-top.png");
+}
+#main-page-sections--horizontal-tabs a[href="#edit-group-middle-left-section"]:before {
+  background-image: url("/modules/custom/dphi_components/themes/nsw_admin_theme/images/section-left.png");
+}
+#main-page-sections--horizontal-tabs a[href="#edit-group-middle-right-section"]:before {
+  background-image: url("/modules/custom/dphi_components/themes/nsw_admin_theme/images/section-right.png");
+}
+#main-page-sections--horizontal-tabs a[href="#edit-group-bottom-section"]:before {
+  background-image: url("/modules/custom/dphi_components/themes/nsw_admin_theme/images/section-bottom.png");
+}
+
+.claro-details__wrapper .field--name-field-short-description .form-textarea-wrapper .ck-editor__top,
+.claro-details__wrapper .field--name-field-short-description .form-textarea-wrapper .ck-editor__bottom {
+  display: none;
+}
+.claro-details__wrapper .field--name-field-short-description [data-drupal-selector=edit-field-short-description-0-format] {
+  display: none;
+}
+.claro-details__wrapper .field--name-field-short-description .ck_content {
+  max-height: 100px;
+}
+.claro-details__wrapper .field--name-field-hero-type #hero-example {
+  max-width: 200px;
+  display: inline;
+  height: auto;
+  float: right;
+  margin: 0 0 1rem 0;
+  clear: both;
+}
+
+@media (min-width: 61rem){
+.layout-region--node-main, .layout-region--node-footer {
+    width: 100%!important;
+ }
+}
+
+.js .paragraph-type-title{
+  flex-grow: 1;
+}
+._na.js-form-wrapper.form-wrapper,
+.form-item--field-preview-image-url-0-value{
+    display:none!important;
+}
+.form-select.form-element.form-element--type-select option[value="_na"] {
+     display: none!important;
+}
+.js-form-item.form-item.js-form-type-textfield.form-type--textfield.js-form-item-revision-log.form-item--revision-log{
+  display:none!important;
+}
+.publish-state{
+  font-style:italic;
+  font-weight:bold;
+  color:#333;
+}
+
+ol.lower-roman > li > ol li {
+  list-style-type: lower-roman;
+}
+
+.nsw-table {
+  border: none !important;
+}
+.nsw-table:not(.nsw-table--bordered) th,
+.nsw-table:not(.nsw-table--bordered) td {
+  border: none !important;
+}
+.nsw-table thead {
+  border-bottom: solid 2px #22272b;
+}
+.nsw-table th {
+  background: none !important;
+}
+.nsw-table--striped tr {
+  border-bottom: none;
+}
+.nsw-table--striped tbody tr:nth-of-type(2n) {
+  background-color: #f2f2f2;
+}
+div.ck.ck-toolbar.ck-toolbar_grouping>.ck-toolbar__items {
+  flex-wrap: wrap;
+}

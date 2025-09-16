@@ -1,0 +1,8 @@
+@import '../../base';
+
+@import 'nsw-design-system/src/components/list-item/_list-item';
+
+.nsw-list-item__image .nsw-media {
+  margin-top: 0;
+  margin-bottom: 0;
+}

@@ -1,0 +1,12 @@
+<header class="nsw-card-list-header">
+  {% if listItems.title is not empty %}
+    <h2 class="component-heading nsw-m-y-sm">
+      {{ listItems.title }}
+    </h2>
+  {% endif %}
+  {{ listItems.description }}
+</header>
+
+{% for item in listItems.items %}
+  {% include '@dphi_base_theme/components/component--list-item.html.twig' %}
+{% endfor %}

@@ -9,7 +9,7 @@ Vite [backend integration](https://vitejs.dev/guide/backend-integration) for Dru
 
 This module requires no modules outside of Drupal core.
 
-It's designed to work with [Vite](https://vitejs.dev) 3 or newer.
+It's designed to work with [Vite](https://vitejs.dev) 5 or newer.
 
 ## Installation
 
@@ -22,10 +22,6 @@ It's designed to work with [Vite](https://vitejs.dev) 3 or newer.
 * Configure vite to:
   * generate `manifest.json`
      <https://vitejs.dev/config/build-options.html#build-manifest>
-  * use right right assets base path for production
-     <https://vitejs.dev/config/shared-options.html#base>,
-     usually it will be something like `/themes/custom/my_theme/dist/`
-     or `/modules/custom/my_module/dist/`
   * depending on your setup you may also need to configure dev server host
      and/or port <https://vitejs.dev/config/server-options.html#server-options>
 
@@ -176,12 +172,20 @@ In library definition instead of only enabling vite support by setting
 
 ```yaml
 vite:
-  # By default true, if not set explicitly to false assumed true.
+  # Determines if vite module should be enabled for this library.
   enabled: true
-  # Path to manifest.json, by default `dist/manifest.json`.
-  manifest: vue_app/dist/manifest.json
-  # By default `<path_to_module|theme>/dist/`.
-  baseUrl: '/themes/custom/my_theme/dist/'
+  # Path to vite root directory, by default theme/module directory.
+  # If starts with `/` path is resolved relative to the drupal root
+  # otherwise relative to the theme/module directory.
+  # Setting it for example to `/..` would mean that the vite root directory
+  # in project root outside of drupal app root.
+  viteRoot: '/..'
+  # Vite dist dir path relative to vite root, by default `dist`.
+  # Should be set to the same value as in vite config.
+  distDir: 'web/libraries/dist'
+  # If set is used as base url for dist assets paths from manifest.json instead
+  # of dynamically resolved path relative to drupal web root.
+  baseUrl: 'https://cdn.example.com/dist/'
   # Vite dev server url, by default http://localhost:5173.
   devServerUrl: 'http://localhost:9999'
   # Library dependencies used in dev mode only.
@@ -205,7 +209,8 @@ $settings['vite'] = [
    * override the default one.
    */
   'enabled' => TRUE,
-  'manifest' => 'vue_app/dist/manifest.json',
+  'viteRoot' => '/..',
+  'distDir' => 'web/libraries/dist',
   'baseUrl' => '/some/custom/base/url/used/in/production/for/dist/assets/',
   'devServerUrl' => 'http://localhost:9999',
   'devDependencies' => [
@@ -281,8 +286,7 @@ reactapp.devmode:
 
 reactapp:
   vite:
-    manifest: app/dist/.vite/manifest.json
-    baseUrl: '/modules/custom/mymodule/app/dist/'
+    distDir: app/dist
     devServerUrl: 'http://host.docker.internal:5173/modules/custom/mymodule/app'
     devDependencies:
       - mymodule/reactapp.devmode # This loads the viteDevMode.js when in dev mode only
@@ -293,3 +297,86 @@ reactapp:
     - core/drupalSettings
     - locale/translations
 ```
+
+## Drupal Translations
+
+### 1. Handling Translatable Strings
+
+Drupal dynamically extracts translatable strings from JavaScript files attached to asset libraries,
+during the js_alter hook execution. More precisely, Drupal scans JavaScript files using regular expressions to find
+occurrences of `Drupal.t()` and `Drupal.formatPlural()` and then extracts the string arguments inside these functions,
+identifying them as translatable text.
+
+Once the translatable strings are identified, Drupal looks up the corresponding translations for the detected strings
+based on the active language, and then generates a JavaScript snippet containing the translations and injects
+it into the page.
+
+The extracted translations are stored in the global `window.drupalTranslations` object, an object that acts as a
+lookup table that the `Drupal.t()` function references when performing translations.
+
+### 2. Issues with Minification
+
+Drupal relies on exact matches of `Drupal.t()` in the source code to extract translatable strings.
+However, modern JavaScript minifiers (like Vite) may rename function parameters or alter code structure,
+breaking this detection process.
+
+For example:
+
+```js
+(function (Drupal) {
+  console.log(Drupal.t("Hello"));
+})(Drupal);
+```
+
+After minification:
+
+```js
+(function(i){console.log(i.t("Hello"))})(Drupal);
+```
+
+Since `Drupal.t` is now `i.t`, Drupal's scanner fails to detect "Hello" as translatable.
+
+### 3. Workarounds for Minification Issues
+
+To ensure Drupal can detect `Drupal.t()`:
+
+#### 3.1 Use the global Drupal object directly instead of passing it as a function argument
+
+```js
+(function () {
+    console.log(Drupal.t("Hello"));
+})();
+```
+
+This way, even after minification, `Drupal.t("Hello")` remains unchanged and can be properly detected.
+
+#### 3.2 Use vite-plugin-preserve-drupal-t Vite plugin
+
+This plugin, is designed to handle Drupal's localization functions, such as `Drupal.t` and `Drupal.formatPlural`,
+during the build process. It ensures that these functions are preserved in the final output by temporarily
+replacing them with placeholders during the transformation phase and restoring them in the bundling phase.
+The plugin takes an array of function names (defaulting to `['t', 'formatPlural']`) and dynamically generates
+regular expressions to identify and replace instances of these in the source code. For example, it replaces
+`Drupal.t()` with a placeholder like `__DRUPAL_T__()` to prevent them from being altered or optimized away
+by the build process.
+
+In the bundle generation phase, the plugin iterates through the generated bundle files and restores the original
+function calls by replacing the placeholders back with their original forms (e.g., `__DRUPAL_T__()` back to
+`Drupal.t()`). This ensures that the localization functions remain intact and functional in the final output.
+By dynamically generating the regex patterns and replacements based on the provided function names, the plugin is
+flexible and can be extended to handle additional Drupal localization functions if needed.
+
+Basic usage in a Vite config file:
+
+```js
+import { defineConfig } from "vite"
+import preserveDrupalT from "vite-plugin-preserve-drupal-t"
+
+export default defineConfig({
+  plugins: [
+    preserveDrupalT(),
+  ]
+})
+```
+
+NPM Plugin page: <https://www.npmjs.com/package/vite-plugin-preserve-drupal-t>

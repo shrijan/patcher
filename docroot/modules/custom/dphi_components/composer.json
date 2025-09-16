@@ -1,0 +1,11 @@
+{
+    "name": "dphi/dphi_components",
+    "type": "drupal-custom-module",
+    "authors": [
+        {
+            "name": "Sitback Solutions"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

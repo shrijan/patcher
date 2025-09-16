@@ -1,0 +1,9 @@
+services:
+  dphi_components.padding_update_command:
+    class: Drupal\dphi_components\Drush\Commands\PaddingUpdateCommand
+    tags:
+      - { name: drush.command }
+  dphi_components.sidebar_settings_update_command:
+    class: Drupal\dphi_components\Drush\Commands\SidebarSettingsUpdateCommand
+    tags:
+      - { name: drush.command }

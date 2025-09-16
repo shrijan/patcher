@@ -17,7 +17,7 @@ function gtm_page_attachments(array &$page) {
     $admin_pages = FALSE;
   }
   if ($config->get('enable') && $config->get('google-tag') && $admin_pages) {
-    $google_tag = $config->get('google-tag');
+    $google_tag = preg_replace('/[^a-zA-Z0-9\-]/', '', $config->get('google-tag'));
     $script = "(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=

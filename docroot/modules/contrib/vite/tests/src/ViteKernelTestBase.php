@@ -13,7 +13,7 @@ use Drupal\KernelTests\KernelTestBase;
  */
 class ViteKernelTestBase extends KernelTestBase {
 
-  protected const string TEST_EXTENSION = 'test_module_vite5';
+  protected const TEST_EXTENSION = 'test_module_vite5';
 
   protected LibraryDiscoveryInterface $libraryDiscovery;
 
@@ -46,19 +46,36 @@ class ViteKernelTestBase extends KernelTestBase {
     array $library,
     string $assetType,
     int $assetIndex = 0,
+    bool $isSDC = FALSE,
+    ?string $viteRoot = NULL,
   ): void {
     static::assertArrayHasKey($assetType, $library);
     static::assertArrayHasKey($assetIndex, $library[$assetType]);
     static::assertArrayHasKey('data', $library[$assetType][$assetIndex]);
-    static::assertEquals($this->moduleBasePath . $expectedPath, $library[$assetType][$assetIndex]['data']);
+    $base_path = $viteRoot ? trim($viteRoot, '/') : $this->moduleBasePath;
+    $prefix = $isSDC ? 'core/../' . $base_path : $base_path;
+
+    static::assertEquals($prefix . $expectedPath, $library[$assetType][$assetIndex]['data']);
   }
 
-  protected function assertLibraryCssAssetPath(string $expectedPath, array $library, int $assetIndex = 0): void {
-    $this->assertLibraryAssetPath($expectedPath, $library, 'css', $assetIndex);
+  protected function assertLibraryCssAssetPath(
+    string $expectedPath,
+    array $library,
+    int $assetIndex = 0,
+    bool $isSDC = FALSE,
+    ?string $viteRoot = NULL,
+  ): void {
+    $this->assertLibraryAssetPath($expectedPath, $library, 'css', $assetIndex, $isSDC, $viteRoot);
   }
 
-  protected function assertLibraryJsAssetPath(string $expectedPath, array $library, int $assetIndex = 0): void {
-    $this->assertLibraryAssetPath($expectedPath, $library, 'js', $assetIndex);
+  protected function assertLibraryJsAssetPath(
+    string $expectedPath,
+    array $library,
+    int $assetIndex = 0,
+    bool $isSDC = FALSE,
+    ?string $viteRoot = NULL,
+  ): void {
+    $this->assertLibraryAssetPath($expectedPath, $library, 'js', $assetIndex, $isSDC, $viteRoot);
   }
 
   protected function clearDiscoveryCache(): void {

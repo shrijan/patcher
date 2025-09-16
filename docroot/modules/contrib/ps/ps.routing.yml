@@ -14,6 +14,18 @@ ps.dd_report:
   requirements:
     _permission: 'access paragraphs stats report'
 
+ps.paragraph_dd_report:
+  path: '/admin/reports/paragraphs-stats-report/drill-down/paragraph/{paragraph}'
+  defaults:
+    _title: 'Paragraphs stats paragraph usage report'
+    _controller: 'Drupal\ps\Controller\PsController::showParagraphUsage'
+  requirements:
+    _permission: 'access paragraphs stats report'
+  options:
+    parameters:
+      paragraph:
+        type: entity:paragraph
+
 ps.get.structure:
   path: '/admin/reports/paragraphs-stats-report/update-structure'
   defaults:

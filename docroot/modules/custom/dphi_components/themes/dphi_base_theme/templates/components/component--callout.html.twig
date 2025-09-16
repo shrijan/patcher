@@ -1,0 +1,10 @@
+{{ attach_library('dphi_base_theme/component.callout') }}
+<div class="nsw-callout callout-highlight-{{ callout.highlight_bar }}">
+  {% if callout.icon %}
+    <span class="nsw-material-icons {{ callout.icon_outlined ? 'material-symbols-outlined' : 'material-icons' }} nsw-callout__icon" focusable="false" aria-hidden="true">{{ callout.icon }}</span>
+  {% endif %}
+  <div class="nsw-callout__content">
+    <p class="nsw-h4">{{ callout.heading }}</p>
+    {{ callout.content }}
+  </div>
+</div>

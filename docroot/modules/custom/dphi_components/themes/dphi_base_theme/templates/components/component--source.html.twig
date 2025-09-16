@@ -1,0 +1,38 @@
+{#
+This component is a used to show the source of the image.
+Used for crediting the photographer.
+
+Note: To show this only when source information is present.Implement the control logic is parent component. Eg: Implementation in carousel component.
+#}
+{{ attach_library('dphi_base_theme/component.source') }}
+
+{% set imageCredit = imageCredit|default("") %}
+{% set imageDescription = imageDescription|default("") %}
+{% set randomId = random()%}
+{% if imageCredit or imageDescription %}
+
+<div class="popup-source {{modifier_class}}" aria-live="polite">
+	<button data-type="trigger" id="trigger-{{randomId}}" type="button" class="popup-source-icon">
+		<span class="nsw-material-icon material-icons" aria-hidden="true">photo_camera</span>
+		<span class="sr-only">Open description</span>
+	</button>
+
+	<div class="popup-source-text nsw-hide-xs" id="popup-{{randomId}}">
+		<div class="description">
+			{% if imageDescription and not (imageDescription ends with '.') %}
+				{% set imageDescription = imageDescription ~ '.' %}
+			{% endif %}
+			{{imageDescription}}
+			<button type="button" data-type="close" id="close-{{randomId}}" class="popup-source-close">
+        <span class="nsw-material-icon material-icons" aria-hidden="true">close</span>
+        <span class="sr-only">Close description</span>
+      </button>
+		</div>
+		{% if imageCredit %}
+			<div>
+				Credit: {{imageCredit}}
+			</div>
+		{% endif %}
+	</div>
+</div>
+{% endif %}

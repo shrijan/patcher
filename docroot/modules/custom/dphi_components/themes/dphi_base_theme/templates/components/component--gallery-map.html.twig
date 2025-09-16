@@ -1,0 +1,22 @@
+{{ attach_library('dphi_base_theme/component.gallery_map') }}
+
+<div
+  id="map-root"
+  class="map-container"
+  data-map-api-key="{{ galleryMap.api_key }}"
+  data-map-id="{{ galleryMap.id }}"
+  data-pin-clustering="{{ galleryMap.enable_clustering }}"
+  data-pin-data="{{ galleryMap.pins_json_string }}"
+  data-terms-data="{{ galleryMap.terms_json_string }}"
+  data-filter-label="{{ galleryMap.filter_label }}"
+  data-modal-cta-label="{{ galleryMap.modal_cta_label }}"
+  data-parent-svg="{{ galleryMap.parent_svg_icon }}"
+>
+  <!-- Loader HTML, shown until the map loads. -->
+  <div class="react-list-load-wrapper">
+    <div class="sopa--map-loader">
+      <span class="material-icons nsw-material-icons">hourglass_empty</span>
+      <p>Loading data, please wait</p>
+    </div>
+  </div>
+</div>

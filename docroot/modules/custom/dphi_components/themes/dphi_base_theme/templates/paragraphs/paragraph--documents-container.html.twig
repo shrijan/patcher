@@ -1,0 +1,6 @@
+<section class="nsw-section {{ paragraph.getPaddingControlClass() }}">
+  {% set documentsContainer = paragraph.getComponent() %}
+  <div class="nsw-container">
+    {% include '@dphi_base_theme/components/component--documents-container.html.twig' with {documentsContainer: documentsContainer} %}
+  </div>
+</section>

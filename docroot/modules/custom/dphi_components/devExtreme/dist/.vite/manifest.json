@@ -1,0 +1,57 @@
+{
+  "_button-BveHU-eQ.js": {
+    "file": "assets/button-BveHU-eQ.js",
+    "name": "button",
+    "imports": [
+      "_devextreme-license-BOLHMBAL.js"
+    ]
+  },
+  "_devextreme-license-BOLHMBAL.js": {
+    "file": "assets/devextreme-license-BOLHMBAL.js",
+    "name": "devextreme-license"
+  },
+  "_tree-view--XPWKX7f.js": {
+    "file": "assets/tree-view--XPWKX7f.js",
+    "name": "tree-view",
+    "imports": [
+      "_devextreme-license-BOLHMBAL.js"
+    ]
+  },
+  "src/contentHierarchyView/entry.jsx": {
+    "file": "assets/contentHierarchyView-CtrkjZVD.js",
+    "name": "contentHierarchyView",
+    "src": "src/contentHierarchyView/entry.jsx",
+    "isEntry": true,
+    "imports": [
+      "_devextreme-license-BOLHMBAL.js",
+      "_button-BveHU-eQ.js",
+      "_tree-view--XPWKX7f.js"
+    ]
+  },
+  "src/mediaHierarchyView/entry.jsx": {
+    "file": "assets/mediaHierarchyView-i0V8rFYI.js",
+    "name": "mediaHierarchyView",
+    "src": "src/mediaHierarchyView/entry.jsx",
+    "isEntry": true,
+    "imports": [
+      "_devextreme-license-BOLHMBAL.js",
+      "_button-BveHU-eQ.js"
+    ],
+    "css": [
+      "assets/mediaHierarchyView-BhQnlEUl.css"
+    ]
+  },
+  "src/menuParentSelector/entry.jsx": {
+    "file": "assets/menuParentSelector-CytgIbnM.js",
+    "name": "menuParentSelector",
+    "src": "src/menuParentSelector/entry.jsx",
+    "isEntry": true,
+    "imports": [
+      "_devextreme-license-BOLHMBAL.js",
+      "_tree-view--XPWKX7f.js"
+    ],
+    "css": [
+      "assets/menuParentSelector-CG4YiYkb.css"
+    ]
+  }
+}

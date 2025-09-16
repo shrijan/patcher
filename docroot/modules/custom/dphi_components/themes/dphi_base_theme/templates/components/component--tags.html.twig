@@ -1,0 +1,9 @@
+{{ attach_library('dphi_base_theme/component.tags') }}
+
+<div class="nsw-list-item__tags">
+  <div class="nsw-list nsw-list--8">
+    {% for tag in tags %}
+      <span class="nsw-tag">{{ tag.entity ? tag.entity.getName() : tag }}</span>
+    {% endfor %}
+  </div>
+</div>

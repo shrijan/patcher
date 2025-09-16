@@ -1,0 +1,70 @@
+{{ attach_library('dphi_base_theme/component.messages') }}
+{#
+/**
+ * @file
+ * Default theme implementation for status messages.
+ *
+ * Displays status, error, and warning messages, grouped by type.
+ *
+ * An invisible heading identifies the messages for assistive technology.
+ * Sighted users see a colored box. See http://www.w3.org/TR/WCAG-TECHS/H69.html
+ * for info.
+ *
+ * Add an ARIA label to the contentinfo area so that assistive technology
+ * user agents will better describe this landmark.
+ *
+ * Available variables:
+ * - message_list: List of messages to be displayed, grouped by type.
+ * - status_headings: List of all status types.
+ * - attributes: HTML attributes for the element, including:
+ *   - class: HTML classes.
+ *
+ * @ingroup themeable
+ */
+#}
+<div data-drupal-messages class="nsw-container nsw-m-y-sm">
+{% for type, messages in message_list %}
+  {% set msgType = 'info' %}
+  {% if type != 'status' %}
+    {% set msgType = type %}
+  {% endif %}
+
+  {% set typeClass = 'nsw-in-page-alert--' ~ msgType %}
+
+  {% set icon = 'info' %}
+  {% if type == 'error' %}
+    {% set icon = 'cancel' %}
+  {% elseif type ==   'warning' %}
+    {% set icon = 'error' %}
+  {% endif %}
+
+  <div 
+    class="nsw-in-page-alert {{ typeClass }}" 
+    role="region" 
+    aria-label="{{ status_headings[type] }}"
+    {{ attributes|without('role', 'aria-label') }}
+  >
+  <span class="material-icons nsw-material-icons nsw-in-page-alert__icon" focusable="false" aria-hidden="true">{{ icon }}</span>
+    {% if type == 'error' %}
+      <div role="alert">
+    {% endif %}
+    <div class="nsw-in-page-alert__content">
+      {% if status_headings[type] %}
+      <h2 class="visually-hidden">{{ status_headings[type] }}</h2>
+      {% endif %}
+      {% if messages|length > 1 %}
+      <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      {{ messages|first }}
+      {% endif %}
+    </div>
+    {% if type == 'error' %}
+      </div>
+    {% endif %}
+  </div>
+{% endfor %}
+</div>

@@ -1,0 +1,17 @@
+<div class="nsw-card" data-title="{{ node.label }}" data-date="{{ node.getSortDate }}">
+  <div class="nsw-card__image">
+    {{ node.getImageWithFallback() }}
+  </div>
+  <div class="nsw-card__content">
+    <div class="nsw-card__date">
+      <time datetime="item date here">{{ content.field_publish_event_date }}</time>
+    </div>
+    <div class="nsw-card__title">
+      <a href="{{ url }}">{{ label }}</a>
+    </div>
+    <div class="nsw-card__copy">
+      {{ content.body }}
+    </div>
+    <span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">east</span>
+  </div>
+</div>

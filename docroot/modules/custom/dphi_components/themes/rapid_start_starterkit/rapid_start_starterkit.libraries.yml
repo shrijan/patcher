@@ -1,0 +1,11 @@
+# Adjust these values for your site.
+global:
+  vite: &vite
+    enabled: true
+    baseUrl: /modules/custom/dphi_components/themes/rapid_start_starterkit/dist/
+    devServerUrl: https://rapid-start.ddev.site:5177
+    devDependencies:
+      - dphi_components/react_refresh
+  css:
+    theme:
+      src/global/entry.scss: {}

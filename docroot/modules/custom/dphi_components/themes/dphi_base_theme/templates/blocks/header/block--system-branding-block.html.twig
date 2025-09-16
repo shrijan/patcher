@@ -1,0 +1,16 @@
+{% include '@dphi_base_theme/blocks/header/block--global-alert.html.twig' %}
+{% include '@dphi_base_theme/blocks/header/block--skip-links.html.twig' %}
+{% include '@dphi_base_theme/blocks/header/block--masthead.html.twig' %}
+
+<header class="nsw-header">
+	<div class="nsw-header__container">
+		<div class="nsw-header__inner">
+			{% include '@dphi_base_theme/blocks/header/block--site-branding.html.twig' %}
+
+			{% include '@dphi_base_theme/blocks/main-navigation/block--menu-mobile-trigger.html.twig' %}
+
+			{% include '@dphi_base_theme/blocks/search/block--search.html.twig' %}
+		</div>
+		{% include '@dphi_base_theme/blocks/search/block--search-area.html.twig' %}
+	</div>
+</header>

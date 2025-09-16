@@ -45,6 +45,23 @@ class MaterialIcons extends CKEditorPluginBase implements CKEditorPluginCssInter
   /**
    * {@inheritdoc}
    */
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    ConfigFactoryInterface $configFactory,
+    LibraryDiscoveryInterface $libraryDiscovery,
+    ModuleExtensionList $moduleExtensionList,
+  ) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->configFactory = $configFactory;
+    $this->libraryDiscovery = $libraryDiscovery;
+    $this->moduleExtensionList = $moduleExtensionList;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
       $configuration,
@@ -54,16 +71,6 @@ class MaterialIcons extends CKEditorPluginBase implements CKEditorPluginCssInter
       $container->get('library.discovery'),
       $container->get('extension.list.module')
     );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $configFactory, LibraryDiscoveryInterface $libraryDiscovery, ModuleExtensionList $moduleExtensionList) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->configFactory = $configFactory;
-    $this->libraryDiscovery = $libraryDiscovery;
-    $this->moduleExtensionList = $moduleExtensionList;
   }
 
   /**

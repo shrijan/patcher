@@ -1,0 +1,23 @@
+<div class="nsw-list-item sc-item" data-id="{{ node.id }}" data-color="{{ node.field_pin_category_colour.value }}" data-lat="{{ node.field_address.lat }}" data-lng="{{ node.field_address.lng }}" data-plat="{{ postcode_address.lat }}" data-plng="{{ postcode_address.lng }}">
+  <div class="nsw-list-item__content">
+
+    <div class="nsw-list-item__title">
+      {% if node.field_website.0.url %}
+        <a href="{{ node.field_website.0.url }}" target="_blank">
+          <span>{{ node.label }}</span>
+        </a>
+      {% else %}
+        <p href="{{ node.field_website.0.url }}">
+          <span>{{ node.label }}</span>
+        </p>
+      {% endif %}
+    </div>
+
+    <div class="nsw-list-item__copy">
+      <div class="nsw-row description">
+        {{ node.body.summary ?: node.body.value }}
+      </div>
+    </div>
+
+  </div>
+</div>

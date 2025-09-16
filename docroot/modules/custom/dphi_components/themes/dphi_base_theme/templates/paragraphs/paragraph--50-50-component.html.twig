@@ -1,0 +1,10 @@
+{{ attach_library('dphi_base_theme/component.50_50') }}
+
+{% set fiftyFifty = paragraph.getComponent() %}
+<section class="nsw-section{{ fiftyFifty.background_color ? ' nsw-bg--off-white' : '' }}{{ fiftyFifty.keep_image_on_left ? ' image_on_left' : '' }}{{ fiftyFifty.text_60 ? ' text-width-60' : '' }} {{ paragraph.getPaddingControlClass() }}">
+  <div class="nsw-container">
+    <div class="img-txt-50">
+      {% include '@dphi_base_theme/components/component--hero.html.twig' with {hero: fiftyFifty} %}
+    </div>
+  </div>
+</section>

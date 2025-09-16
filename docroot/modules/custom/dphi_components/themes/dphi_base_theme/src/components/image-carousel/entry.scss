@@ -1,0 +1,16 @@
+@import '../../base';
+
+.component--image-carousel {
+  margin: 0;
+
+  .media-oembed-content {
+    display: block;
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    height: auto;
+  }
+
+  figcaption {
+    line-height: 2rem;
+  }
+}

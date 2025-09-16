@@ -1,0 +1,180 @@
+@import '../../base.scss';
+
+// Add any additional custom styles specific to react_lists_components here
+.checkbox-container {
+  margin-bottom: 16px;
+}
+
+.show-all-options {
+  font-weight: var(--nsw-font-bold);
+  color: var(--nsw-link);
+  text-decoration: underline;
+  font-size: var(--nsw-font-size-sm-mobile);
+  line-height: var(--nsw-line-height-sm-mobile);
+  display: inline-block;
+  cursor: pointer;
+  background-color: transparent;
+  border: 0;
+  padding: 0;
+  -webkit-appearance: none;
+}
+
+.nsw-filters__title {
+  margin: 0 auto;
+  padding-top: 0;
+}
+
+.toggled-filters {
+  // Allow input outlines to show outside 'overflow-hidden'.
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+
+  &.animated {
+    transition: height 0.5s;
+  }
+
+  &.closed {
+    overflow: hidden;
+  }
+
+  @media (min-width: 768px) {
+    height: auto !important;
+  }
+}
+
+.gallery-main {
+  container-type: inline-size;
+}
+
+.results-and-sort {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+
+  @container (min-width: 500px) {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .sort-by-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 0;
+
+    .nsw-form__group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0;
+    }
+
+    .nsw-form__label {
+      margin-right: 1rem;
+      margin-bottom: 0;
+    }
+
+    .nsw-form__select {
+      width: 200px;
+    }
+  }
+}
+
+.video-row {
+  display: flex;
+
+  .video-item {
+    display: flex;
+    figure {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      margin: 0 auto;
+    }
+    .nsw-media__thumbnail {
+      cursor: pointer;
+    }
+    .video-caption {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      background-color: var(--nsw-white);
+
+      a {
+        color: inherit;
+      }
+    }
+  }
+}
+
+.video-modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--nsw-black-80);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+
+  .video-modal-content {
+    background-color: var(--nsw-white);
+    max-width: 800px;
+    width: 90%;
+    position: sticky;
+    top: 60px;
+    bottom: 60px;
+
+    figcaption {
+      padding: 10px;
+    }
+
+    .close-button {
+      color: var(--nsw-text-light);
+      position: absolute;
+      top: -30px;
+      right: -4px;
+      background-color: transparent;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+    }
+  }
+}
+
+.nsw-media__thumbnail {
+  display: flex;
+  align-items: center;
+  aspect-ratio: 4 / 3;
+  background-color: var(--nsw-black);
+  position: relative;
+
+  .play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--nsw-black-60);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease;
+
+    .material-icons {
+      color: var(--nsw-text-light);
+      font-size: 36px;
+    }
+  }
+
+  &:hover .play-icon {
+    background-color: var(--nsw-black-80);
+  }
+}

@@ -1,0 +1,7 @@
+name: 'DPE AD Login'
+type: module
+description: 'Create link for DPE AD login'
+core_version_requirement: ^9.2 || ^10
+package: DPE
+dependencies:
+  - samlauth

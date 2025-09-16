@@ -1,0 +1,11 @@
+{% set listItems = paragraph.getComponent() %}
+{% set classes = [
+  'nsw-section',
+  'component',
+  paragraph.getPaddingControlClass
+] %}
+<section{{ attributes.addClass(classes) }}>
+  <div class="nsw-container">
+    {% include '@dphi_base_theme/components/component--list-items.html.twig' %}
+  </div>
+</section>

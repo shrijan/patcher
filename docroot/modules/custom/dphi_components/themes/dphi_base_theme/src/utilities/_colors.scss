@@ -1,0 +1,17 @@
+@use 'sass:meta';
+@use 'sass:color';
+@use '../theme/palette' as p;
+
+$definedColors: meta.module-variables('p');
+
+:root {
+  @each $colorName, $colorValue in $definedColors {
+    @if ($colorValue != null) {
+      $rgb-r: color.red($colorValue) ;
+      $rgb-g: color.green($colorValue);
+      $rgb-b: color.blue($colorValue);
+      --nsw-#{$colorName}: #{$colorValue};
+      --nsw-#{$colorName}-rgb: #{$rgb-r}, #{$rgb-g}, #{$rgb-b};
+    }
+  }
+}
