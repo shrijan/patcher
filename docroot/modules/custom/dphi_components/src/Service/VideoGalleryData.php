@@ -8,7 +8,7 @@ class VideoGalleryData {
 
   public function parseVideoUrl($url) {
     $data = [];
-    if (!str_starts_with($url, 'https://vimeo.com/')) {
+    if (!str_starts_with($url, 'https://vimeo.com/') && !str_starts_with($url, 'https://player.vimeo.com')) {
       $parsed_url = parse_url($url, PHP_URL_QUERY);
       $args = [];
       if ($parsed_url) {
@@ -21,13 +21,29 @@ class VideoGalleryData {
           }
         }
       }
-      if (empty($data['youtube_id']) && str_starts_with($url, 'https://youtu.be')) {
+      if (empty($data['youtube_id']) && (
+        str_starts_with($url, 'https://youtu.be') ||
+        str_starts_with($url, 'https://www.youtube.com') ||
+        str_starts_with($url, 'https://youtube.com')
+      )) {
         $data['youtube_id'] = basename(parse_url($url, PHP_URL_PATH));
       }
       if (!empty($data['youtube_id'])) {
         $args['enablejsapi'] = '1';
         $data['embed'] = 'https://www.youtube.com/embed/'.$data['youtube_id'].'?'.http_build_query($args);
       }
+    } elseif (str_starts_with($url, 'https://vimeo.com/')) {
+
+      $vimeo_id = basename(parse_url($url, PHP_URL_PATH));
+  
+      if ($vimeo_id) {
+        $data['vimeo_id'] = $vimeo_id;
+        $data['embed'] = 'https://player.vimeo.com/video/' . $vimeo_id;
+        $data['player_title'] = 'Vimeo video player';
+      }
+    } elseif (str_starts_with($url, 'https://player.vimeo.com')) {
+        $data['embed'] = $url;
+        $data['player_title'] = 'Vimeo video player';
     }
     return $data;
   }

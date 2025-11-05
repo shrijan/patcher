@@ -1,0 +1,69 @@
+diff --git a/docroot/modules/custom/dphi_components/src/Entity/Paragraph/VideoImageTeaser.php b/docroot/modules/custom/dphi_components/src/Entity/Paragraph/VideoImageTeaser.php
+index 336a33ac9478ac30c25542dc2d7249052ad751b0..3b4785d3fac116edc2df06b0871558ad972b0df5 100644
+--- a/docroot/modules/custom/dphi_components/src/Entity/Paragraph/VideoImageTeaser.php
++++ b/docroot/modules/custom/dphi_components/src/Entity/Paragraph/VideoImageTeaser.php
+@@ -46,6 +46,7 @@ public function getComponent(): array {
+       $data = $this->videoGalleryData->parseVideoUrl($url);
+       if (!empty($data['embed'])) {
+         $component['video_url'] = $data['embed'];
++        $component['player_title'] = $data['player_title'];
+       }
+     }
+     foreach (['background_image', 'image'] as $k) {
+diff --git a/docroot/modules/custom/dphi_components/src/Service/VideoGalleryData.php b/docroot/modules/custom/dphi_components/src/Service/VideoGalleryData.php
+index 3b6b10ff7d21a84494aee1240450a03f81a300f9..97a3965895ef9b7509ad1677980d740799862c76 100644
+--- a/docroot/modules/custom/dphi_components/src/Service/VideoGalleryData.php
++++ b/docroot/modules/custom/dphi_components/src/Service/VideoGalleryData.php
+@@ -8,7 +8,7 @@ class VideoGalleryData {
+ 
+   public function parseVideoUrl($url) {
+     $data = [];
+-    if (!str_starts_with($url, 'https://vimeo.com/')) {
++    if (!str_starts_with($url, 'https://vimeo.com/') && !str_starts_with($url, 'https://player.vimeo.com')) {
+       $parsed_url = parse_url($url, PHP_URL_QUERY);
+       $args = [];
+       if ($parsed_url) {
+@@ -21,13 +21,29 @@ public function parseVideoUrl($url) {
+           }
+         }
+       }
+-      if (empty($data['youtube_id']) && str_starts_with($url, 'https://youtu.be')) {
++      if (empty($data['youtube_id']) && (
++        str_starts_with($url, 'https://youtu.be') ||
++        str_starts_with($url, 'https://www.youtube.com') ||
++        str_starts_with($url, 'https://youtube.com')
++      )) {
+         $data['youtube_id'] = basename(parse_url($url, PHP_URL_PATH));
+       }
+       if (!empty($data['youtube_id'])) {
+         $args['enablejsapi'] = '1';
+         $data['embed'] = 'https://www.youtube.com/embed/'.$data['youtube_id'].'?'.http_build_query($args);
+       }
++    } elseif (str_starts_with($url, 'https://vimeo.com/')) {
++
++      $vimeo_id = basename(parse_url($url, PHP_URL_PATH));
++  
++      if ($vimeo_id) {
++        $data['vimeo_id'] = $vimeo_id;
++        $data['embed'] = 'https://player.vimeo.com/video/' . $vimeo_id;
++        $data['player_title'] = 'Vimeo video player';
++      }
++    } elseif (str_starts_with($url, 'https://player.vimeo.com')) {
++        $data['embed'] = $url;
++        $data['player_title'] = 'Vimeo video player';
+     }
+     return $data;
+   }
+diff --git a/docroot/modules/custom/dphi_components/themes/dphi_base_theme/templates/components/component--video-image-teaser.html.twig b/docroot/modules/custom/dphi_components/themes/dphi_base_theme/templates/components/component--video-image-teaser.html.twig
+index f692223c75e99943000039d13bbe18191a8724ad..1657919c1920894cea92946d3defb41f62295b09 100644
+--- a/docroot/modules/custom/dphi_components/themes/dphi_base_theme/templates/components/component--video-image-teaser.html.twig
++++ b/docroot/modules/custom/dphi_components/themes/dphi_base_theme/templates/components/component--video-image-teaser.html.twig
+@@ -53,7 +53,7 @@
+     {% endif %}
+   {% if videoImageTeaser.video_url or videoImageTeaser.image %}
+     {% if videoImageTeaser.video_url %}
+-      <iframe title="YouTube video player" class="embed-responsive-item" src="{{ videoImageTeaser.video_url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
++      <iframe title="{{ videoImageTeaser.player_title }}" class="embed-responsive-item" src="{{ videoImageTeaser.video_url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+     {% else %}
+       {{ videoImageTeaser.image }}
+     {% endif %}

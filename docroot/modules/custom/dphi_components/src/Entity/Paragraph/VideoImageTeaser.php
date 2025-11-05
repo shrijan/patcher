@@ -46,6 +46,7 @@ class VideoImageTeaser extends Paragraph {
       $data = $this->videoGalleryData->parseVideoUrl($url);
       if (!empty($data['embed'])) {
         $component['video_url'] = $data['embed'];
+        $component['player_title'] = $data['player_title'];
       }
     }
     foreach (['background_image', 'image'] as $k) {

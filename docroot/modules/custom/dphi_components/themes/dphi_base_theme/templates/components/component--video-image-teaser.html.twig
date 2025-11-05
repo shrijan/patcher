@@ -53,7 +53,7 @@
     {% endif %}
   {% if videoImageTeaser.video_url or videoImageTeaser.image %}
     {% if videoImageTeaser.video_url %}
-      <iframe title="YouTube video player" class="embed-responsive-item" src="{{ videoImageTeaser.video_url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <iframe title="{{ videoImageTeaser.player_title }}" class="embed-responsive-item" src="{{ videoImageTeaser.video_url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     {% else %}
       {{ videoImageTeaser.image }}
     {% endif %}

@@ -46,12 +46,19 @@ class NodeQueryService {
     if ($selected_types) {
       foreach ($selected_types as $type) {
         // For 'publications', add condition based on content type.
-        if ($type === 'publications') {
+        /*if ($type === 'publications') {
           $types[] = 'publications';
         }
         else {
           $types[] = 'page';
           $category_types[] = $type;
+        }*/
+        //code is update to include new content type other than publications
+        if (ctype_digit($type)) {
+          $types[] = 'page';
+          $category_types[] = $type;
+        }else{
+          $types[] = $type;
         }
       }
     }
@@ -68,10 +75,16 @@ class NodeQueryService {
       $conditions->condition($query->orConditionGroup()->condition('node__field_content_category.field_content_category_value', $category_types, 'IN'));
 
       // Add conditions for selected tags.
-      if (!empty($selected_tags)) {
-        $query->leftJoin('node__field_tags', 'node__field_tags', 'node__field_tags.entity_id = base_table.nid');
-        $conditions->condition($query->orConditionGroup()->condition('node__field_tags.field_tags_target_id', $selected_tags, 'IN'));
-      }
+      //if (!empty($selected_tags)) {
+        //$query->leftJoin('node__field_tags', 'node__field_tags', 'node__field_tags.entity_id = base_table.nid');
+        //$conditions->condition($query->orConditionGroup()->condition('node__field_tags.field_tags_target_id', $selected_tags, 'IN'));
+      //}
+    }
+    
+     /* Have to move this out form $category_types check because its not working for content type other than page, publication */
+    if (!empty($selected_tags)) {
+      $query->leftJoin('node__field_tags', 'node__field_tags', 'node__field_tags.entity_id = base_table.nid');
+      $conditions->condition($query->orConditionGroup()->condition('node__field_tags.field_tags_target_id', $selected_tags, 'IN'));
     }
 
     // Add OR condition for field area.
