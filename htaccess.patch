@@ -1,0 +1,122 @@
+diff --git a/docroot/.htaccess b/docroot/.htaccess
+index 95d8810d1..4e37bb23c 100755
+--- a/docroot/.htaccess
++++ b/docroot/.htaccess
+@@ -37,12 +37,11 @@ AddEncoding gzip svgz
+ 
+   # Cache all files for 1 year after access.
+   ExpiresDefault "access plus 1 year"
+-
+   # Rapid Start document cache length.
+-  <FilesMatch "\.(pdf|xls|xlsx|csv|docx|doc|zip)$">
++  <FilesMatch "\.(pdf|xls|xlsx|csv|docx|doc|zip)$">    
+     ExpiresDefault "access plus 3 hours"
+   </FilesMatch>
+-
++  
+   <FilesMatch \.php$>
+     # Do not allow PHP scripts to be cached unless they explicitly send cache
+     # headers themselves. Otherwise all scripts would have to overwrite the
+@@ -65,9 +64,6 @@ AddEncoding gzip svgz
+ <IfModule mod_rewrite.c>
+   RewriteEngine on
+ 
+-  RewriteCond %{HTTPS} off
+-  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+-  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+   # Set "protossl" to "s" if we were accessed via https://.  This is used later
+   # if you enable "www." stripping or enforcement, in order to ensure that
+   # you don't bounce between http and https.
+@@ -75,23 +71,22 @@ AddEncoding gzip svgz
+   RewriteCond %{HTTPS} on
+   RewriteRule ^ - [E=protossl:s]
+ 
++  # === Host-specific redirects (after HTTPS is ensured) ===
++
++  # 1) Redirect all traffic from water-assist.dpie.nsw.gov.au (with or without www)
++  #    to a single non-www welcome/disclaimer page on water.dcceew.nsw.gov.au
++  RewriteCond %{HTTP_HOST} ^(www\.)?water-assist\.dpie\.nsw\.gov\.au$ [NC]
++  RewriteRule ^ https://water.dcceew.nsw.gov.au/waterassist-welcome-page-and-disclaimer [L,R=301]
++
++  # 2) Redirect www.water.dcceew.nsw.gov.au to the canonical non-www host
++  RewriteCond %{HTTP_HOST} ^www\.water\.dcceew\.nsw\.gov\.au$ [NC]
++  RewriteRule ^ https://water.dcceew.nsw.gov.au%{REQUEST_URI} [L,R=301]
++
+   # Make sure Authorization HTTP header is available to PHP
+   # even when running as CGI or FastCGI.
+   RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+ 
+-  # Block access to "hidden" directories whose names begin with a period. This
+-  # includes directories used by version control systems such as Subversion or
+-  # Git to store control files. Files whose names begin with a period, as well
+-  # as the control files used by CVS, are protected by the FilesMatch directive
+-  # above.
+-  #
+-  # NOTE: This only works when mod_rewrite is loaded. Without mod_rewrite, it is
+-  # not possible to block access to entire directories from .htaccess because
+-  # <DirectoryMatch> is not allowed here.
+-  #
+-  # If you do not have mod_rewrite installed, you should remove these
+-  # directories from your webroot or otherwise protect them from being
+-  # downloaded.
++  # Block access to "hidden" directories whose names begin with a period.
+   RewriteRule "/\.|^\.(?!well-known/)" - [F]
+ 
+   # If your site can be accessed both with and without the 'www.' prefix, you
+@@ -105,16 +100,17 @@ AddEncoding gzip svgz
+   # RewriteCond %{HTTP_HOST} !^www\. [NC]
+   # RewriteRule ^ http%{ENV:protossl}://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+   #
+-  # To redirect all users to access the site WITHOUT the 'www.' prefix,
+-  # (http://www.example.com/foo will be redirected to http://example.com/foo)
+-  # uncomment the following:
+-  # RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+-  # RewriteRule ^ http%{ENV:protossl}://%1%{REQUEST_URI} [L,R=301]
+   RewriteCond %{ENV:AH_SITE_ENVIRONMENT} prod [NC] # only prod
+   RewriteCond %{HTTP_HOST} !\.acquia-sites\.com [NC]
+   RewriteCond %{HTTP_HOST} .
+   RewriteCond %{HTTP_HOST} !^www\. [NC]
+   RewriteRule ^ http%{ENV:protossl}://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
++  # To redirect all users to access the site WITHOUT the 'www.' prefix,
++  # (http://www.example.com/foo will be redirected to http://example.com/foo)
++  # uncomment the following:
++  # RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
++  # RewriteRule ^ http%{ENV:protossl}://%1%{REQUEST_URI} [L,R=301]
++
+   # Modify the RewriteBase if you are using Drupal in a subdirectory or in a
+   # VirtualDocumentRoot and the rewrite rules are not working properly.
+   # For example if your site is at http://example.com/drupal uncomment and
+@@ -149,8 +145,6 @@ AddEncoding gzip svgz
+   RewriteCond %{REQUEST_URI} !/core/[^/]*\.php$
+   # Allow access to test-specific PHP files:
+   RewriteCond %{REQUEST_URI} !/core/modules/system/tests/https?\.php
+-  # Allow access to simplesaml paths
+-  RewriteCond %{REQUEST_URI} !^/simplesaml
+   # Allow access to Statistics module's custom front controller.
+   # Copy and adapt this rule to directly execute PHP files in contributed or
+   # custom modules or to run another PHP application in the same directory.
+@@ -177,9 +171,7 @@ AddEncoding gzip svgz
+     RewriteRule \.js\.gz$ - [T=text/javascript,E=no-gzip:1,E=no-brotli:1]
+ 
+     <FilesMatch "(\.js\.gz|\.css\.gz)$">
+-      # Serve correct encoding type.
+       Header set Content-Encoding gzip
+-      # Force proxies to cache gzipped & non-gzipped css/js files separately.
+       Header append Vary Accept-Encoding
+     </FilesMatch>
+   </IfModule>
+@@ -187,14 +179,7 @@ AddEncoding gzip svgz
+ 
+ # Various header fixes.
+ <IfModule mod_headers.c>
+-  # Disable content sniffing for all responses, since it's an attack vector.
+-  # This header is also set in FinishResponseSubscriber, which depending on
+-  # Apache configuration might get placed in the 'onsuccess' table. To prevent
+-  # header duplication, unset that one prior to setting in the 'always' table.
+-  # See "To circumvent this limitation..." in
+-  # https://httpd.apache.org/docs/current/mod/mod_headers.html.
+   Header onsuccess unset X-Content-Type-Options
+   Header always set X-Content-Type-Options nosniff
+-  # Disable Proxy header, since it's an attack vector.
+   RequestHeader unset Proxy
+ </IfModule>
