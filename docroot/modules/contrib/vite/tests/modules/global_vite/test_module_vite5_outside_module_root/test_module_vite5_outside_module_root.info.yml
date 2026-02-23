@@ -12,7 +12,7 @@ vite:
   viteRoot: '../'
   distDir: 'dist'
 
-# Information added by Drupal.org packaging script on 2025-09-13
-version: '1.5.0'
+# Information added by Drupal.org packaging script on 2025-09-16
+version: '1.5.1'
 project: 'vite'
-datestamp: 1757795708
+datestamp: 1758009879

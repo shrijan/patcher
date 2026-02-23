@@ -7,7 +7,7 @@ use ParagonIE\ConstantTime\Encoding;
 /**
  * TfaHotpSetup plugin test.
  *
- * @group tfa
+ * @group Tfa
  */
 class TfaHotpSetupPluginTest extends TfaTestBase {
 
@@ -28,7 +28,7 @@ class TfaHotpSetupPluginTest extends TfaTestBase {
   /**
    * Instance of the setup plugin for the $validationPluginId.
    *
-   * @var \Drupal\tfa\Plugin\Tfa\TfaHotp
+   * @var \Drupal\tfa\Plugin\TfaSetup\TfaHotpSetup
    */
   public $setupPlugin;
 
@@ -53,7 +53,7 @@ class TfaHotpSetupPluginTest extends TfaTestBase {
       'setup own tfa',
       'disable own tfa',
     ]);
-    $this->setupPlugin = \Drupal::service('plugin.manager.tfa')->createInstance($this->validationPluginId, ['uid' => $this->userAccount->id()]);
+    $this->setupPlugin = \Drupal::service('plugin.manager.tfa.setup')->createInstance($this->validationPluginId . '_setup', ['uid' => $this->userAccount->id()]);
     $this->drupalLogin($this->userAccount);
   }
 

@@ -98,7 +98,7 @@
             </div>
           {% endif %}
 
-          <div id="content" aria-label="Main page content" class="nsw-layout__main">
+          <div id="content" role="main" aria-label="Main page content" class="nsw-layout__main">
             {% if node.field_in_page_navigation.value == '1' %}
               {% include '@dphi_base_theme/components/component--in-page-navigation.html.twig' %}
             {% endif %}

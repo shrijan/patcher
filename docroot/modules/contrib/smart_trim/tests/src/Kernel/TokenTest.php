@@ -8,17 +8,21 @@ use Composer\Semver\Comparator;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Entity\Entity\EntityViewMode;
 use Drupal\Core\Render\Markup;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\Entity\FieldConfig;
 use Drupal\filter\Entity\FilterFormat;
 use Drupal\filter\FilterFormatInterface;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\Tests\token\Kernel\TokenKernelTestBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Test the smart trim tokens.
  *
  * @group smart_trim
  */
+#[Group('smart_trim')]
 final class TokenTest extends TokenKernelTestBase {
 
   /**
@@ -54,7 +58,46 @@ final class TokenTest extends TokenKernelTestBase {
       'description' => "Use <em>articles</em> for time-sensitive content like news, press releases or blog posts.",
     ]);
     $node_type->save();
-    node_add_body_field($node_type);
+
+    // Add or remove the body field, as needed.
+    $field_storage = FieldStorageConfig::loadByName('node', 'body');
+    // This is needed because Drupal core 11.1+ no longer automatically
+    // creates a body field.
+    if (!$field_storage) {
+      $field_storage = FieldStorageConfig::create([
+        'field_name' => 'body',
+        'entity_type' => 'node',
+        'type' => 'text_with_summary',
+        'cardinality' => 1,
+        'settings' => [
+          'max_length' => 0,
+        ],
+      ]);
+      $field_storage->save();
+    }
+    $field = FieldConfig::loadByName('node', $node_type->id(), 'body');
+    if (empty($field)) {
+      $field = FieldConfig::create([
+        'field_storage' => $field_storage,
+        'bundle' => $node_type->id(),
+        'label' => 'Body',
+        'settings' => [
+          'display_summary' => TRUE,
+          'allowed_formats' => [],
+        ],
+      ]);
+      $field->save();
+
+      /** @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface $display_repository */
+      $display_repository = \Drupal::service('entity_display.repository');
+
+      // Assign widget settings for the default form mode.
+      $display_repository->getFormDisplay('node', $node_type->id())
+        ->setComponent('body', [
+          'type' => 'text_textarea_with_summary',
+        ])
+        ->save();
+    }
 
     $this->testFormat = FilterFormat::create([
       'format' => 'test',

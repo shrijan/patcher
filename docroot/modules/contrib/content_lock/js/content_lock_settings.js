@@ -20,7 +20,7 @@
         context,
       ).forEach(function (elem) {
         // Init
-        Drupal.behaviors.contentLockSettings.toggleBundles;
+        Drupal.behaviors.contentLockSettings.toggleBundles.call(elem);
         // Change
         $(elem).change(Drupal.behaviors.contentLockSettings.toggleBundles);
       });
@@ -37,7 +37,7 @@
      * Toggle the bundle rows if all option is changed.
      */
     toggleBundles() {
-      const all_bundles_selected = this.checked;
+      const allBundlesSelected = this.checked;
       $(this)
         .closest('tbody')
         .find('.bundle-settings')
@@ -45,7 +45,7 @@
           // If the "All bundles" checkbox is checked then uncheck and disable
           // all other options.
           const $checkbox = $('[type="checkbox"]', this);
-          if (all_bundles_selected) {
+          if (allBundlesSelected) {
             $checkbox
               .prop('disabled', true)
               .prop('checked', false)
@@ -62,13 +62,13 @@
      * Remove all selected bundles or auto select all when changing an entity type.
      */
     toggleEntityType() {
-      const entity_type_id = $(this).val();
+      const entityTypeId = this.value;
       if (this.checked) {
-        $(`.${entity_type_id} .content-lock-entity-settings[value="*"]`)
+        $(`.${entityTypeId} .content-lock-entity-settings[value="*"]`)
           .prop('checked', true)
           .trigger('change');
       } else {
-        $(`.${entity_type_id} .content-lock-entity-settings`).prop(
+        $(`.${entityTypeId} .content-lock-entity-settings`).prop(
           'checked',
           false,
         );

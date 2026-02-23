@@ -35,31 +35,35 @@ class Cookie
         'D M d H:i:s Y T',
     ];
 
-    protected $name;
-    protected $value;
-    protected $expires;
-    protected $path;
-    protected $domain;
-    protected $secure;
-    protected $httponly;
-    protected $rawValue;
-    private ?string $samesite;
+    protected string $value;
+    protected ?string $expires = null;
+    protected string $path;
+    protected string $rawValue;
 
     /**
      * Sets a cookie.
      *
-     * @param string      $name         The cookie name
-     * @param string|null $value        The value of the cookie
-     * @param string|null $expires      The time the cookie expires
-     * @param string|null $path         The path on the server in which the cookie will be available on
-     * @param string      $domain       The domain that the cookie is available
-     * @param bool        $secure       Indicates that the cookie should only be transmitted over a secure HTTPS connection from the client
-     * @param bool        $httponly     The cookie httponly flag
-     * @param bool        $encodedValue Whether the value is encoded or not
-     * @param string|null $samesite     The cookie samesite attribute
+     * @param string          $name         The cookie name
+     * @param string|null     $value        The value of the cookie
+     * @param string|int|null $expires      The time the cookie expires
+     * @param string|null     $path         The path on the server in which the cookie will be available on
+     * @param string          $domain       The domain that the cookie is available
+     * @param bool            $secure       Indicates that the cookie should only be transmitted over a secure HTTPS connection from the client
+     * @param bool            $httponly     The cookie httponly flag
+     * @param bool            $encodedValue Whether the value is encoded or not
+     * @param string|null     $samesite     The cookie samesite attribute
      */
-    public function __construct(string $name, ?string $value, ?string $expires = null, ?string $path = null, string $domain = '', bool $secure = false, bool $httponly = true, bool $encodedValue = false, ?string $samesite = null)
-    {
+    public function __construct(
+        private string $name,
+        ?string $value,
+        string|int|null $expires = null,
+        ?string $path = null,
+        private string $domain = '',
+        private bool $secure = false,
+        private bool $httponly = true,
+        bool $encodedValue = false,
+        private ?string $samesite = null,
+    ) {
         if ($encodedValue) {
             $this->rawValue = $value ?? '';
             $this->value = urldecode($this->rawValue);
@@ -67,12 +71,7 @@ class Cookie
             $this->value = $value ?? '';
             $this->rawValue = rawurlencode($this->value);
         }
-        $this->name = $name;
-        $this->path = empty($path) ? '/' : $path;
-        $this->domain = $domain;
-        $this->secure = $secure;
-        $this->httponly = $httponly;
-        $this->samesite = $samesite;
+        $this->path = $path ?: '/';
 
         if (null !== $expires) {
             $timestampAsDateTime = \DateTimeImmutable::createFromFormat('U', $expires);

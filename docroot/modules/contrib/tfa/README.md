@@ -16,6 +16,18 @@ TFA module can be installed like other Drupal modules by placing this directory
 in the Drupal file system (for example, under modules/) and enabling on
 the Drupal modules page.
 
+### Compatibility and Security concerns
+To enforce security the following routes must not be overridden by other
+modules:
+
+* `user.login`
+* `user.login.http`
+* `user.reset.login`
+* `user.reset`
+
+TFA will provide a warning on the site status report if these routes deviate
+from the expected controllers.
+
 ### Configuration
 
 TFA can be configured on your Drupal site at Administration - Configuration -
@@ -98,13 +110,34 @@ Now you should be ready to configure the TFA module.
 * Visit your account's TFA tab: `user/[uid]/security/tfa`
     * Configure the selected Validation Plugins as desired for your account.
 
+##### TFA Security Advisory Related Configuration
+
+###### Configured Plugins Enforce TFA Required
+Prior to 8.x-1.4 the TFA module would only check if a user had configured the
+current default validation plugin to determine if TFA was required for login.
+
+This could lead to TFA not being required for users if a site administrator
+changed the default plugin to one a user had not yet configured.
+
+In order to mitigate this risk TFA now must validate that no plugins indicate
+a provisioned status, this includes disabled plugins. This can create a
+situation where a user is unable to log in due to having a disabled plugin
+provisioned without any enabled plugins provisioned.
+
+If an administrator is unable to re-enable a disabled plugin that prevents
+authentication, or believes that this restriction is not necessary for their
+site they may limit the validation to only test enabled plugins by adding the
+following into the sites settings.php file.
+
+`$settings['tfa.only_restrict_with_enabled_plugins'] = TRUE;`
+
 ##### TFA apps
 Users will need an application for their phone, tablet or computer that is
 capable of generating authentication codes.  As of the date of this ReadMe,
 some of the more popular options include:
   * Google Authenticator (Android, iOS)
   * Microsoft Authenticator (Android, iOS)
-  * Authy (Android, iOS, Windows, macOS, Linux)
+  * Twilio Authy (Android, iOS)
   * FreeOTP (Android, iOS)
   * WinAuth (Windows)
   * GAuth Authenticator (Chrome browser extension and Chrome OS)

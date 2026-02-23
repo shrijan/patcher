@@ -67,6 +67,7 @@ abstract class TfaTestBase extends BrowserTestBase {
       'key_type' => 'encryption',
       'key_type_settings' => ['key_size' => '128'],
       'key_provider' => 'config',
+      // cSpell:disable-next-line mustbesixteenbit
       'key_provider_settings' => ['key_value' => 'mustbesixteenbit'],
     ]);
     $key->save();
@@ -104,7 +105,7 @@ abstract class TfaTestBase extends BrowserTestBase {
 
     $edit = [
       'tfa_enabled' => TRUE,
-      'tfa_default_validation_plugin' => $validation_plugin_id,
+      'tfa_validate' => $validation_plugin_id,
       "tfa_allowed_validation_plugins[{$validation_plugin_id}]" => $validation_plugin_id,
       'encryption_profile' => $this->encryptionProfile->id(),
     ];
@@ -112,7 +113,7 @@ abstract class TfaTestBase extends BrowserTestBase {
     $this->submitForm($edit, 'Save configuration');
     $assert->statusCodeEquals(200);
     $assert->pageTextContains('The configuration options have been saved.');
-    $select_field_id = 'edit-tfa-default-validation-plugin';
+    $select_field_id = 'edit-tfa-validate';
     $option_field = $assert->optionExists($select_field_id, $validation_plugin_id);
     $result = $option_field->hasAttribute('selected');
     $this->assertTrue($result, "Option {$validation_plugin_id} for field {$select_field_id} is selected.");

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\smart_trim\Unit;
 
+use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\smart_trim\Hook\SmartTrimHooks;
 use Drupal\Tests\UnitTestCase;
 
 require __DIR__ . "/../../../smart_trim.module";
@@ -14,6 +16,18 @@ require __DIR__ . "/../../../smart_trim.module";
  * @group smart_trim
  */
 class SuggestionTest extends UnitTestCase {
+
+  /**
+   * Set up dependency injection container for hooks.
+   */
+  public function setUp(): void {
+    parent::setUp();
+
+    \Drupal::unsetContainer();
+    $container = new ContainerBuilder();
+    $container->register(SmartTrimHooks::class, SmartTrimHooks::class);
+    \Drupal::setContainer($container);
+  }
 
   /**
    * Testing hook_theme_suggestions_HOOK_alter.

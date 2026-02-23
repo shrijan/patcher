@@ -1,0 +1,28 @@
+@import '../node_modules/nsw-design-system/src/core/grid/_grid';
+@import '../node_modules/nsw-design-system/src/global/scss/helpers/_spacing';
+@import '../node_modules/nsw-design-system/src/components/form/_form';
+@import '../node_modules/nsw-design-system/src/components/select/_select';
+@import '../node_modules/nsw-design-system/src/components/pagination/_pagination';
+
+.views-exposed-form {
+  @extend .nsw-container;
+
+  label {
+    @extend .nsw-form__label;
+  }
+
+  .form-item {
+    @extend .nsw-m-bottom-sm;
+  }
+
+  + table {
+    display: block;
+    @extend .nsw-container;
+    @extend .nsw-m-bottom-md;
+  }
+}
+
+.pager {
+  @extend .nsw-pagination;
+  @extend .nsw-m-bottom-md;
+}

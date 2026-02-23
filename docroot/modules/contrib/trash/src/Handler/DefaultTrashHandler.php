@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Drupal\trash\Handler;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\trash\Exception\UnrestorableEntityException;
+use Drupal\trash\PathAlias\PathAliasIntegrationTrait;
 use Drupal\trash\TrashManagerInterface;
 
 /**
@@ -16,6 +19,7 @@ use Drupal\trash\TrashManagerInterface;
 class DefaultTrashHandler implements TrashHandlerInterface {
 
   use StringTranslationTrait;
+  use PathAliasIntegrationTrait;
 
   /**
    * The ID of the entity type managed by this handler.
@@ -33,6 +37,16 @@ class DefaultTrashHandler implements TrashHandlerInterface {
   protected TrashManagerInterface $trashManager;
 
   /**
+   * Tracks whether validation has already been performed for an entity.
+   *
+   * This prevents duplicate validation when validateRestore() is called
+   * explicitly (e.g., from form validation) before preTrashRestore().
+   *
+   * @var array<string, bool>
+   */
+  protected array $validatedEntities = [];
+
+  /**
    * {@inheritdoc}
    */
   public function preTrashDelete(EntityInterface $entity): void {}
@@ -40,7 +54,28 @@ class DefaultTrashHandler implements TrashHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function postTrashDelete(EntityInterface $entity): void {}
+  public function postTrashDelete(EntityInterface $entity): void {
+    // Automatically delete associated path aliases to match core's behavior.
+    $this->deleteAssociatedPathAliases($entity);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateRestore(EntityInterface $entity): void {
+    $entity_key = $entity->getEntityTypeId() . ':' . $entity->id();
+    $this->validatedEntities[$entity_key] = TRUE;
+
+    // Run entity validation for fieldable entities to check for conflicts.
+    if ($entity instanceof FieldableEntityInterface) {
+      $violations = $entity->validate();
+      if ($violations->count() > 0) {
+        // Get the first violation message for the exception.
+        $message = $violations->get(0)->getMessage();
+        throw new UnrestorableEntityException((string) $message);
+      }
+    }
+  }
 
   /**
    * {@inheritdoc}
@@ -50,7 +85,10 @@ class DefaultTrashHandler implements TrashHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function postTrashRestore(EntityInterface $entity): void {}
+  public function postTrashRestore(EntityInterface $entity, int|string $deleted_timestamp): void {
+    // Automatically restore associated path aliases.
+    $this->restoreAssociatedPathAliases($entity, $deleted_timestamp);
+  }
 
   /**
    * {@inheritdoc}

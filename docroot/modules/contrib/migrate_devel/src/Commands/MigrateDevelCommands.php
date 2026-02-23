@@ -10,17 +10,16 @@ use Drush\Commands\DrushCommands;
  */
 class MigrateDevelCommands extends DrushCommands {
 
-    /**
-     * Register two new options for the migrate:import command.
-     *
-     * @hook command migrate:import
-     * @option migrate-debug Enable Debug Mode
-     * @option migrate-debug-pre Enable Debug Mode (Before Row Save)
-     */
-    public function additionalOptionsMigrateImport(CommandData $commandData)
-    {
-      // No action required here. The new options will be examined in the
-      // migrate event subscriber methods.
-    }
+  /**
+   * Register two new options for the migrate:import command.
+   *
+   * @hook command migrate:import
+   * @option migrate-debug Enable Debug Mode
+   * @option migrate-debug-pre Enable Debug Mode (Before Row Save)
+   */
+  public function additionalOptionsMigrateImport(CommandData $commandData) {
+    // No action required here. The new options will be examined in the
+    // migrate event subscriber methods.
+  }
 
 }

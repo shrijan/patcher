@@ -1,0 +1,4 @@
+services:
+  rapid_start_exports.entity_usage:
+    class: Drupal\rapid_start_exports\Service\EntityUsageService
+    arguments: ['@entity_type.manager', '@entity_usage.usage']

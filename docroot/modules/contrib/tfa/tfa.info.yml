@@ -1,7 +1,8 @@
 name: Two-factor Authentication (TFA)
 type: module
 description: Pluggable provider of second factor authentication for Drupal
-core_version_requirement: ^9.1 || ^10
+core: 8.x
+core_version_requirement: ^8 || ^9 || ^10 || ^11
 package: Security
 configure: tfa.settings
 dependencies:
@@ -10,7 +11,7 @@ test_dependencies:
   - key:key
   - encrypt:encrypt
 
-# Information added by Drupal.org packaging script on 2022-11-30
-version: '2.0.0-alpha2'
+# Information added by Drupal.org packaging script on 2025-07-18
+version: '8.x-1.12'
 project: 'tfa'
-datestamp: 1669821017
+datestamp: 1752807549

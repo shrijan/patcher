@@ -31,7 +31,7 @@
 
 
         {% if featured_publication.heading is not empty %}
-          <h2 class="nsw-featured-publication__title">
+          <h3 class="nsw-featured-publication__title">
             {# Heading for desktop when NOT in middle_right_section (display as link) #}
             {% if not featured_publication.is_middle_right %}
               <a href="{{ path('entity.node.canonical', {'node': featured_publication.nid}) }}"
@@ -43,7 +43,7 @@
             {% if featured_publication.is_middle_right %}
               <span class="featured-publication-heading-desktop-middle-right">{{ featured_publication.heading }}</span>
             {% endif %}
-          </h2>
+          </h3>
         {% endif %}
 
 

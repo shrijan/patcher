@@ -12,7 +12,7 @@ class TransitionAccessConstraintValidator extends ConstraintValidatorBase {
   /**
    * {@inheritdoc}
    */
-  public function validate($value, Constraint $constraint) {
+  public function validate($value, Constraint $constraint): void {
     /** @var \Drupal\Core\Field\FieldItemList $value */
     assert($constraint instanceof TransitionAccessConstraint);
     $entity = $value->getEntity();

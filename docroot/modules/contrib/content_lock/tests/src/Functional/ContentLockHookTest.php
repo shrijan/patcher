@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\content_lock\Functional;
 
 use Drupal\Tests\BrowserTestBase;
+use Drupal\Tests\content_lock\Tools\LogoutTrait;
 
 /**
  * Node tests.
@@ -12,6 +13,7 @@ use Drupal\Tests\BrowserTestBase;
  * @group content_lock
  */
 class ContentLockHookTest extends BrowserTestBase {
+  use LogoutTrait;
 
   /**
    * {@inheritdoc}
@@ -29,7 +31,7 @@ class ContentLockHookTest extends BrowserTestBase {
   /**
    * Test hook_content_lock_entity_lockable.
    */
-  public function testContentLockEntityLockableHook() {
+  public function testContentLockEntityLockableHook(): void {
     $assert_session = $this->assertSession();
 
     $this->drupalCreateContentType(['type' => 'article']);

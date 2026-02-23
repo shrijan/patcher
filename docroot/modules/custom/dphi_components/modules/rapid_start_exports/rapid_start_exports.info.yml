@@ -1,0 +1,8 @@
+name: 'Rapid Start Exports'
+type: module
+description: 'Module to add a field showing the count of entities where the entity is used.'
+core_version_requirement: ^9 || ^10
+package: Custom
+dependencies:
+  - views:views
+  - entity_usage:entity_usage

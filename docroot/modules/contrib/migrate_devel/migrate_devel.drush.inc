@@ -4,11 +4,10 @@
  * @file
  * File for Drush Integration.
  */
+
 use Drupal\Component\Plugin\Discovery\CachedDiscoveryInterface;
-use Drupal\config_update\ConfigListInterface;
-use Drupal\config_update\ConfigRevertInterface;
-use Drupal\Core\Config\StorageInterface;
-use Drush\Log\LogLevel;
+use Drush\Drush;
+use Psr\Log\LogLevel;
 
 /**
  * Implements hook_drush_help_alter().
@@ -25,8 +24,8 @@ function migrate_devel_drush_help_alter(&$command) {
 function migrate_devel_drush_command_alter(&$command) {
   $cmd = $command['command'];
   if ($cmd === 'migrate-import' || $cmd === 'migrate-status') {
-    // Reset all migrations
-    if (drush_get_option('migrate-debug')) {
+    // Reset all migrations.
+    if (Drush::input()->getOption('migrate-debug')) {
       migrate_devel_rebuild_migrations();
     }
   }
@@ -36,35 +35,38 @@ function migrate_devel_drush_command_alter(&$command) {
  * Clears cache for migrations and reverts config of migrations if needed.
  */
 function migrate_devel_rebuild_migrations() {
-  // @TODO: Remove this legacy support of migrate_plus.
+  // @todo Remove this legacy support of migrate_plus.
   // After #2752335, it uses the default Migrate Plugin Manager
-  /* @var $discovery CachedDiscoveryInterface */
+  /** @var \Drupal\Component\Plugin\Discovery\CachedDiscoveryInterface $discovery */
   if (\Drupal::hasService('plugin.manager.config_entity_migration')) {
     $discovery = \Drupal::service('plugin.manager.config_entity_migration');
-  } else {
+  }
+  else {
     $discovery = \Drupal::service('plugin.manager.migration');
   }
 
-  // Reset cached migrations
+  // Reset cached migrations.
   $discovery->clearCachedDefinitions();
 
-  /* @var $discovery CachedDiscoveryInterface */
+  /** @var \Drupal\Component\Plugin\Discovery\CachedDiscoveryInterface $discovery */
   if (\Drupal::moduleHandler()->moduleExists('migrate_plus')) {
     migrate_devel_revert_migrate_config($discovery);
   }
 
-  \Drupal::logger(dt('Reset Cached Migrations'), LogLevel::DEBUG);
+  // Use the correct PSR-3 constant.
+  \Drupal::logger('your_channel')->log(LogLevel::DEBUG, 'Reset Cached Migrations');
 }
 
 /**
- * Reverts migrate config for migrate_plus
+ * Reverts migrate config for migrate_plus.
  *
- * @param CachedDiscoveryInterface $discovery
+ * @param \Drupal\Component\Plugin\Discovery\CachedDiscoveryInterface $discovery
+ *   @todo Add a docstring comment for this variable.
  */
-function migrate_devel_revert_migrate_config($discovery) {
+function migrate_devel_revert_migrate_config(CachedDiscoveryInterface $discovery) {
   // If migrate_plus and config_update exists, revert the config.
   if (\Drupal::moduleHandler()->moduleExists('config_update')) {
-    /* @var $config_revert ConfigRevertInterface */
+    /** @var \Drupal\config_update\ConfigRevertInterface $config_revert */
     $config_revert = \Drupal::service('config_update.config_update');
 
     foreach ($discovery->getDefinitions() as $definition) {
@@ -73,9 +75,10 @@ function migrate_devel_revert_migrate_config($discovery) {
 
     \Drupal::logger(dt('Reverted Existing Migration Configs'));
 
-    // Revert missing config
+    // Revert missing config.
     migrate_devel_revert_missing_config('migration');
-  } else {
+  }
+  else {
     \Drupal::logger(dt('Missing config_update for revert.'));
   }
 }
@@ -84,20 +87,21 @@ function migrate_devel_revert_migrate_config($discovery) {
  * Reverts missing config for a specific config type.
  *
  * @param string $type
+ *   @todo Add a docstring comment for this variable.
  */
 function migrate_devel_revert_missing_config($type) {
-  /* @var ConfigRevertInterface $config_revert */
+  /** @var \Drupal\config_update\ConfigRevertInterface $config_revert */
   $config_revert = \Drupal::service('config_update.config_update');
 
   // Now we need to add any new migrations.
-  /* @var ConfigListInterface $config_lister */
+  /** @var \Drupal\config_update\ConfigListInterface $config_lister */
   $config_lister = \Drupal::service('config_update.config_list');
 
   // Add any new migrations we need to.
-  list($active_list, $install_list, $optional_list) = $config_lister->listConfig('type', $type);
+  [$active_list, $install_list] = $config_lister->listConfig('type', $type);
   $missing = array_diff($install_list, $active_list);
 
-  /* @var StorageInterface $config_reader */
+  /** @var \Drupal\Core\Config\StorageInterface $config_reader */
   $config_reader = \Drupal::service('config_update.extension_storage');
 
   foreach ($missing as $name) {
@@ -107,8 +111,8 @@ function migrate_devel_revert_missing_config($type) {
     $id_key = $definition->getKey('id');
 
     if ($config_revert->import($config_type, $config[$id_key])) {
-      \Drupal::logger(dt('Imported @config', ['@config' => $name]), LogLevel::ALERT);
+      $message = \Drupal::translation()->translate('Imported @config', ['@config' => $name]);
+      \Drupal::logger('your_channel')->log(LogLevel::ALERT, $message);
     }
   }
 }
-

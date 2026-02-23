@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\content_lock\Functional;
 
 use Drupal\Tests\BrowserTestBase;
+use Drupal\Tests\content_lock\Tools\LogoutTrait;
 
 /**
  * Views tests.
@@ -12,6 +13,7 @@ use Drupal\Tests\BrowserTestBase;
  * @group content_lock
  */
 class ContentLockViewsTest extends BrowserTestBase {
+  use LogoutTrait;
 
   /**
    * {@inheritdoc}
@@ -32,7 +34,7 @@ class ContentLockViewsTest extends BrowserTestBase {
   /**
    * Test Content Lock view display.
    */
-  public function testViewDisplay() {
+  public function testViewDisplay(): void {
     $this->drupalPlaceBlock('local_tasks_block');
     $this->drupalCreateContentType(['type' => 'article']);
     $admin = $this->drupalCreateUser([

@@ -6,6 +6,6 @@ dependencies:
   - scheduler_content_moderation_integration:scheduler_content_moderation_integration
 
 # Information added by Drupal.org packaging script on 2025-02-04
-version: '2.0.0'
+version: '3.0.4'
 project: 'scheduler_content_moderation_integration'
-datestamp: 1738678268
+datestamp: 1738679098

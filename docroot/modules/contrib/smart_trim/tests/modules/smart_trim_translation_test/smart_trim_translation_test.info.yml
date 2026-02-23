@@ -5,7 +5,7 @@ package: Testing
 dependencies:
   - smart_trim:smart_trim
 
-# Information added by Drupal.org packaging script on 2024-08-16
-version: '2.2.0'
+# Information added by Drupal.org packaging script on 2026-01-11
+version: '2.3.1'
 project: 'smart_trim'
-datestamp: 1723847278
+datestamp: 1768161515

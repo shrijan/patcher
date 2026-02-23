@@ -26,19 +26,9 @@ class ContentLockTranslationTest extends ContentLockTestBase {
   protected $defaultTheme = 'stark';
 
   /**
-   * {@inheritdoc}
-   */
-  public function setUp(): void {
-    $this->markTestSkipped(
-      'prefetch_catch is not D10 compatible.'
-    );
-    parent::setUp();
-  }
-
-  /**
    * Test translation integration.
    */
-  public function testTranslatedContent() {
+  public function testTranslatedContent(): void {
     $translation = $this->entity->addTranslation('de', ['name' => 'entity1 german']);
     $this->entity->save();
 
@@ -58,12 +48,12 @@ class ContentLockTranslationTest extends ContentLockTestBase {
 
     // We lock entity.
     $this->drupalLogin($this->user1);
-    // Edit a entity without saving.
+    // Edit an entity without saving.
     $this->drupalGet($this->entity->toUrl('edit-form'));
     $assert_session->pageTextContains('This content translation is now locked against simultaneous editing. This content translation will remain locked if you navigate away from this page without saving or unlocking it.');
     // English form locked, german not.
-    $this->assertNotFalse($lockService->fetchLock($this->entity->id(), $this->entity->language()->getId(), NULL, 'entity_test_mul_changed'));
-    $this->assertFalse($lockService->fetchLock($translation->id(), $translation->language()->getId(), NULL, 'entity_test_mul_changed'));
+    $this->assertNotFalse($lockService->fetchLock($this->entity));
+    $this->assertFalse($lockService->fetchLock($translation));
 
     $this->drupalLogin($this->user2);
     // Enter english form.
@@ -77,7 +67,7 @@ class ContentLockTranslationTest extends ContentLockTestBase {
     // Enter translation form.
     $this->drupalGet($translation->toUrl('edit-form'));
     $assert_session->pageTextContains('This content translation is now locked against simultaneous editing. This content translation will remain locked if you navigate away from this page without saving or unlocking it.');
-    $this->assertNotFalse($lockService->fetchLock($translation->id(), $translation->language()->getId(), NULL, 'entity_test_mul_changed'));
+    $this->assertNotFalse($lockService->fetchLock($translation));
     $this->drupalGet($translation->toUrl('edit-form'));
     $this->submitForm([], 'Save');
 

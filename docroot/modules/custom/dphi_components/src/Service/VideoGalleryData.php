@@ -31,6 +31,7 @@ class VideoGalleryData {
       if (!empty($data['youtube_id'])) {
         $args['enablejsapi'] = '1';
         $data['embed'] = 'https://www.youtube.com/embed/'.$data['youtube_id'].'?'.http_build_query($args);
+        $data['player_title'] = 'YouTube video player';
       }
     } elseif (str_starts_with($url, 'https://vimeo.com/')) {
 

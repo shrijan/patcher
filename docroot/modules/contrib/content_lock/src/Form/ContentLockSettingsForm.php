@@ -3,10 +3,12 @@
 namespace Drupal\content_lock\Form;
 
 use Drupal\content_lock\ContentLock\ContentLockInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\ConfigFormBase;
+use Drupal\Core\Form\ConfigTarget;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Link;
@@ -20,35 +22,22 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class ContentLockSettingsForm extends ConfigFormBase {
 
-  /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * Drupal\Core\Extension\ModuleHandlerInterface module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entityTypeManager, ModuleHandlerInterface $module_handler) {
-    parent::__construct($config_factory);
-    $this->entityTypeManager = $entityTypeManager;
-    $this->moduleHandler = $module_handler;
+  public function __construct(
+    ConfigFactoryInterface $config_factory,
+    TypedConfigManagerInterface $typedConfigManager,
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected ModuleHandlerInterface $moduleHandler,
+  ) {
+    parent::__construct($config_factory, $typedConfigManager);
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('entity_type.manager'),
       $container->get('module_handler')
     );
@@ -57,7 +46,7 @@ class ContentLockSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return [
       'content_lock.settings',
     ];
@@ -66,14 +55,14 @@ class ContentLockSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'content_lock_settings_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $config = $this->config('content_lock.settings');
 
     $form['general'] = [
@@ -182,13 +171,6 @@ class ContentLockSettingsForm extends ConfigFormBase {
           ] + $form['entities'][$definition->id()]['settings']['translation_lock'];
         }
 
-        $form['entities'][$definition->id()]['settings']['js_lock'] = [
-          '#type' => 'checkbox',
-          '#title' => $this->t('Lock form using JS.'),
-          '#default_value' => in_array($definition->id(), $config->get('types_js_lock') ?: []),
-          '#description' => $this->t('Activating this options activates the lock when the user is on the form. This helps if modules interacting with form without a user interacting with the form, like the prefetch_cache module.'),
-        ];
-
         if (!empty($definition->getHandlerClasses()['form'])) {
           $form['entities'][$definition->id()]['settings']['form_op_lock'] = [
             '#tree' => 1,
@@ -198,8 +180,8 @@ class ContentLockSettingsForm extends ConfigFormBase {
             '#title' => $this->t('Lock only on entity form operation level.'),
             '#options' => [
               ContentLockInterface::FORM_OP_MODE_DISABLED => $this->t('Disabled'),
-              ContentLockInterface::FORM_OP_MODE_WHITELIST => $this->t('Enable lock for selected form operations'),
-              ContentLockInterface::FORM_OP_MODE_BLACKLIST => $this->t('Disable lock for selected form operations'),
+              ContentLockInterface::FORM_OP_MODE_ALLOWLIST => $this->t('Enable lock for selected form operations'),
+              ContentLockInterface::FORM_OP_MODE_DENYLIST => $this->t('Disable lock for selected form operations'),
             ],
             '#default_value' => $config->get('form_op_lock.' . $definition->id() . '.mode') ?: ContentLockInterface::FORM_OP_MODE_DISABLED,
             '#description' => $this->t('Activating this options allows users to edit different entity forms concurrently'),
@@ -222,6 +204,14 @@ class ContentLockSettingsForm extends ConfigFormBase {
       }
     }
 
+    $form['timeout'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Lock timeout'),
+      '#description' => $this->t('The maximum time in minutes that each lock may be kept. To disable breaking locks after a timeout, clear the value. It is recommended for user experience to set this value.'),
+      '#min' => 1,
+      '#config_target' => new ConfigTarget('content_lock.settings', 'timeout', fn($value) => empty($value) ? '' : $value / 60, fn($value) => empty($value) ? NULL : $value * 60),
+    ];
+
     $form['#attached']['library'][] = 'content_lock/drupal.content_lock.settings';
     return parent::buildForm($form, $form_state);
   }
@@ -229,7 +219,7 @@ class ContentLockSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
 
     $content_lock = $this->config('content_lock.settings');
@@ -248,16 +238,6 @@ class ContentLockSettingsForm extends ConfigFormBase {
             $types_translation_lock = array_diff($types_translation_lock, [$definition->id()]);
           }
           $content_lock->set('types_translation_lock', $types_translation_lock);
-
-          $js_lock = (bool) $form_state->getValue([$definition->id(), 'settings', 'js_lock']);
-          $types_js_lock = $content_lock->get('types_js_lock') ?: [];
-          if ($js_lock && !in_array($definition->id(), $types_js_lock)) {
-            $types_js_lock[] = $definition->id();
-          }
-          elseif (!$js_lock && in_array($definition->id(), $types_js_lock)) {
-            $types_js_lock = array_diff($types_js_lock, [$definition->id()]);
-          }
-          $content_lock->set('types_js_lock', $types_js_lock);
 
           $content_lock->set('form_op_lock.' . $definition->id() . '.mode', $form_state->getValue([$definition->id(), 'settings', 'form_op_lock', 'mode']));
           $content_lock->set('form_op_lock.' . $definition->id() . '.values', $this->removeEmptyValue((array) $form_state->getValue([$definition->id(), 'settings', 'form_op_lock', 'values'])));
@@ -278,7 +258,7 @@ class ContentLockSettingsForm extends ConfigFormBase {
    * @return array
    *   The array without empty values.
    */
-  protected function removeEmptyValue(array $array) {
+  protected function removeEmptyValue(array $array): array {
     return array_filter($array, function ($value) {
       return !empty($value);
     });
@@ -298,7 +278,7 @@ class ContentLockSettingsForm extends ConfigFormBase {
    *
    * @see _entity_reference_field_settings_process()
    */
-  public static function formProcessMergeParent(array $element) {
+  public static function formProcessMergeParent(array $element): array {
     $parents = $element['#parents'];
     array_pop($parents);
     $element['#parents'] = $parents;

@@ -2,12 +2,16 @@
 
 namespace Drupal\Tests\tfa\Functional;
 
+use Drupal\tfa\TfaUserDataTrait;
+use Drupal\user\RoleInterface;
+
 /**
  * Tests for the tfa login process.
  *
- * @group tfa
+ * @group Tfa
  */
 class TfaLoginTest extends TfaTestBase {
+  use TfaUserDataTrait;
 
   /**
    * User doing the TFA Validation.
@@ -79,10 +83,16 @@ class TfaLoginTest extends TfaTestBase {
     // gets prompted with tfa.
     // Disable TFA for all roles.
     $this->drupalLogin($this->adminUser);
-    $roles = user_role_names(TRUE);
-    $edit = [];
-    foreach ($roles as $role_id => $role_name) {
-      $edit['tfa_required_roles[' . $role_id . ']'] = FALSE;
+    /** @var \Drupal\user\RoleStorageInterface $role_storage */
+    $role_storage = \Drupal::service('entity_type.manager')->getStorage('user_role');
+    /** @var \Drupal\user\RoleInterface[]|null $roles */
+    $roles = $role_storage->loadMultiple();
+    $this->assertNotEmpty($roles);
+    foreach ($roles as $role) {
+      if ($role->id() == RoleInterface::ANONYMOUS_ID) {
+        continue;
+      }
+      $edit['tfa_required_roles[' . $role->id() . ']'] = FALSE;
     }
     $edit['tfa_required_roles[authenticated]'] = FALSE;
     $this->drupalGet('admin/config/people/tfa');
@@ -124,15 +134,105 @@ class TfaLoginTest extends TfaTestBase {
 
     // Check tfa setup as another user.
     $another_user = $this->createUser();
+    $this->assertNotFalse($another_user);
     $this->drupalLogin($this->superAdmin);
     $this->drupalGet('user/' . $another_user->id() . '/security/tfa');
     $assert_session->statusCodeEquals(200);
     $this->clickLink('Set up test application');
+    $assert_session->statusCodeEquals(200);
+    $assert_session->pageTextContains('Enter your current password to alter TFA settings for account ' . $another_user->getAccountName());
     $edit = [
       'current_pass' => $this->superAdmin->passRaw,
     ];
     $this->submitForm($edit, 'Confirm');
     $assert_session->pageTextContains('TFA Setup for ' . $another_user->getDisplayName());
+  }
+
+  /**
+   * Tests login when the user has the Default plugin disabled.
+   */
+  public function testDefaultPluginDisabled() {
+    $test_user = $this->createUser();
+    $this->assertNotFalse($test_user);
+    $settings = $this->config('tfa.settings');
+    $settings->set('enabled', TRUE);
+    $enabled_plugins = [
+      'tfa_test_plugins_validation' => 'tfa_test_plugins_validation',
+      'tfa_test_plugins_validation_false' => 'tfa_test_plugins_validation_false',
+    ];
+    $settings->set('allowed_validation_plugins', $enabled_plugins);
+    $settings->set('default_validation_plugin', 'tfa_test_plugins_validation_false');
+    $settings->save();
+
+    /** @var \Drupal\user\UserDataInterface $user_data_service */
+    $user_data_service = $this->container->get('user.data');
+    // This will be the users 'configured and ready' plugin, it is however
+    // not the 'default' plugin.
+    $this->tfaSaveTfaData((int) $test_user->id(), $user_data_service, ['plugins' => 'tfa_test_plugins_validation']);
+    // This will be an unknown/invalid/uninstalled plugin to ensure
+    // that no exceptions occur on unknown plugins.
+    $this->tfaSaveTfaData((int) $test_user->id(), $user_data_service, ['plugins' => 'tfa_plugin_does_not_exist']);
+
+    $this->drupalLogout();
+    $edit = [
+      'name' => $test_user->getAccountName(),
+      'pass' => $test_user->passRaw,
+    ];
+    $this->drupalGet('user/login');
+    $this->submitForm($edit, 'Log in');
+    $assert_session = $this->assertSession();
+    $assert_session->statusCodeEquals(200);
+    $this->assertNotEmpty($this->getSessionCookies());
+    $this->matchesRegularExpression('/.*\/user\/' . $test_user->id() . '.*/', $this->getSession()->getCurrentUrl());
+  }
+
+  /**
+   * Tests session is migrated before token entry form.
+   */
+  public function testLoginSessionFixationPrevention(): void {
+    $assert_session = $this->assertSession();
+
+    // Enable TFA for the webUser role only.
+    $this->drupalLogin($this->adminUser);
+    $web_user_roles = $this->webUser->getRoles(TRUE);
+    $edit = [
+      'tfa_required_roles[' . $web_user_roles[0] . ']' => TRUE,
+    ];
+    $this->drupalGet('admin/config/people/tfa');
+    $this->submitForm($edit, 'Save configuration');
+    $assert_session->statusCodeEquals(200);
+    $this->assertSession()->pageTextContains('The configuration options have been saved.');
+    $this->drupalLogout();
+
+    $seed_data = [
+      'seed' => base64_encode('foo'),
+      'created' => '12345',
+    ];
+
+    $this->setUserData('tfa', ['tfa_totp_seed' => $seed_data], (int) $this->webUser->id(), \Drupal::service('user.data'));
+
+    // Reset any session data and set a fixated session id.
+    $this->getSession()->restart();
+    $this->getSession()->setCookie($this->getSessionName(), '1');
+
+    // Submit the login page.
+    $edit = [
+      'name' => $this->webUser->getAccountName(),
+      'pass' => $this->webUser->passRaw,
+    ];
+    $this->drupalGet('user/login');
+    $this->submitForm($edit, 'Log in');
+    // Ensure this is tfa\Form\EntryForm.
+    $assert_session->statusCodeEquals(200);
+    $assert_session->addressMatches('/\/tfa\/' . $this->webUser->id() . '/');
+    $assert_session->pageTextContains('Two-Factor Authentication');
+
+    // Note: drupalGet() followed the 302 redirect. We are testing after
+    // redirect followed, ideally we would test the redirect response.
+    $this->assertNotNull($this->getSessionCookies()->getCookieByName($this->sessionName));
+    $after_reset_page_session_value = $this->getSessionCookies()->getCookieByName($this->sessionName)->getValue();
+    $this->assertNotEquals('1', $after_reset_page_session_value, "Ensure session migrated");
+
   }
 
 }

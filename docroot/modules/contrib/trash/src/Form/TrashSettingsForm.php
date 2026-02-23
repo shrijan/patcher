@@ -204,6 +204,12 @@ class TrashSettingsForm extends ConfigFormBase {
     }
     $config->save();
 
+    // Inform users that they should probably enable support for path aliases
+    // alongside nodes.
+    if (isset($enabled_entity_types['node']) && !isset($enabled_entity_types['path_alias'])) {
+      $this->messenger()->addStatus($this->t('Consider enabling Trash support for URL aliases. This ensures that URL aliases are automatically trashed and restored along with their associated content.'));
+    }
+
     parent::submitForm($form, $form_state);
   }
 
@@ -215,7 +221,6 @@ class TrashSettingsForm extends ConfigFormBase {
     $unsupported_entity_types = [
       'comment',
       'taxonomy_term',
-      'path_alias',
       'user',
       'workspace',
     ];

@@ -1,0 +1,17 @@
+Export current Question and Answer content.
+<form method="POST">
+  <div class="form-item">
+    <label class="form-item__label">Collection</label>
+    <select name="collection" class="form-select form-element form-element--type-select">
+      <option value="">- All -</option>
+      {% for collection in collections %}
+        <option value={{ collection.id }}>{{ collection.value }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <ul class="local-actions">
+    <li class="local-actions__item">
+      <input type="submit" class="button button--primary" name="type" value="Export Questions" />
+    </li>
+  </ul>
+</form>

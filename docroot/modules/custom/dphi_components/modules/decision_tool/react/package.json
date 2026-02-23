@@ -1,0 +1,32 @@
+{
+  "name": "decisionTool",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "trace": "VITE_CJS_TRACE=true vite build",
+    "dev": "npm run build && vite --host --port=5175",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@dnd-kit/sortable": "^10.0.0",
+    "body-scroll-lock-upgrade": "^1.1.0",
+    "nsw-design-system": "^3.19.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-html-map": "^0.1.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.3",
+    "glob": "^11.0.0",
+    "prettier": "^3.2.4",
+    "sass-embedded": "^1.86.0",
+    "vite": "^6.0.0"
+  },
+  "prettier": {
+    "arrowParens": "avoid",
+    "semi": false,
+    "singleQuote": true
+  }
+}

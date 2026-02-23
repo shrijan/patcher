@@ -5,7 +5,7 @@ namespace Drupal\Tests\tfa\Functional;
 /**
  * Tests the Tfa UI.
  *
- * @group tfa
+ * @group Tfa
  */
 class TfaConfigTest extends TfaTestBase {
   /**

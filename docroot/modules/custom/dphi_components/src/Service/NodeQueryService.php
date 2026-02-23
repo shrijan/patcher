@@ -75,16 +75,10 @@ class NodeQueryService {
       $conditions->condition($query->orConditionGroup()->condition('node__field_content_category.field_content_category_value', $category_types, 'IN'));
 
       // Add conditions for selected tags.
-      //if (!empty($selected_tags)) {
-        //$query->leftJoin('node__field_tags', 'node__field_tags', 'node__field_tags.entity_id = base_table.nid');
-        //$conditions->condition($query->orConditionGroup()->condition('node__field_tags.field_tags_target_id', $selected_tags, 'IN'));
-      //}
-    }
-    
-     /* Have to move this out form $category_types check because its not working for content type other than page, publication */
-    if (!empty($selected_tags)) {
-      $query->leftJoin('node__field_tags', 'node__field_tags', 'node__field_tags.entity_id = base_table.nid');
-      $conditions->condition($query->orConditionGroup()->condition('node__field_tags.field_tags_target_id', $selected_tags, 'IN'));
+      if (!empty($selected_tags)) {
+        $query->leftJoin('node__field_tags', 'node__field_tags', 'node__field_tags.entity_id = base_table.nid');
+        $conditions->condition($query->orConditionGroup()->condition('node__field_tags.field_tags_target_id', $selected_tags, 'IN'));
+      }
     }
 
     // Add OR condition for field area.

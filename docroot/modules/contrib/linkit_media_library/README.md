@@ -8,9 +8,8 @@ open the linked document in a new window/tab.
 
 ## REQUIREMENTS
 
-* Drupal 8 or 9
 * [Linkit](https://www.drupal.org/project/linkit) module
-  * Supported versions: 8.x-5.x and 6.x.x
+  * Supported versions: 7.0.x
 
 ## INSTALLATION
 

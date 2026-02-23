@@ -21,6 +21,7 @@ class ContentBlock extends Paragraph {
       'use_background_color' => $this->getSingleFieldValue('field_use_background_colour') == '1',
       'title' => $this->getSingleFieldValue('field_title'),
       'titleAsH2' => $this->getSingleFieldValue('field_display_title_as_h2') == '1',
+      'title_left_content_right' => $this->getSingleFieldValue('field_title_in_left_and_content'),
       'date' => $this->getSingleFieldValue('field_date'),
       'content' => $this->getContentFieldValue('field_content'),
     ];

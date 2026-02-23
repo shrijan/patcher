@@ -219,10 +219,20 @@ function dphi_components_form_alter(&$form, FormStateInterface $form_state, $for
       else {
         $path = \Drupal::service('path.current')->getPath();
         if ($form['#id'] === 'views-exposed-form-publications-page-list') {
-          foreach (['', '_1'] as $suffix) {
-            $form['field_publish_event_date' . $suffix]['#attributes']['class'] = ['nsw-form__input js-date-input__text'];
-            $form['field_publish_event_date' . $suffix]['#attributes']['placeholder'] = 'dd/mm/yyyy';
-            $form['field_publish_event_date' . $suffix]['#weight'] = -20;
+          $date_fields = [
+            'field_publish_event_date_wrapper' => 'field_publish_event_date',
+            'field_publish_event_date_1_wrapper' => 'field_publish_event_date_1',
+          ];
+
+          foreach ($date_fields as $wrapper => $field) {
+            if (isset($form[$wrapper][$field]['date'])) {
+              $form[$wrapper]['#attributes']['class'] = ['fieldgroup form-composite js-form-item form-item js-form-wrapper form-wrapper nsw-p-bottom-xs'];
+              $element = &$form[$wrapper][$field]['date'];
+              $element['#type'] = 'textfield';;
+              $element['#attributes']['class'][] = 'nsw-form__input js-date-input__text';
+              $element['#attributes']['placeholder'] = 'dd/mm/yyyy';
+              $element['#weight'] = -20;
+           }
           }
           $form['field_theme_target_id']['#type'] = 'checkboxes';
           $form['field_publication_type_target_id']['#type'] = 'checkboxes';
@@ -265,20 +275,34 @@ function dphi_components_form_alter(&$form, FormStateInterface $form_state, $for
             '/news',
             '/resources-and-research',
             '/stories-and-case-studies',
-          ]) && !empty($form[$field_name]) && !empty($form[$field_name . '_1'])) {
-          array_splice($form, array_search($field_name, array_keys($form)), 0, [
-            [
-              '#name'=>'daterange',
-              '#type' => 'checkbox',
-              '#title' => t('View results during dates'),
-              '#attributes' => [
-                'class' => ['option nsw-form__checkbox-input'],
-              ]
-            ]
-          ]);
+          ]) && !empty($form[$field_name.'_wrapper']) && !empty($form[$field_name.'_1_wrapper'])
+        ) {
+          foreach ($form as $key=>&$form_item) {
+            if ($key == 'field_publish_event_date_value_wrapper') {
+              break;
+            }
+            if (empty($form_item['#weight'])) {
+              $form_item['#weight'] = -1;
+            }
+          }
+          $form['daterange'] = [
+            '#type' => 'checkbox',
+            '#title' => t('View results during dates'),
+            '#weight' => -1,
+            '#attributes' => [
+              'class' => ['option nsw-form__checkbox-input'],
+            ],
+          ];
           foreach (['', '_1'] as $suffix) {
-            $form[$field_name . $suffix]['#attributes']['class'] = ['nsw-form__input js-date-input__text'];
-            $form[$field_name . $suffix]['#attributes']['placeholder'] = 'dd/mm/yyyy';
+            $form[$field_name.$suffix] = [
+              '#type' => 'textfield',
+              '#weight' => -1,
+              '#value' => $form[$field_name.$suffix.'_wrapper'][$field_name.$suffix]['date']['#default_value'],
+              '#attributes' => [
+                'class' => ['nsw-form__input js-date-input__text'],
+                'placeholder' => 'dd/mm/yyyy'
+              ]
+            ];
           }
         }
       }
@@ -346,6 +370,41 @@ function dphi_components_preprocess(&$variables, $hook) {
   $config = \Drupal::configFactory()->get('dphi_components.settings');
   $left_nav_flag = $config->get('left_side_nav_expand_collapse');
   $variables['#attached']['drupalSettings']['left_nav_expand'] = $left_nav_flag;
+}
+
+/**
+ * Implements hook_preprocess_block().
+ */
+function dphi_components_preprocess_block(&$variables) {
+  if (!empty($variables['elements']['#id']) && $variables['elements']['#id'] == 'dphi_base_theme_sitebranding') {
+    $config = \Drupal::config('dphi_components.settings');
+    $variables['logo_image_url'] = $config->get('logo_image_url') ?: '/';
+  }
+}
+
+/**
+ * Implements hook_preprocess_form_element().
+ */
+function dphi_components_preprocess_form_element(&$variables) {
+  if (!empty($variables['name']) && in_array($variables['name'], [
+    'field_publish_event_date_value',
+    'field_publish_event_date_value_1'
+  ])) {
+    $variables['attributes']['data-date-format'] = 'y-m-d';
+  }
+}
+
+/**
+ * Implements hook_preprocess_fieldset().
+ */
+function dphi_components_preprocess_fieldset(&$variables) {
+  if (!empty($variables['element']['#id']) && in_array($variables['element']['#id'], [
+    'edit-field-publish-event-date-value-wrapper',
+    'edit-field-publish-event-date-value-1-wrapper'
+  ])) {
+    $variables['attributes']['hidden'] = true;
+    unset($variables['children']);
+  }
 }
 
 /**
@@ -589,29 +648,31 @@ function dphi_components_preprocess_views_view(&$vars) {
     $postcodes_json = file_get_contents($module_path . '/themes/dphi_base_theme/src/components/spatial/data/australian_postcodes.json');
     $postcodes_json_data = json_decode($postcodes_json, TRUE);
 
-    // getiing and filtering results for displaing on map without pagination.
+    // getting and filtering results for displaying on map without pagination.
     $query = \Drupal::entityQuery('node')->accessCheck(TRUE);
     $query->condition('type', 'spatial_component');
-    $pin_id = $spatial_component->get('field_pin_id')->getValue()[0]['value'];
-    if (isset($pin_id)) {
-      $query->condition('field_pin_id', $pin_id);
+    if (!empty($spatial_component)) {
+      $pin_id = $spatial_component->get('field_pin_id')->getValue()[0]['value'];
+      if (isset($pin_id)) {
+        $query->condition('field_pin_id', $pin_id);
+      }
+
+      $queryParameters = \Drupal::request()->query;
+
+      foreach (['one', 'two', 'three', 'four', 'five'] as $suffix) {
+        $show_filter = $spatial_component->get('field_show_filter_' . $suffix)
+          ->getValue()[0]['value'];
+        if (!empty($show_filter) && $queryParameters->has('sc_filter_' . $suffix)) {
+          $filter = $queryParameters->all()['sc_filter_' . $suffix];
+          if ($filter) {
+            $query->condition('field_sc_filter_' . $suffix, $filter, 'IN');
+          }
+        }
+      }
     }
 
     if ($postcode = \Drupal::request()->query->get('postcode')) {
       $query->condition('field_postcode', $postcode);
-    }
-
-    $queryParameters = \Drupal::request()->query;
-
-    foreach (['one', 'two', 'three', 'four', 'five'] as $suffix) {
-      $show_filter = $spatial_component->get('field_show_filter_' . $suffix)
-        ->getValue()[0]['value'];
-      if (!empty($show_filter) && $queryParameters->has('sc_filter_' . $suffix)) {
-        $filter = $queryParameters->all()['sc_filter_' . $suffix];
-        if ($filter) {
-          $query->condition('field_sc_filter_' . $suffix, $filter, 'IN');
-        }
-      }
     }
 
     $result = $query->execute();
@@ -1021,4 +1082,17 @@ function get_spatial_components_tag_options($pin_id, $filter_id, $filter_type) {
  */
 function dphi_components_file_presave(\Drupal\Core\Entity\EntityInterface $file) {
   \Drupal\dphi_components\Service\FilePreSaveHook::preSave($file);
+}
+
+function dphi_components_preprocess_colorbox_formatter(&$variables) {
+  if (isset($variables['attributes'])) {
+    $entity = $variables['entity'];
+    $image_credit = $entity->getSingleFieldValue('field_image_credit');
+    $image_description = $entity->getSingleFieldValue('field_image_description');
+    $image_title = ($image_description ? $image_description.'; ' : '') . $image_credit;
+    // Override the 'title' attribute for the Colorbox.
+    if ($image_title) {
+      $variables['attributes']['title'] = $image_title;
+    }
+  }
 }

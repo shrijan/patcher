@@ -35,7 +35,7 @@ class SidebarMenuBlock extends MenuBlock {
 
     if ($sidebarSetting == 'global') {
       if ($node->hasField('field_sidebar_level')) {
-        $sidebarLevel = $node->get('field_sidebar_level')->getString() || 1;
+        $sidebarLevel = $node->get('field_sidebar_level')->getString() ?: 1;
         $menu_name = $this->getDerivativeId();
         $activeTrail = array_values($this->menuActiveTrail->getActiveTrailIds($menu_name));
         $this->configuration['parent'] = $activeTrail[count($activeTrail) - $sidebarLevel - 1];

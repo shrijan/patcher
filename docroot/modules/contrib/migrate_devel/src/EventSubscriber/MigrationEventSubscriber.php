@@ -5,6 +5,7 @@ namespace Drupal\migrate_devel\EventSubscriber;
 use Drupal\migrate\Event\MigrateEvents;
 use Drupal\migrate\Event\MigratePostRowSaveEvent;
 use Drupal\migrate\Event\MigratePreRowSaveEvent;
+use Drush\Drush;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -18,7 +19,7 @@ class MigrationEventSubscriber implements EventSubscriberInterface {
    * Pre Row Save Function for --migrate-debug-pre.
    *
    * @param \Drupal\migrate\Event\MigratePreRowSaveEvent $event
-   *    Pre-Row-Save Migrate Event.
+   *   Pre-Row-Save Migrate Event.
    */
   public function debugRowPreSave(MigratePreRowSaveEvent $event) {
     if (PHP_SAPI !== 'cli') {
@@ -27,10 +28,10 @@ class MigrationEventSubscriber implements EventSubscriberInterface {
 
     $row = $event->getRow();
 
-    if (in_array('migrate-debug-pre', \Drush\Drush::config()->get('runtime.options'))) {
+    if (in_array('migrate-debug-pre', Drush::config()->get('runtime.options'))) {
       // Start with capital letter for variables since this is actually a label.
-      $Source = $row->getSource();
-      $Destination = $row->getDestination();
+      $source = $row->getSource();
+      $destination = $row->getDestination();
 
       // Uses Symfony VarDumper.
       // @todo Explore advanced usage of CLI dumper class for nicer output.
@@ -39,11 +40,11 @@ class MigrationEventSubscriber implements EventSubscriberInterface {
         '---------------------------------------------------------------------',
         '|                             $Source                               |',
         '---------------------------------------------------------------------',
-        $Source,
+        $source,
         '---------------------------------------------------------------------',
         '|                           $Destination                            |',
         '---------------------------------------------------------------------',
-        $Destination
+        $destination
       );
     }
   }
@@ -61,12 +62,12 @@ class MigrationEventSubscriber implements EventSubscriberInterface {
 
     $row = $event->getRow();
 
-    if (in_array('migrate-debug', \Drush\Drush::config()->get('runtime.options'))) {
+    if (in_array('migrate-debug', Drush::config()->get('runtime.options'))) {
 
       // Start with capital letter for variables since this is actually a label.
-      $Source = $row->getSource();
-      $Destination = $row->getDestination();
-      $DestinationIDValues = $event->getDestinationIdValues();
+      $source = $row->getSource();
+      $destination = $row->getDestination();
+      $destinationIDValues = $event->getDestinationIdValues();
 
       // Uses Symfony VarDumper.
       // @todo Explore advanced usage of CLI dumper class for nicer output.
@@ -75,15 +76,15 @@ class MigrationEventSubscriber implements EventSubscriberInterface {
         '---------------------------------------------------------------------',
         '|                             $Source                               |',
         '---------------------------------------------------------------------',
-        $Source,
+        $source,
         '---------------------------------------------------------------------',
         '|                           $Destination                            |',
         '---------------------------------------------------------------------',
-        $Destination,
+        $destination,
         '---------------------------------------------------------------------',
         '|                       $DestinationIdValues                        |',
         '---------------------------------------------------------------------',
-        $DestinationIDValues
+        $destinationIDValues
       );
     }
   }
@@ -91,7 +92,7 @@ class MigrationEventSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     $events[MigrateEvents::PRE_ROW_SAVE][] = ['debugRowPreSave'];
     $events[MigrateEvents::POST_ROW_SAVE][] = ['debugRowPostSave'];
     return $events;

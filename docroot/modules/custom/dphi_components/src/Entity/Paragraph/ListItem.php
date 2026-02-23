@@ -98,7 +98,7 @@ class ListItem extends Paragraph {
     if (!$this->getParentEntity()->showLabel()) {
       return '';
     }
-    if ($this->referencedEntity->hasField('field_short_description')) {
+    if ($this->referencedEntity->hasField('field_content_category')) {
       if (!$this->referencedEntity->get('field_content_category')
         ->isEmpty()) {
         $content_category = $this->getContentCategories();

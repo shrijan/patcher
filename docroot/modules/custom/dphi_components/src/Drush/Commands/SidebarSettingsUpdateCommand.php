@@ -57,17 +57,31 @@ class SidebarSettingsUpdateCommand extends DrushCommands {
       $node = Node::load($nid);
 
       if ($node) {
-        $sidebarSetting = $node->get('field_sidebar_setting')->first();
-        if (empty($sidebarSetting)) {
-          $showSidebar = (bool) $node->get('field_show_left_side_navigation')->first()?->get('value')->getValue();
-          if ($showSidebar) {
-            $node->set('field_sidebar_setting', 'global');
-            $node->set('field_sidebar_level', 1);
+        $nodes = [$node];
+
+        $revision_id = $node->getRevisionId();
+        $nodeStorage = \Drupal::entityTypeManager()->getStorage('node');
+        $latest_revision_id = array_pop($nodeStorage->revisionIds($node));
+        if ($latest_revision_id && $revision_id != $latest_revision_id) {
+          $nodes[] = $nodeStorage->loadRevision($latest_revision_id);
+        }
+        $nodes = array_filter($nodes, function ($node) {
+          return empty($node->get('field_sidebar_setting')->first());
+        });
+        if ($nodes) {
+          foreach ($nodes as $node) {
+            $showSidebar = (bool) $node->get('field_show_left_side_navigation')->first()?->get('value')->getValue();
+            if ($showSidebar) {
+              $node->set('field_sidebar_setting', 'global');
+              $node->set('field_sidebar_level', 1);
+            }
+            else {
+              $node->set('field_sidebar_setting', 'hidden');
+            }
+            $node->changed = REQUEST_TIME;
+            $node->setSyncing(true);
+            $node->save();
           }
-          else {
-            $node->set('field_sidebar_setting', 'hidden');
-          }
-          $node->save();
           $context['message'] = t('Processed node ID @nid', ['@nid' => $nid]);
         } else {
           $context['message'] = t('No change required for node ID @nid', ['@nid' => $nid]);

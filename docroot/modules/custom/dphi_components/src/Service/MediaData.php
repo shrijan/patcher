@@ -46,12 +46,21 @@ class MediaData {
     $bundleInfo = $this->bundleInfo->getBundleInfo('media');
     $mediaItems = $this->mediaInFolder($folderId);
 
+    $file_system = \Drupal::service('file_system');
     foreach ($mediaItems as $mediaItem) {
+      $type = $bundleInfo[$mediaItem->bundle()]['label'];
+      if (in_array($type, ['Image', 'Document'])) {
+        $file = $mediaItem->get('field_media_'.strtolower($type))->entity;
+        if (!$file || !file_exists($file_system->realpath($file->getFileUri()))) {
+          continue;
+        }
+      }
+
       $author = $mediaItem->getOwner() ?? NULL;
       $output[] = [
         'id' => $mediaItem->id(),
         'title' => $mediaItem->label(),
-        'type' => $bundleInfo[$mediaItem->bundle()]['label'],
+        'type' => $type,
         'author' => $author ? $author->label() : '',
         'published' => $mediaItem->get('status')
           ->first()

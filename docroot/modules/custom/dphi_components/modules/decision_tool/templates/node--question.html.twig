@@ -1,0 +1,14 @@
+{{ attach_library('decision_tool/decisionTool') }}
+
+{% set title = elements.field_collection[0]['#entity'].field_title[0].value %}
+<div class="nsw-container">
+  <h1>{{ title }}</h1>
+  <div
+    role="presentation"
+    class="decisionTool"
+    data-id="{{ elements['#node'].id }}"
+    data-title="{{ title }}"
+    data-progress-indicator
+    data-response-tracker
+  ></div>
+</div>

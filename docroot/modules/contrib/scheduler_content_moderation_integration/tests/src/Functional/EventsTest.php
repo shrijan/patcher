@@ -14,7 +14,7 @@ class EventsTest extends SchedulerContentModerationBrowserTestBase {
    *
    * @dataProvider dataEntityTypes
    */
-  public function testEvents($entityTypeId, $bundle) {
+  public function testEvents($entityTypeId, $bundle): void {
     $this->drupalLogin($entityTypeId == 'media' ? $this->schedulerMediaUser : $this->schedulerUser);
     $entityType = $this->entityTypeObject($entityTypeId, $bundle);
     $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
@@ -26,7 +26,7 @@ class EventsTest extends SchedulerContentModerationBrowserTestBase {
     // Create a moderated entity in draft state with a scheduled publishing date
     // in the past. On saving, our event subscriber should react to the
     // PUBLISH_IMMEDIATELY event and update the entity's moderation state.
-    $title = $this->randomString();
+    $title = 'Hello';
     $edit = [
       "{$titleField}[0][value]" => $title,
       'moderation_state[0][state]' => 'draft',

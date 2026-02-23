@@ -32,3 +32,8 @@ services:
   dphi_components.node_menu_widget:
     class: Drupal\dphi_components\Service\NodeMenuWidget
     arguments: ['@config.factory', '@menu.parent_form_selector', '@entity_type.manager', '@current_user', '@dphi_components.parent_form_selector']
+  dphi_components.preview_link_redirect_subscriber:
+    class: Drupal\dphi_components\EventSubscriber\CustomPreviewLinkRedirectSubscriber
+    arguments: ['@path.current', '@current_route_match', '@url_generator', '@current_user']
+    tags:
+      - { name: event_subscriber }

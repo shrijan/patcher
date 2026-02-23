@@ -8,7 +8,7 @@
 /**
  * Implements hook_install().
  */
-function linkit_media_library_install() {
+function linkit_media_library_install(): void {
   // Add a media matcher to the default linkit profile.
   $default_profile = \Drupal::entityTypeManager()
     ->getStorage('linkit_profile')

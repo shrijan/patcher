@@ -1,0 +1,80 @@
+decision_tool.question:
+  path: '/decisionTool/question'
+  methods: ['GET']
+  defaults:
+    _controller: '\Drupal\decision_tool\Controller\ApiController::question'
+  requirements:
+    _permission: 'access content'
+
+decision_tool.steps:
+  path: '/decisionTool/steps'
+  methods: ['GET']
+  defaults:
+    _controller: '\Drupal\decision_tool\Controller\ApiController::steps'
+  requirements:
+    _permission: 'edit any question content,edit any page content'
+
+decision_tool.autocomplete:
+  path: '/decisionTool/autocomplete'
+  methods: ['GET']
+  defaults:
+    _controller: '\Drupal\decision_tool\Controller\ApiController::autocomplete'
+  requirements:
+    _permission: 'edit any question content,edit any page content'
+
+decision_tool.startingQuestions:
+  path: '/decisionTool/startingQuestions'
+  methods: ['GET']
+  defaults:
+    _controller: '\Drupal\decision_tool\Controller\ApiController::startingQuestions'
+  requirements:
+    _permission: 'edit any question content,edit any page content'
+
+decision_tool.search:
+  path: '/decisionTool/search'
+  methods: ['GET']
+  defaults:
+    _controller: '\Drupal\decision_tool\Controller\ApiController::search'
+  requirements:
+    _permission: 'edit any question content,edit any page content'
+
+decision_tool.save:
+  path: '/decisionTool/question'
+  methods: ['POST']
+  defaults:
+    _controller: '\Drupal\decision_tool\Controller\ApiController::save'
+  requirements:
+    _permission: 'edit any question content,edit any page content'
+
+decision_tool.flowchart:
+  path: '/decisionTool/flowchart'
+  methods: ['GET']
+  defaults:
+    _controller: '\Drupal\decision_tool\Controller\ApiController::flowchart'
+  requirements:
+    _permission: 'edit any question content,edit any page content'
+
+decision_tool.orphan:
+  path: '/decisionTool/orphan'
+  methods: ['GET']
+  defaults:
+    _controller: '\Drupal\decision_tool\Controller\ApiController::orphan'
+  requirements:
+    _permission: 'edit any question content,edit any page content'
+
+decision_tool.export:
+  path: '/admin/content/feed/decisionToolExport'
+  methods: ['GET']
+  defaults:
+    _title: 'Question and Answer export'
+    _controller: '\Drupal\decision_tool\Controller\AdminController::content'
+  requirements:
+    _permission: 'edit any question content'
+
+decision_tool.export_questions:
+  path: '/admin/content/feed/decisionToolExport'
+  methods: ['POST']
+  defaults:
+    _controller: '\Drupal\decision_tool\Controller\AdminController::export'
+  requirements:
+    _permission: 'edit any question content'

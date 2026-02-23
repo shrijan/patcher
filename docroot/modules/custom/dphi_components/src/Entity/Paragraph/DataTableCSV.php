@@ -26,41 +26,34 @@ class DataTableCSV extends Paragraph {
     return trim($value);
   }
 
-  protected function parse_csv_file($csvfile, $delimiter, $associative = 0) {
-    $csv = [];
+  protected function parse_csv_file($csvfile, $delimiter) {
+    $headers = [];
+    $data = [];
     $rowcount = 0;
-    if (!file_exists($csvfile)){
-      return [];
-    }
-    if (($handle = fopen($csvfile, 'r')) !== false) {
-      $header = fgetcsv($handle, 0, $delimiter);
-      $header = array_map([$this, 'convertEncoding'], $header);
-      $header_colcount = count($header);
+    if (file_exists($csvfile) && ($handle = fopen($csvfile, 'r')) !== false) {
+      $headers = fgetcsv($handle, 0, $delimiter);
+      $headers = array_map([$this, 'convertEncoding'], $headers);
+      $header_colcount = count($headers);
       while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
         $row = array_map([$this, 'convertEncoding'], $row);
         $row_colcount = count($row);
         if ($row_colcount == $header_colcount) {
-          if ($associative) {
-            $entry = array_combine($header, $row);
-          } else {
-            $entry = $row;
-          }
-          $csv[] = $entry;
+          $data[] = $row;
         } else {
-          return;
+          return [];
         }
         ++$rowcount;
       }
       fclose($handle);
-    } else {
-      return;
     }
-    return $csv;
+    return [$headers, $data];
   }
 
   public function getComponent() {
     $filter_1 = $this->getSingleFieldValue('field_filter_1');
     $filter_2 = $this->getSingleFieldValue('field_filter_2');
+    $data = [];
+    $headers = [];
     $csv = $this->get('field_csv')->entity;
     if ($csv) {
       $uri = $csv->getFileUri();
@@ -71,10 +64,8 @@ class DataTableCSV extends Paragraph {
       } else {
         $delimiter = ',';
       }
-      $csv_header = $this->parse_csv_file($file_path, $delimiter, 1);
-      $data = $this->parse_csv_file($file_path, $delimiter, 0);
-      if (isset($csv_header[0])) {
-        $headers = array_keys($csv_header[0]);
+      list($headers, $data) = $this->parse_csv_file($file_path, $delimiter);
+      if (isset($headers[0])) {
         if ($filter_1 > 2) {
           $headers['h1'] = $headers[$filter_1];
         }
@@ -93,8 +84,6 @@ class DataTableCSV extends Paragraph {
             }
           }
         }
-      } else {
-        $headers = [];
       }
     }
     return [

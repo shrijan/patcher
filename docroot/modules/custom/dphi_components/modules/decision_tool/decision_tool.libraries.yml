@@ -1,0 +1,35 @@
+decisionTool:
+  vite: &vite
+    enabled: true
+    baseUrl: /modules/custom/dphi_components/modules/decision_tool/react/dist/
+    manifest: react/dist/.vite/manifest.json
+    devDependencies:
+      - dphi_components/react_refresh
+  js:
+    src/entry.jsx: {}
+
+decisionToolPage:
+  js:
+    js/page.js: {}
+
+decisionToolFeed:
+  vite: &vite
+    enabled: true
+    baseUrl: /modules/custom/dphi_components/modules/decision_tool/react/dist/
+    manifest: react/dist/.vite/manifest.json
+    devDependencies:
+      - dphi_components/react_refresh
+  css:
+    layout:
+      scss/feed.scss: {}
+
+decisionToolView:
+  vite: &vite
+    enabled: true
+    baseUrl: /modules/custom/dphi_components/modules/decision_tool/react/dist/
+    manifest: react/dist/.vite/manifest.json
+    devDependencies:
+      - dphi_components/react_refresh
+  css:
+    layout:
+      scss/view.scss: {}

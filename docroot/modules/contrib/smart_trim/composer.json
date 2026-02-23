@@ -28,7 +28,7 @@
     },
     "require": {
         "php": ">=8.1",
-        "drupal/token": "^1.0"
+        "drupal/token": "^1.17"
     },
     "require-dev": {
         "drupal/token_filter": "^2.1 || ^2.2"

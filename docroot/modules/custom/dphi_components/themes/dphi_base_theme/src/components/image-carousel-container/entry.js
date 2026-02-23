@@ -11,7 +11,7 @@ Drupal.behaviors.ImageCarouselContainer = {
     ).forEach(element => {
       const splide = new Splide(element, {
         type: 'loop',
-        arrows: element.querySelector('.splide__arrows') !== null,
+        arrows: false,
         classes: {
           pagination: 'splide__pagination nsw-pagination',
           page: 'splide__pagination__page',
@@ -19,6 +19,23 @@ Drupal.behaviors.ImageCarouselContainer = {
       })
 
       splide.on('mounted', () => {
+        const arrows = element.querySelector('.splide__arrows')
+        if (arrows) {
+          arrows.style.display = 'flex';
+
+          [['.splide__arrow--prev', '<'], ['.splide__arrow--next', '>']].forEach(([className, control]) => {
+            const button = arrows.querySelector(className)
+            button.addEventListener('click', event => {
+              splide.go(control)
+            })
+            button.addEventListener('keydown', event => {
+              if (event.key == 'Enter') {
+                event.preventDefault()
+              }
+            })
+          })
+        }
+
         splide.Components.Elements.slides.forEach(li => {
           li.setAttribute('role', 'presentation')
         })

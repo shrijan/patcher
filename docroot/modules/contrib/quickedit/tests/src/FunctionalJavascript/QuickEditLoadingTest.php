@@ -44,7 +44,7 @@ class QuickEditLoadingTest extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'starterkit_theme';
+  protected $defaultTheme = 'classy';
 
   /**
    * A user with permissions to create and edit articles.

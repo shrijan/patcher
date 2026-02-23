@@ -7,6 +7,7 @@ namespace Drupal\Tests\content_lock\Functional;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\Tests\BrowserTestBase;
+use Drupal\Tests\content_lock\Tools\LogoutTrait;
 
 /**
  * Block tests.
@@ -14,7 +15,7 @@ use Drupal\Tests\BrowserTestBase;
  * @group content_lock
  */
 class ContentLockBlockTest extends BrowserTestBase {
-
+  use LogoutTrait;
   /**
    * {@inheritdoc}
    */
@@ -53,7 +54,7 @@ class ContentLockBlockTest extends BrowserTestBase {
    * @return \Drupal\block_content\Entity\BlockContent
    *   Created custom block.
    */
-  protected function createBlockContent($title = FALSE, $bundle = 'basic', $save = TRUE) {
+  protected function createBlockContent(string|false $title = FALSE, string $bundle = 'basic', bool $save = TRUE): BlockContent {
     $title = $title ?: $this->randomMachineName();
     $block_content = BlockContent::create([
       'info' => $title,
@@ -72,12 +73,12 @@ class ContentLockBlockTest extends BrowserTestBase {
    * @param string $label
    *   The block type label.
    * @param bool $create_body
-   *   Whether or not to create the body field.
+   *   Whether to create the body field.
    *
    * @return \Drupal\block_content\Entity\BlockContentType
    *   Created custom block type.
    */
-  protected function createBlockContentType($label, $create_body = FALSE) {
+  protected function createBlockContentType(string $label, bool $create_body = FALSE): BlockContentType {
     $bundle = BlockContentType::create([
       'id' => $label,
       'label' => $label,
@@ -93,7 +94,7 @@ class ContentLockBlockTest extends BrowserTestBase {
   /**
    * Test simultaneous edit on block.
    */
-  public function testContentLockBlock() {
+  public function testContentLockBlock(): void {
 
     // Create block.
     $this->createBlockContentType('basic', TRUE);
@@ -171,6 +172,73 @@ class ContentLockBlockTest extends BrowserTestBase {
     $this->drupalGet("/admin/content/block/{$block1->id()}");
     $this->submitForm([], 'Save');
     $assert_session->pageTextContains('has been updated.');
+  }
+
+  /**
+   * Tests deleting blocks with content locks.
+   *
+   * @covers content_lock_entity_access
+   */
+  public function testContentLockBlockDeleteAccess(): void {
+    // Create two test blocks.
+    $this->createBlockContentType('basic', TRUE);
+    $block1 = $this->createBlockContent('Block for user without break permission');
+    $block2 = $this->createBlockContent('Block for user with break permission');
+
+    $admin = $this->drupalCreateUser([
+      'administer blocks',
+      'administer block content',
+      'administer content lock',
+      'delete any basic block content',
+      'view the administration theme',
+    ]);
+
+    // User without break lock permission.
+    $user1 = $this->drupalCreateUser([
+      'administer blocks',
+      'administer block content',
+      'delete any basic block content',
+      'access content',
+      'view the administration theme',
+    ]);
+
+    // User with break lock permission.
+    $user2 = $this->drupalCreateUser([
+      'administer blocks',
+      'administer block content',
+      'delete any basic block content',
+      'access content',
+      'break content lock',
+      'view the administration theme',
+    ]);
+
+    // We protect the bundle created.
+    $this->drupalLogin($admin);
+    $edit = [
+      'block_content[bundles][basic]' => 1,
+    ];
+    $this->drupalGet('admin/config/content/content_lock');
+    $this->submitForm($edit, 'Save configuration');
+
+    // Lock both blocks.
+    $this->drupalGet("/admin/content/block/{$block1->id()}");
+    $this->drupalGet("/admin/content/block/{$block2->id()}");
+
+    // Test user1 (without break lock permission) cannot delete the locked
+    // block.
+    $this->drupalLogin($user1);
+    $this->drupalGet("/admin/content/block/{$block1->id()}/delete");
+    $assert_session = $this->assertSession();
+    $assert_session->statusCodeEquals(403);
+
+    // Test user2 (with break lock permission) can delete the locked block.
+    $this->drupalLogin($user2);
+    $this->drupalGet("/admin/content/block/{$block2->id()}/delete");
+    $assert_session->statusCodeEquals(200);
+    $assert_session->pageTextContains('Are you sure you want to delete');
+    // In order to delete the user must break the lock. Breaking the lock is
+    // tested above.
+    $assert_session->pageTextContains('Click here to Break lock');
   }
 
 }

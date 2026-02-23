@@ -25,13 +25,12 @@ class LayoutBuilderQuickEditTest extends QuickEditJavascriptTestBase {
   protected static $modules = [
     'node',
     'layout_builder',
-    'field_ui',
   ];
 
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'starterkit_theme';
+  protected $defaultTheme = 'classy';
 
   /**
    * The article node under test.

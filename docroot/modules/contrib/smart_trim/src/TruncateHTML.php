@@ -70,10 +70,10 @@ class TruncateHTML {
    * @param string $ellipsis
    *   Characters to use at the end of the text.
    *
-   * @return \DOMDocument
-   *   Prepared DOMDocument to work with.
+   * @return \DOMNode
+   *   Prepared DOMNode to work with.
    */
-  protected function init(string $html, int $limit, string $ellipsis): \DOMDocument {
+  protected function init(string $html, int $limit, string $ellipsis): \DOMNode {
     $dom = Html::load($html);
 
     // The body tag node, our html fragment is automatically wrapped in

@@ -7,7 +7,7 @@ use Drupal\Tests\image\Kernel\ImageFieldCreationTrait;
 use Drupal\Tests\TestFileCreationTrait;
 
 /**
- * @coversDefaultClass \Drupal\quickedit\Plugin\InPlaceEditor\Image
+ * @coversDefaultClass \Drupal\image\Plugin\InPlaceEditor\Image
  * @group quickedit
  */
 class QuickEditImageTest extends QuickEditJavascriptTestBase {

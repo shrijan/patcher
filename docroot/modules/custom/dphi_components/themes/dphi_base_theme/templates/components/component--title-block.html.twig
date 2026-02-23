@@ -6,7 +6,9 @@
 {% if titleBlock.date or titleBlock.tags %}
   <div class="nsw-m-y-xs">
   {% if titleBlock.date %}
-    <div class="nsw-m-y-xs">{{ titleBlock.date }}</div>
+    <div class="nsw-m-y-xs">
+      <time datetime="{{ titleBlock.date.0['#markup']|date('Y-m-d\\TH:i:sO') }}">{{ titleBlock.date }}</time>
+    </div>
   {% endif %}
   {% if titleBlock.tags %}
     {% include '@dphi_base_theme/components/component--tags.html.twig' with {tags: titleBlock.tags} %}

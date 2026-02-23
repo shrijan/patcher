@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\views_ui\Functional;
 
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+
 /**
  * Tests for the filters from the UI.
- *
- * @group views_ui
- * @group #slow
  */
+#[Group('views_ui')]
+#[RunTestsInSeparateProcesses]
 class FilterUITest extends UITestBase {
-
 
   /**
    * Views used by this test.

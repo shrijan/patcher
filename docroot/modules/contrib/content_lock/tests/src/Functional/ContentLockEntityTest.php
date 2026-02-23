@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\content_lock\Functional;
 
+use Drupal\entity_test\Entity\EntityTestMulChanged;
+
 /**
  * Tests simultaneous edit on test entity.
  *
@@ -19,7 +21,7 @@ class ContentLockEntityTest extends ContentLockTestBase {
   /**
    * Tests simultaneous edit on test entity.
    */
-  public function testContentLockEntity() {
+  public function testContentLockEntity(): void {
 
     // We protect the bundle created.
     $this->drupalLogin($this->admin);
@@ -31,7 +33,7 @@ class ContentLockEntityTest extends ContentLockTestBase {
 
     // We lock entity.
     $this->drupalLogin($this->user1);
-    // Edit a entity without saving.
+    // Edit an entity without saving.
     $this->drupalGet($this->entity->toUrl('edit-form'));
     $assert_session = $this->assertSession();
     $assert_session->pageTextContains('This content is now locked against simultaneous editing.');
@@ -56,7 +58,7 @@ class ContentLockEntityTest extends ContentLockTestBase {
 
     // We lock entity with user2.
     $this->drupalLogin($this->user2);
-    // Edit a entity without saving.
+    // Edit an entity without saving.
     $this->drupalGet($this->entity->toUrl('edit-form'));
     $assert_session->pageTextContains('This content is now locked against simultaneous editing.');
 
@@ -70,13 +72,58 @@ class ContentLockEntityTest extends ContentLockTestBase {
 
     // We unlock entity with user2.
     $this->drupalLogin($this->user2);
-    // Edit a entity without saving.
+    // Edit an entity without saving.
     $this->drupalGet($this->entity->toUrl('edit-form'));
     $assert_session->pageTextContains('This content is now locked by you against simultaneous editing.');
     $this->drupalGet($this->entity->toUrl('edit-form'));
     $this->submitForm([], 'Save');
     $assert_session->pageTextContains('updated.');
     $assert_session->pageTextNotContains('against simultaneous editing.');
+  }
+
+  /**
+   * Tests deleting entities with content locks.
+   *
+   * @covers content_lock_entity_access
+   */
+  public function testContentLockEntityDeleteAccess(): void {
+    // Create two additional test entities.
+    $entity1 = EntityTestMulChanged::create([
+      'name' => 'Entity for user without break permission',
+    ]);
+    $entity1->save();
+
+    $entity2 = EntityTestMulChanged::create([
+      'name' => 'Entity for user with break permission',
+    ]);
+    $entity2->save();
+
+    // We protect the bundle.
+    $this->drupalLogin($this->admin);
+    $edit = [
+      'entity_test_mul_changed[bundles][*]' => 1,
+    ];
+    $this->drupalGet('admin/config/content/content_lock');
+    $this->submitForm($edit, 'Save configuration');
+
+    // Lock both entities.
+    $this->drupalGet($entity1->toUrl('edit-form'));
+    $this->drupalGet($entity2->toUrl('edit-form'));
+
+    // Test user1 (without break lock permission) cannot delete the locked
+    // entity.
+    $this->drupalLogin($this->user1);
+    $url = $entity1->toUrl('delete-form')->toString();
+    $this->drupalGet($url);
+    $this->assertSession()->statusCodeEquals(403);
+
+    // Test user2 (with break lock permission) can delete the locked entity.
+    $this->drupalLogin($this->user2);
+    $url = $entity2->toUrl('delete-form')->toString();
+    $this->drupalGet($url);
+    $this->assertSession()->statusCodeEquals(200);
+    // In order to delete the entity this way we will need to break the lock.
+    // This is test above.
   }
 
 }

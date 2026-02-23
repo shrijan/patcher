@@ -56,6 +56,11 @@ component.card:
     component:
       src/components/card/entry.scss: {}
 
+component.card_carousel:
+  vite: *vite
+  js:
+    src/components/card-carousel/entry.js: {}
+
 component.case_study:
   vite: *vite
   css:
@@ -69,9 +74,8 @@ component.checkboxes:
 
 component.content_block:
   vite: *vite
-  css:
-    component:
-     src/components/content-block/entry.scss: {}
+  js:
+    src/components/content-block/entry.js: {}
   dependencies:
     - dphi_base_theme/component.button
     - dphi_base_theme/component.media

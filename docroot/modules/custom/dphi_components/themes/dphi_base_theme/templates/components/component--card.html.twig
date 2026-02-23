@@ -15,6 +15,11 @@
       {% endif %}
     </div>
   {% endif %}
+  {% if featuredCard %}
+    <div class="cardOuter">
+      <span class="material-icons nsw-material-icons{{ card.endIconAbove ? ' above' : '' }}"
+            focusable="false" aria-hidden="true">{{ card.endIcon }}</span>
+  {% endif %}
   <div class="nsw-card__content">
     {% if card.date %}
       <div class="nsw-card__date nsw-m-y-sm">
@@ -30,7 +35,11 @@
         <span class="nsw-material-icons nsw-position-static nsw-m-bottom-md {{ card.iconClasses }} {{ card.iconOutlined ? 'material-symbols-outlined' : 'material-icons' }}"
               focusable="false" aria-hidden="true">{{ card.icon }}</span>
       {% endif %}
-      <a href="{{ card.link }}" class="nsw-display-block">{{ card.title }}</a>
+      {% if card.link.toString() is not empty %}
+        <a href="{{ card.link }}" class="nsw-display-block">{{ card.title }}</a>
+      {% else %}
+        {{ card.title }}
+      {% endif %}
       {% if card.tags %}
         {% include '@dphi_base_theme/components/component--tags.html.twig' with {tags: card.tags} %}
       {% endif %}
@@ -40,9 +49,12 @@
         {{ card.description }}
       </div>
     {% endif %}
-    {% if card.endIcon %}
+    {% if card.endIcon and card.link.toString() is not empty and not featuredCard %}
       <span class="material-icons nsw-material-icons"
             focusable="false" aria-hidden="true">{{ card.endIcon }}</span>
     {% endif %}
   </div>
+  {% if featuredCard %}
+    </div>
+  {% endif %}
 </div>

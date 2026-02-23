@@ -5,15 +5,14 @@ namespace Drupal\quickedit\Plugin\InPlaceEditor;
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\filter\Entity\FilterFormat;
-use Drupal\filter\Plugin\FilterInterface;
 use Drupal\quickedit\Plugin\InPlaceEditorInterface;
+use Drupal\filter\Plugin\FilterInterface;
 
 /**
  * Defines the formatted text in-place editor.
  *
  * @InPlaceEditor(
- *   id = "editor",
- *   provider = "editor",
+ *   id = "editor"
  * )
  */
 class Editor extends PluginBase implements InPlaceEditorInterface {
@@ -88,7 +87,7 @@ class Editor extends PluginBase implements InPlaceEditorInterface {
     // Get the attachments for all text editors that the user might use.
     $attachments = $manager->getAttachments($formats);
 
-    // Also include quickedit.module's formatted text editor.
+    // Also include module's formatted text editor.
     $attachments['library'][] = 'quickedit/quickedit.inPlaceEditor.formattedText';
 
     return $attachments;

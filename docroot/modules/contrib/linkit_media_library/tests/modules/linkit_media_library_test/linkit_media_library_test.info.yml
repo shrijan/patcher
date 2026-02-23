@@ -1,0 +1,12 @@
+name: Linkit Media Library Test
+type: module
+description: 'Module to support Linkit Library Media tests'
+package: Testing
+core_version_requirement: ^10.3 || ^11
+dependencies:
+  - linkit_media_library:linkit_media_library
+
+# Information added by Drupal.org packaging script on 2025-01-16
+version: '2.0.0'
+project: 'linkit_media_library'
+datestamp: 1737059937

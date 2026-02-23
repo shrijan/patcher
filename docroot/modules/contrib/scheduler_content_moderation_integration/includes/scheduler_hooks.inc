@@ -11,7 +11,7 @@
  * This hook is called from scheduler_form_{type}_form_alter() and returns TRUE
  * if the scheduler publish_on field should be hidden.
  */
-function scheduler_content_moderation_integration_scheduler_hide_publish_date($form, $form_state, $entity) {
+function scheduler_content_moderation_integration_scheduler_hide_publish_date($form, $form_state, $entity): bool {
   /** @var \Drupal\content_moderation\ModerationInformationInterface $moderation_information */
   $moderation_information = \Drupal::service('content_moderation.moderation_information');
 
@@ -35,7 +35,7 @@ function scheduler_content_moderation_integration_scheduler_hide_publish_date($f
  * This hook is called from scheduler_form_{type}_form_alter() and returns TRUE
  * if the scheduler unpublish_on field should be hidden.
  */
-function scheduler_content_moderation_integration_scheduler_hide_unpublish_date($form, $form_state, $entity) {
+function scheduler_content_moderation_integration_scheduler_hide_unpublish_date($form, $form_state, $entity): bool {
   /** @var \Drupal\content_moderation\ModerationInformationInterface $moderation_information */
   $moderation_information = \Drupal::service('content_moderation.moderation_information');
 
@@ -62,7 +62,7 @@ function scheduler_content_moderation_integration_scheduler_hide_unpublish_date(
  * -1 if an exception is thrown, to abandon processing this entity in Scheduler.
  * 0  if not moderated, to let Scheduler process the entity as normal.
  */
-function scheduler_content_moderation_integration_scheduler_publish_process($entity) {
+function scheduler_content_moderation_integration_scheduler_publish_process($entity): int {
   /** @var \Drupal\content_moderation\ModerationInformationInterface $moderation_information */
   $moderation_information = \Drupal::service('content_moderation.moderation_information');
 
@@ -80,7 +80,7 @@ function scheduler_content_moderation_integration_scheduler_publish_process($ent
     $entity->set('moderation_state', $state)->save();
     return 1;
   }
-  catch (\InvalidArgumentException $exception) {
+  catch (\InvalidArgumentException) {
     // If transition is not valid, throw exception.
     return -1;
   }
@@ -95,7 +95,7 @@ function scheduler_content_moderation_integration_scheduler_publish_process($ent
  * -1 if an exception is thrown, to abandon processing this entity in Scheduler.
  * 0  if not moderated, to let Scheduler process the entity as normal.
  */
-function scheduler_content_moderation_integration_scheduler_unpublish_process($entity) {
+function scheduler_content_moderation_integration_scheduler_unpublish_process($entity): int {
   /** @var \Drupal\content_moderation\ModerationInformationInterface $moderation_information */
   $moderation_information = \Drupal::service('content_moderation.moderation_information');
 
@@ -113,7 +113,7 @@ function scheduler_content_moderation_integration_scheduler_unpublish_process($e
     $entity->set('moderation_state', $state)->save();
     return 1;
   }
-  catch (\InvalidArgumentException $exception) {
+  catch (\InvalidArgumentException) {
     // If transition is not valid, throw exception.
     return -1;
   }

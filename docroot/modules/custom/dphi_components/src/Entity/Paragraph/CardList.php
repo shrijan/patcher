@@ -35,21 +35,21 @@ class CardList extends Paragraph {
       'cards' => array_map(function ($card) use ($configuration) {
         $card['configuration'] = $configuration;
         return $card;
-      }, $this->getCards()),
+      }, self::getCards($this)),
     ];
   }
 
-  public function getCards(): array {
-    return array_map(function($card) {
+  public static function getCards($paragraph): array {
+    return array_map(function($card) use ($paragraph) {
       $content = $card->get('field_content');
       $title = $card->get('field_title')->first();
       $data = [
-        'theme' => $this->getSingleFieldValue('field_theme'),
-        'highlight' => $this->getSingleFieldValue('field_highlight') == '1',
+        'theme' => $paragraph->getSingleFieldValue('field_theme'),
+        'highlight' => $paragraph->getSingleFieldValue('field_highlight') == '1',
         'title' => $title ? $title->view() : '',
         'description' => !$content->isEmpty() ? $content->view(['label' => 'hidden']) : null,
       ];
-      if ($card->getType() == 'card') {
+      if (in_array($card->getType(), ['card', 'f_card'])) {
         $icon = $card->get('field_icon')->first();
         $media = $card->get('field_media_image');
         $link = $card->get('field_link')->first()->getUrl();
@@ -63,7 +63,8 @@ class CardList extends Paragraph {
           'camera_icon' => $camera_icon,
           'link' => $link,
           'number' => $number ? $number->get('value')->getValue() : NULL,
-          'endIcon' => $link ? 'east' : NULL,
+          'endIconAbove' => $card->getType() == 'f_card',
+          'endIcon' => $link ? ($link->isExternal() ? 'open_in_new' : 'east') : NULL,
           'tags' => array_map(function($tag) {
             return $tag->label();
           }, $card->get('field_card_tags')->referencedEntities()),
@@ -82,7 +83,7 @@ class CardList extends Paragraph {
         ]);
       }
       return $data;
-    }, $this->get('field_cards')->referencedEntities());
+    }, $paragraph->get('field_cards')->referencedEntities());
   }
 
 }

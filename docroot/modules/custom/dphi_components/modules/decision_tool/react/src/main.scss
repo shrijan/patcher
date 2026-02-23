@@ -1,0 +1,191 @@
+@import '../node_modules/nsw-design-system/src/global/scss/base/_all';
+@import '../node_modules/nsw-design-system/src/global/scss/settings/_palette';
+@import '../node_modules/nsw-design-system/src/global/scss/settings/_settings';
+@import '../node_modules/nsw-design-system/src/global/scss/settings/_theme';
+@import '../node_modules/nsw-design-system/src/global/scss/helpers/_all';
+@import '../node_modules/nsw-design-system/src/core/iconography/_icon';
+@import '../node_modules/nsw-design-system/src/core/typography/_typography';
+@import '../node_modules/nsw-design-system/src/components/button/_button';
+@import '../node_modules/nsw-design-system/src/components/form/_form';
+@import '../node_modules/nsw-design-system/src/components/loader/_loader';
+@import '../node_modules/nsw-design-system/src/components/tooltip/_tooltip';
+@import '../node_modules/nsw-design-system/src/components/progress-indicator/_progress-indicator';
+
+.decisionToolGrid {
+  display: grid;
+  @media (min-width: 1024px) {
+    &:has(.decisionToolTracker) {
+      grid-template-columns: 700px auto;
+    }
+  }
+
+  .decisionToolProgress {
+    grid-row: 1;
+    grid-column: 1 / 2;
+  }
+  .decisionToolContent {
+    grid-row: 2;
+    grid-column: 1;
+  }
+  .decisionToolTracker {
+    grid-row: 2;
+    grid-column: 2;
+    align-self: start;
+    @media (min-width: 1024px) {
+      margin-left: auto;
+    }
+    @media (max-width: 1023px) {
+      grid-row: 4;
+      grid-column: 1;
+    }
+  }
+  .decisionToolFooter {
+    grid-row: 3;
+    grid-column: 1 / 2;
+  }
+}
+
+.decisionToolTitle {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.decisionToolTooltip {
+  position: relative;
+  display: inline-block;
+
+  > .nsw-icon-button {
+    padding: 0;
+    vertical-align: middle;
+  }
+
+  .nsw-tooltip,
+  .nsw-toggletip {
+    white-space: normal;
+  }
+
+  .nsw-tooltip__element,
+  .nsw-toggletip__element {
+    top: auto;
+    bottom: calc(100% + 10px);
+    &[data-align=left] {
+      left: 0;
+    }
+    &[data-align=center] {
+      left: 50%;
+      translate: -50%;
+    }
+    &[data-align=right] {
+      left: 100%;
+      translate: -100%;
+    }
+  }
+
+  .nsw-tooltip__arrow,
+  .nsw-toggletip__arrow {
+    top: -16px;
+    left: 50%;
+    translate: -50%;
+  }
+}
+
+.decisionToolProgress.nsw-progress-indicator {
+  margin-top: 2rem;
+}
+
+.decisionToolContent p > br:first-child {
+  display: none;
+}
+
+.decisionToolTracker {
+  margin-top: 40px - 16px;
+  margin-bottom: 2rem;
+  padding: 16px;
+  @media (min-width: 1024px) {
+    width: 250px;
+  }
+
+  hr {
+    background-color: var(--nsw-black) !important;
+  }
+
+  ul {
+    list-style: none;
+    margin-left: 0;
+    padding-left: 0;
+  }
+
+  li {
+    margin-top: 1em;
+  }
+}
+@media (min-width: 1024px) {
+  .nsw-layout:has(.decisionToolProgress) .decisionToolTracker {
+    margin-top: 40px + 32px + 36px + 32px - 16px;
+    margin-left: auto;
+  }
+}
+
+.decisionToolFooter {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  @media (min-width: 833px) {
+    align-items: flex-end;
+  }
+  @media (max-width: 832px) {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .left {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+
+    img {
+      width: 250px;
+    }
+  }
+
+  .buttons {
+    display: flex;
+    gap: 16px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+body {
+  @media print {
+    print-color-adjust: exact;
+
+    &:not(.user-logged-in) {
+      .nsw-skip,
+      .nsw-breadcrumbs,
+      .rs--local-tasks,
+      .decisionToolConfirmationPageTitle .printButton,
+      .decisionToolFooter a,
+      .decisionToolFooter button {
+        display: none;
+      }
+
+      .decisionToolProgress .nsw-progress-indicator__bar div.active {
+        background-color: var(--nsw-brand-accent) !important;
+      }
+
+      .nsw-layout .decisionToolTracker {
+        margin-top: 0;
+        page-break-before: always;
+      }
+    }
+  }
+}

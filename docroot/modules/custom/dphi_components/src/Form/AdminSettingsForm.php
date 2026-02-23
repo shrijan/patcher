@@ -88,6 +88,14 @@ class AdminSettingsForm extends ConfigFormBase {
       '#placeholder' => $this->t('NSW Government logo'),
     ];
 
+    $form['logo_image_url'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Logo image URL'),
+      '#description' => $this->t('Override the logo image URL to point somewhere other than the home page.'),
+      '#default_value' => $config->get('logo_image_url') ?? FALSE,
+      '#placeholder' => $this->t('/'),
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -106,6 +114,7 @@ class AdminSettingsForm extends ConfigFormBase {
       ->set('menu_widget_enabled', $form_state->getValue('menu_widget_enabled'))
       ->set('fallback_image_path', trim($form_state->getValue('path')))
       ->set('fallback_image_alt_text', trim($form_state->getValue('alt_text')))
+      ->set('logo_image_url', trim($form_state->getValue('logo_image_url')))
       ->save();
     \Drupal::keyValue('dphi_components')->set('api_keys', $form_state->getValue('api_keys'));
     \Drupal::keyValue('dphi_components')->set('google_cloud_map_id', $form_state->getValue('google_cloud_map_id'));

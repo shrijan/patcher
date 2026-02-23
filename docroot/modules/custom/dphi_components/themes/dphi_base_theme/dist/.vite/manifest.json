@@ -55,13 +55,22 @@
     "src": "src/components/callout/entry.scss",
     "isEntry": true
   },
+  "src/components/card-carousel/entry.js": {
+    "file": "assets/card-carousel-nG7Idd57.js",
+    "name": "card-carousel",
+    "src": "src/components/card-carousel/entry.js",
+    "isEntry": true,
+    "css": [
+      "assets/card-carousel-BxlgbIOz.css"
+    ]
+  },
   "src/components/card/entry.scss": {
-    "file": "assets/card-C4gYEtuO.css",
+    "file": "assets/card-Dw7xW8Pl.css",
     "src": "src/components/card/entry.scss",
     "isEntry": true
   },
   "src/components/case-study/entry.scss": {
-    "file": "assets/case-study-DefAiO7U.css",
+    "file": "assets/case-study-DD9JcQiL.css",
     "src": "src/components/case-study/entry.scss",
     "isEntry": true
   },
@@ -74,10 +83,14 @@
       "assets/checkboxes-DHlupjDh.css"
     ]
   },
-  "src/components/content-block/entry.scss": {
-    "file": "assets/content-block-5lHaX-y3.css",
-    "src": "src/components/content-block/entry.scss",
-    "isEntry": true
+  "src/components/content-block/entry.js": {
+    "file": "assets/content-block-e1PZS4QV.js",
+    "name": "content-block",
+    "src": "src/components/content-block/entry.js",
+    "isEntry": true,
+    "css": [
+      "assets/content-block-BmhMiONq.css"
+    ]
   },
   "src/components/content-listing/entry.js": {
     "file": "assets/content-listing-DmJ0NB_W.js",
@@ -89,7 +102,7 @@
     ]
   },
   "src/components/data-table-csv/entry.js": {
-    "file": "assets/data-table-csv-piwF0qS4.js",
+    "file": "assets/data-table-csv-Cz1PvIZB.js",
     "name": "data-table-csv",
     "src": "src/components/data-table-csv/entry.js",
     "isEntry": true,
@@ -97,7 +110,7 @@
       "__commonjsHelpers-BosuxZz1.js"
     ],
     "css": [
-      "assets/data-table-csv-CNEfR1Wd.css"
+      "assets/data-table-csv-BW1dR9lz.css"
     ]
   },
   "src/components/featured-publication/entry.scss": {
@@ -135,7 +148,7 @@
     ]
   },
   "src/components/header/entry.js": {
-    "file": "assets/header-D2wRfUTG.js",
+    "file": "assets/header-DcIRnjiL.js",
     "name": "header",
     "src": "src/components/header/entry.js",
     "isEntry": true,
@@ -143,7 +156,7 @@
       "_utilities-CT1sfag7.js"
     ],
     "css": [
-      "assets/header-CV8EkEMy.css"
+      "assets/header-tmypD2ln.css"
     ]
   },
   "src/components/hero-banner-search/entry.js": {
@@ -161,7 +174,7 @@
     "isEntry": true
   },
   "src/components/image-carousel-container/entry.js": {
-    "file": "assets/image-carousel-container-D5bnPyEC.js",
+    "file": "assets/image-carousel-container-CtlBEQKK.js",
     "name": "image-carousel-container",
     "src": "src/components/image-carousel-container/entry.js",
     "isEntry": true,
@@ -175,7 +188,7 @@
     "isEntry": true
   },
   "src/components/in-page-alert/entry.scss": {
-    "file": "assets/in-page-alert-DYAQffe4.css",
+    "file": "assets/in-page-alert-ng2iwEHO.css",
     "src": "src/components/in-page-alert/entry.scss",
     "isEntry": true
   },
@@ -254,7 +267,7 @@
     ]
   },
   "src/components/react_lists_components/video_gallery/entry.jsx": {
-    "file": "assets/video_gallery-BOUAXrB3.js",
+    "file": "assets/video_gallery-DklM0GSH.js",
     "name": "video_gallery",
     "src": "src/components/react_lists_components/video_gallery/entry.jsx",
     "isEntry": true,
@@ -360,7 +373,7 @@
     ]
   },
   "src/components/video-image-teaser/entry.scss": {
-    "file": "assets/video-image-teaser-C4jbs_Fj.css",
+    "file": "assets/video-image-teaser-CPs-u3gU.css",
     "src": "src/components/video-image-teaser/entry.scss",
     "isEntry": true
   },
@@ -370,7 +383,7 @@
     "isEntry": true
   },
   "src/global/entry.scss": {
-    "file": "assets/global-COltz6YU.css",
+    "file": "assets/global-u-SNbuq1.css",
     "src": "src/global/entry.scss",
     "isEntry": true
   },

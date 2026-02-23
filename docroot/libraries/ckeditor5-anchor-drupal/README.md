@@ -5,12 +5,12 @@ This package implements the anchor feature for CKEditor 5. It allows inserting a
 
 This is a Drupal-adapted fork of [the original plugin by Northern Commerce](https://github.com/northernco/ckeditor5-anchor-drupal).
 
-Packaged to be used with composer directly in Drupal, and maintained and supported for the [CKEditor Anchor Link](https://www.drupal.org/project/anchor_link) module.
+Packaged to be used with composer directly in Drupal, and maintained and supported for the [CKEditor Anchor Link](https://www.drupal.org/project/anchor_link) module. 
 
 
 ## Install with Composer
 ```
-composer require vardot/ckeditor5-anchor-drupal:~1.0
+composer require vardot/ckeditor5-anchor-drupal:~2.0
 ```
 
 ## Table of contents

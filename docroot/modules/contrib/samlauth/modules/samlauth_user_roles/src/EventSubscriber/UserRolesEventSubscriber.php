@@ -64,7 +64,7 @@ class UserRolesEventSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     $events[SamlauthEvents::USER_SYNC][] = ['onUserSync'];
     return $events;
   }
@@ -88,13 +88,21 @@ class UserRolesEventSubscriber implements EventSubscriberInterface {
     $account = $event->getAccount();
     $changed_role_ids = $account_role_ids = $account->getRoles();
 
+    // @todo better formalize what the 2 config values contain.
+    //   - It should be an array of role IDs. (Use 'ids' not 'names' in
+    //     below variable names, for clarity.)
+    //   - In the form, we set an array of ID => ID, so it looks like we also
+    //     keep the keys. Maybe this is already being converted into numeric
+    //     keys by the newer config schema, or maybe not.
+    //     - If yes: make a note in the changelog?
+    //     - If no: change this some time (wait until v4?)
     // Remove 'unassign' roles, then add 'default' roles to $changed_role_ids.
-    $role_names = $config->get('unassign_roles');
-    if ($role_names) {
-      if (is_array($role_names)) {
+    $role_ids = $config->get('unassign_roles');
+    if ($role_ids) {
+      if (is_array($role_ids)) {
         $changed_role_ids = array_diff(
           $changed_role_ids,
-          $this->getRoleIds($role_names, $valid_roles, 'unassign_roles')
+          $this->getRoleIds($role_ids, $valid_roles, 'unassign_roles')
         );
       }
       else {
@@ -103,12 +111,12 @@ class UserRolesEventSubscriber implements EventSubscriberInterface {
       }
     }
 
-    $role_names = $config->get('default_roles');
-    if ($role_names) {
-      if (is_array($role_names)) {
+    $role_ids = $config->get('default_roles');
+    if ($role_ids) {
+      if (is_array($role_ids)) {
         $changed_role_ids = array_unique(array_merge(
           $changed_role_ids,
-          $this->getRoleIds($role_names, $valid_roles, 'default_roles')
+          $this->getRoleIds($role_ids, $valid_roles, 'default_roles')
         ));
       }
       else {
@@ -116,102 +124,69 @@ class UserRolesEventSubscriber implements EventSubscriberInterface {
       }
     }
 
-    // Process role mapping. Spam logs about anything strange in the
-    // attribute values or value_map configuration. (We may need to iterate on
-    // the logs for attribute values, because they don't mention the associated
-    // account. It's possible that the account has no ID and no name yet.)
-    $attribute_name = $config->get('saml_attribute');
+    $idp_role_values = $this->getIdpRoles($event->getAttributes());
     $value_map = $config->get('value_map');
-    if ($attribute_name) {
-      if ($value_map && is_array($value_map)) {
-        $separator = $config->get('saml_attribute_separator');
-
-        // We don't differentiate between several 'IdP role' values
-        // concatenated in one attribute value, a multi-value attribute or a
-        // combination of both. Get all 'IdP role' values into one array.
-        $idp_role_values = [];
-        $attributes = $event->getAttributes();
-        if (isset($attributes[$attribute_name])) {
-          if (!is_array($attributes[$attribute_name])) {
-            // We've never seen single-array string values for an attribute but
-            // let's support them without complaining.
-            if (is_string($attributes[$attribute_name])) {
-              $attributes[$attribute_name] = [$attributes[$attribute_name]];
-            }
-            else {
-              $this->logger->warning('%name attribute is not an array of values; this points to a coding error.', ['%name' => $attribute_name]);
-            }
-          }
-          if (is_array($attributes[$attribute_name])) {
-            foreach ($attributes[$attribute_name] as $attribute_value) {
-              // "0" is a valid attribute value. "" / NULL are considered
-              // 'empty / not a value' and 0 is... inconsequential.
-              if ($attribute_value != NULL) {
-                if (!is_string($attribute_value)) {
-                  $this->logger->warning('%name attribute contains a (or multiple) non-string value(s); this points to a coding error.', ['%name' => $attribute_name]);
-                }
-                if ($separator) {
-                  $idp_role_values = array_merge($idp_role_values, explode($separator, $attribute_value));
-                }
-                else {
-                  $idp_role_values[] = $attribute_value;
-                }
-              }
-            }
-          }
-        }
-
-        if ($idp_role_values) {
-          // Process values (add IDs of mapped roles); skip unknown values.
-          foreach (array_map('trim', $idp_role_values) as $idp_role_value) {
-            // The same IdP value can be mapped to multiple roles so loop
-            // through all defined mappings. If we find any illegal
-            // configuration, that could mean we log duplicate warnings.
-            foreach ($value_map as $mapping) {
-              if (isset($mapping['attribute_value'])) {
-                if ($idp_role_value === $mapping['attribute_value']) {
-                  // Attribute value matches role mapping.
-                  if (isset($mapping['role_machine_name'])) {
-                    if (isset($valid_roles[$mapping['role_machine_name']])) {
-                      $changed_role_ids[] = $valid_roles[$mapping['role_machine_name']]->id();
-                    }
-                    else {
-                      $this->logger->warning('Unknown/invalid role %role in %name configuration value; (partially?) skipping role assignment.', [
-                        '%name' => 'value_map',
-                        '%role' => $mapping['role_machine_name'],
-                      ]);
-                    }
-                  }
-                  else {
-                    $this->logger->warning('%subname not present in %name configuration value; (partially?) skipping role assignment.', [
-                      '%name' => 'value_map',
-                      '%subname' => 'role_machine_name',
-                    ]);
-                  }
-                }
-              }
-              else {
-                $this->logger->warning('%subname not present in %name configuration value; role assignment may be partially skipped.', [
-                  '%name' => 'value_map',
-                  '%subname' => 'attribute_value',
-                ]);
-              }
-            }
-          }
-          $changed_role_ids = array_unique($changed_role_ids);
-        }
-      }
-      elseif (!is_array($value_map)) {
+    if ($value_map) {
+      if (!is_array($value_map)) {
         $this->logger->warning('%name is not an array; skipping role mapping.', ['%name' => 'value_map']);
+        $idp_role_values = [];
       }
-      else {
-        // We expect either both config values or neither to be set. Otherwise,
-        // spam logs.
-        $this->logger->warning('%name is not configured; skipping role mapping.', ['%name' => 'value_map']);
+      elseif (!$config->get('saml_attribute')) {
+        // We expect both config values or neither to be set. Spam logs if not.
+        $this->logger->warning('%name is not configured; skipping role mapping.', ['%name' => 'saml_attribute']);
       }
     }
-    elseif ($value_map && trim($value_map)) {
-      $this->logger->warning('%name is not configured; skipping role mapping.', ['%name' => 'saml_attribute']);
+    if ($idp_role_values) {
+      if ($value_map) {
+        // Skip incomplete mapping config silently; it can be found by config
+        // inspector.
+        $value_map = array_filter(
+          $value_map,
+          fn($v) => isset($v['attribute_value']) && isset($v['role_machine_name']),
+        );
+      }
+      else {
+        // Treat attribute values as Drupal role machine names.
+        $value_map = array_map(
+          fn($role) => ['attribute_value' => $role->id(), 'role_machine_name' => $role->id()],
+          $valid_roles
+        );
+      }
+      $log_unknown_idp_values = $config->get('log_unknown');
+      // Process role mapping (add to $changed_role_ids). Spam logs about
+      // unknown roles in the attribute values or value_map configuration.
+      // (The logs don't mention the associated account, because it's possible
+      // that the account has no ID/name yet. Maybe the log messages should be
+      // doublechecked to make sure it's clear that they come from this class.)
+      foreach (array_map('trim', $idp_role_values) as $idp_role_value) {
+        // The same IdP value can be mapped to multiple roles, so loop through
+        // all defined mappings. If we find any illegal configuration, that
+        // could mean we log duplicate warnings.
+        $mapped = FALSE;
+        foreach ($value_map as $mapping) {
+          if ($idp_role_value === $mapping['attribute_value']) {
+            // Attribute value matches role mapping. If the mapped role
+            // exists (which we could have checked outside the loop), map it.
+            $mapped = TRUE;
+            if (isset($valid_roles[$mapping['role_machine_name']])) {
+              $changed_role_ids[] = $valid_roles[$mapping['role_machine_name']]->id();
+            }
+            else {
+              $this->logger->warning('Unknown/invalid role %role in %name configuration value; (partially?) skipping role assignment.', [
+                '%name' => 'value_map',
+                '%role' => $mapping['role_machine_name'],
+              ]);
+            }
+          }
+        }
+        if (!$mapped && $log_unknown_idp_values) {
+            $this->logger->warning('Role %idprole from IdP is not present in %name configuration value; role assignment was partially skipped.', [
+            '%idprole' => $idp_role_value,
+            '%name' => 'value_map',
+          ]);
+        }
+      }
+      $changed_role_ids = array_unique($changed_role_ids);
     }
 
     sort($account_role_ids);
@@ -228,30 +203,85 @@ class UserRolesEventSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * Converts role machine names into role IDs; logs unknown names.
+   * Extract (not yet mapped) values for roles from a SAML attribute.
+   *
+   * @param array $attributes
+   *   The SAML attribute values, contained in the event.
+   *
+   * @return string[]
+   *   The 'roles' contained in the attribute.
+   */
+  protected function getIdpRoles(array $attributes) {
+    $idp_role_values = [];
+    $config = $this->configFactory->get(static::CONFIG_OBJECT_NAME);
+    $attribute_name = $config->get('saml_attribute');
+    if ($attribute_name) {
+      if (isset($attributes[$attribute_name])) {
+        // Don't differentiate between several 'IdP role' values concatenated
+        // in one attribute value, a multi-value attribute or a combination of
+        // both. Get all 'IdP role' values into one array.
+        if (!is_array($attributes[$attribute_name])) {
+          // We've never seen single-array string values for an attribute but
+          // let's support them without complaining.
+          if (is_string($attributes[$attribute_name])) {
+            $attributes[$attribute_name] = [$attributes[$attribute_name]];
+          }
+          else {
+            $this->logger->warning('%name attribute is not an array of values; this points to a coding error.', [
+              '%name' => $config->get('saml_attribute'),
+            ]);
+          }
+        }
+        if (is_array($attributes[$attribute_name])) {
+          $separator = $config->get('saml_attribute_separator');
+          foreach ($attributes[$attribute_name] as $attribute_value) {
+            // "0" is a valid attribute value. "" / NULL are considered
+            // 'empty / not a value' and 0 is... inconsequential.
+            if ($attribute_value != NULL) {
+              if (!is_string($attribute_value)) {
+                $this->logger->warning('%name attribute contains a (or multiple) non-string value(s); this points to a coding error.', [
+                  '%name' => $config->get('saml_attribute'),
+                ]);
+              }
+              if ($separator) {
+                $idp_role_values = array_merge($idp_role_values, explode($separator, $attribute_value));
+              }
+              else {
+                $idp_role_values[] = $attribute_value;
+              }
+            }
+          }
+        }
+      }
+    }
+    return $idp_role_values;
+  }
+
+  /**
+   * Filters and logs unknown role IDs from first parameter.
    *
    * @param array $role_names
-   *   The role machine names to convert.
+   *   Role IDs (coming from a config value, not guaranteed to exist).
    * @param \Drupal\user\Entity\Role[] $valid_roles_by_name
    *   Array with all roles valid for this purpose.
    * @param string $config_log_name
    *   Name to use for warning log if applicable.
+   *
+   * @todo Remove in v4, and move the logs to the caller? I clearly did not
+   *   know / check that a "Role name", as used here, is in fact a role ID so
+   *   this whole foreach loop is unnecessary. (This code is still here, only
+   *   because maybe some extending class uses / implements it.)
    */
   protected function getRoleIds(array $role_names, array $valid_roles_by_name, $config_log_name) {
-    $role_ids = [];
-    foreach ($role_names as $role_name) {
-      if (isset($valid_roles_by_name[$role_name])) {
-        $role_ids[] = $valid_roles_by_name[$role_name]->id();
-      }
-      else {
-        $this->logger->warning('Unknown/invalid role %role in %name configuration value; skipping part of role (un)assignment.', [
-          '%name' => $config_log_name,
-          '%role' => $role_name,
-        ]);
-      }
+    // Rewritten to use 'id' where I used 'name' before:
+    $valid_role_ids = array_keys($valid_roles_by_name);
+    foreach (array_diff($role_names, $valid_role_ids) as $invalid_id) {
+      $this->logger->warning('Unknown/invalid role %role in %name configuration value; skipping part of role (un)assignment.', [
+        '%name' => $config_log_name,
+        '%role' => $invalid_id,
+      ]);
     }
-
-    return $role_ids;
+    return array_intersect($role_names, $valid_role_ids);
   }
 
 }

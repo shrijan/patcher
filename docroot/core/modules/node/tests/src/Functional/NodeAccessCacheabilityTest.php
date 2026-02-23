@@ -6,14 +6,16 @@ namespace Drupal\Tests\node\Functional;
 
 use Drupal\Core\Url;
 use Drupal\Tests\system\Functional\Cache\AssertPageCacheContextsAndTagsTrait;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the node access automatic cacheability bubbling logic.
- *
- * @group node
- * @group Cache
- * @group cacheability_safeguards
  */
+#[Group('node')]
+#[Group('Cache')]
+#[Group('cacheability_safeguards')]
+#[RunTestsInSeparateProcesses]
 class NodeAccessCacheabilityTest extends NodeTestBase {
 
   use AssertPageCacheContextsAndTagsTrait;
@@ -25,14 +27,6 @@ class NodeAccessCacheabilityTest extends NodeTestBase {
     'node_access_test',
     'node_access_test_auto_bubbling',
   ];
-
-  /**
-   * {@inheritdoc}
-   *
-   * @todo Remove and fix test to not rely on super user.
-   * @see https://www.drupal.org/project/drupal/issues/3437620
-   */
-  protected bool $usesSuperUserAccessPolicy = TRUE;
 
   /**
    * {@inheritdoc}
@@ -64,9 +58,9 @@ class NodeAccessCacheabilityTest extends NodeTestBase {
     $this->drupalGet(new Url('node_access_test_auto_bubbling'));
     $this->assertCacheContext('user.node_grants:view');
 
-    // The root user has the 'bypass node access' permission, which means the
+    // The user has the 'bypass node access' permission, which means the
     // node grants cache context is not necessary.
-    $this->drupalLogin($this->rootUser);
+    $this->drupalLogin($this->drupalCreateUser(['bypass node access']));
     $this->drupalGet(new Url('node_access_test_auto_bubbling'));
     $this->assertNoCacheContext('user.node_grants:view');
     $this->drupalLogout();

@@ -1,0 +1,6 @@
+decision_tool.admin:
+  title: 'CSV bulk download'
+  description: 'Export Questions and Answers CSV'
+  parent: system.admin_content
+  route_name: decision_tool.export
+  weight: 13

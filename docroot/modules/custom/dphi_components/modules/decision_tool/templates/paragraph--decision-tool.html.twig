@@ -1,0 +1,29 @@
+{{ attach_library('decision_tool/decisionTool') }}
+
+{% set collection = elements.field_collection[0]['#entity'] %}
+<div class="nsw-container">
+  <h1>{{ collection.field_title[0].value }}</h1>
+  {{ collection.description|view }}
+  <div
+    role="presentation"
+    class="decisionTool"
+    data-entry-page-id="{{ entry_page_id }}"
+    data-id="{{ elements.field_question[0]['#node'].id }}"
+    data-title="{{ collection.field_title[0].value }}"
+    {% if collection.field_before[0] %}
+      data-begin="{{ collection.field_before[0].value }}"
+      {% if collection.field_begin_text[0] %}
+        data-begin-text="{{ collection.field_begin_text[0].value }}"
+      {% endif %}
+    {% endif %}
+    {% if elements['field_nest_questions'][0]['#markup'] == 'On' %}
+      data-nest-questions
+    {% endif %}
+    {% if elements['field_hide_progress_indicator'][0]['#markup'] != 'On' %}
+      data-progress-indicator
+    {% endif %}
+    {% if elements['field_hide_response_tracker'][0]['#markup'] != 'On' %}
+      data-response-tracker
+    {% endif %}
+  ></div>
+</div>

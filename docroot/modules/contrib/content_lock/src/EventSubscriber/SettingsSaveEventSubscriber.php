@@ -6,6 +6,7 @@ use Drupal\Core\Config\ConfigCrudEvent;
 use Drupal\Core\Config\ConfigEvents;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Routing\RouteBuilderInterface;
 use Drupal\views\Views;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -14,21 +15,11 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class SettingsSaveEventSubscriber implements EventSubscriberInterface {
 
-  protected $entityTypeManager;
-
-  protected ModuleHandlerInterface $moduleHandler;
-
-  /**
-   * SettingsSaveEventSubscriber constructor.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager service.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   The module handler service.
-   */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->moduleHandler = $module_handler;
+  public function __construct(
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected ModuleHandlerInterface $moduleHandler,
+    protected RouteBuilderInterface $routeBuilder,
+  ) {
   }
 
   /**
@@ -37,10 +28,10 @@ class SettingsSaveEventSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Config\ConfigCrudEvent $event
    *   The save event.
    */
-  public function onSave(ConfigCrudEvent $event) {
+  public function onSave(ConfigCrudEvent $event): void {
 
     if ($event->getConfig()->getName() == 'content_lock.settings' && $event->isChanged('types')) {
-
+      $this->routeBuilder->setRebuildNeeded();
       foreach (array_filter($event->getConfig()->get('types')) as $type => $value) {
         // Skip if the entity type does not exist.
         if (!$this->entityTypeManager->getDefinition($type, FALSE)) {
@@ -70,7 +61,7 @@ class SettingsSaveEventSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     $events[ConfigEvents::SAVE][] = ['onSave'];
     return $events;
   }

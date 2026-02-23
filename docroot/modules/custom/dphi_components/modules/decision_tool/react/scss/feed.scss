@@ -1,0 +1,13 @@
+@import '../node_modules/nsw-design-system/src/core/grid/_grid';
+@import '../node_modules/nsw-design-system/src/global/scss/helpers/_spacing';
+@import '../node_modules/nsw-design-system/src/components/callout/_callout';
+
+.messages__wrapper {
+  @extend .nsw-callout;
+  @extend .nsw-container;
+}
+
+.feeds_feed__content {
+  @extend .nsw-container;
+  @extend .nsw-m-y-md;
+}

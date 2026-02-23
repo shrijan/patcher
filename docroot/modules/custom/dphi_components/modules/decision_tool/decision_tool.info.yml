@@ -1,0 +1,5 @@
+name: 'Decision Tool'
+type: module
+description: 'Module for Decision Tool functionality'
+core_version_requirement: ^9 || ^10
+package: DPHI

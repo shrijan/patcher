@@ -8,7 +8,8 @@ use Drupal\Core\Entity\ContentEntityConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\WorkspaceSafeFormInterface;
 use Drupal\Core\Url;
-use Drupal\trash\TrashManager;
+use Drupal\trash\Exception\UnrestorableEntityException;
+use Drupal\trash\TrashManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -19,7 +20,7 @@ class EntityRestoreForm extends ContentEntityConfirmFormBase implements Workspac
   /**
    * The trash manager.
    */
-  protected TrashManager $trashManager;
+  protected TrashManagerInterface $trashManager;
 
   /**
    * {@inheritdoc}
@@ -69,26 +70,53 @@ class EntityRestoreForm extends ContentEntityConfirmFormBase implements Workspac
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, FormStateInterface $form_state): array {
+    parent::validateForm($form, $form_state);
+
+    $entity = $this->getEntity();
+
+    // Use the handler's validateRestore() to check for conflicts. This also
+    // sets a flag so that preTrashRestore() skips duplicate validation.
+    try {
+      $this->trashManager->getHandler($entity->getEntityTypeId())?->validateRestore($entity);
+    }
+    catch (UnrestorableEntityException $e) {
+      $form_state->setError($form, $e->getMessage());
+    }
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = $this->getEntity();
-    $message = $this->t('The @entity-type %label has been restored from trash.', [
+    $args = [
       '@entity-type' => $entity->getEntityType()->getSingularLabel(),
-      '%label' => $entity->label() ?? $entity->id(),
-    ]);
-
-    trash_restore_entity($entity);
-
-    // Ensure that the redirect URL doesn't have any Trash context.
-    $this->getRequest()->query->remove('in_trash');
-    $form_state->setRedirectUrl($this->getRedirectUrl());
-
-    $this->messenger()->addStatus($message);
-    $this->getLogger('trash')->info('@entity-type (@bundle): restored %label.', [
-      '@entity-type' => $entity->getEntityType()->getLabel(),
       '@bundle' => $this->entityTypeBundleInfo->getBundleInfo($entity->getEntityTypeId())[$entity->bundle()]['label'],
       '%label' => $entity->label() ?? $entity->id(),
-    ]);
+    ];
+
+    try {
+      trash_restore_entity($entity);
+    }
+    catch (UnrestorableEntityException $e) {
+      $this->messenger()->addError($this->t('The @entity-type %label could not be restored from trash.', $args));
+      if ($message = $e->getMessage()) {
+        $this->messenger()->addError($message);
+      }
+      $form_state->setRedirectUrl($this->getCancelUrl());
+      return;
+    }
+
+    $form_state->setRedirectUrl($this->getRedirectUrl());
+
+    $this->messenger()->addStatus($this->t('The @entity-type %label has been restored from trash.', $args));
+    $this->getLogger('trash')->info('@entity-type (@bundle): restored %label.', [
+      '@entity-type' => $entity->getEntityType()->getLabel(),
+    ] + $args);
   }
 
   /**

@@ -1,0 +1,14 @@
+.ck.ck-link-form.ck-link-form_layout-vertical button.ck-media-library {
+  display: block;
+  width: 100%;
+  padding: var(--ck-spacing-small) var(--ck-spacing-large);
+  border-top: unset;
+}
+
+.ui-dialog.ui-dialog-off-canvas ~ .ck-body-wrapper .ck-balloon-panel {
+  --ck-z-modal: calc(var(--ck-z-default) + 999);
+}
+
+.ui-dialog.media-library-widget-modal ~ .ck-body-wrapper .ck-balloon-panel {
+  --ck-z-modal: inherit;
+}

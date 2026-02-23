@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\content_lock\Functional;
 
+use Drupal\Tests\content_lock\Tools\LogoutTrait;
 use Drupal\Tests\taxonomy\Traits\TaxonomyTestTrait;
 use Drupal\Tests\BrowserTestBase;
 
@@ -13,7 +14,7 @@ use Drupal\Tests\BrowserTestBase;
  * @group content_lock
  */
 class ContentLockTermTest extends BrowserTestBase {
-
+  use LogoutTrait;
   use TaxonomyTestTrait;
 
   /**
@@ -32,7 +33,7 @@ class ContentLockTermTest extends BrowserTestBase {
   /**
    * Test simultaneous edit on block.
    */
-  public function testContentLockTerm() {
+  public function testContentLockTerm(): void {
 
     // Create vocabulary and terms.
     $vocabulary = $this->createVocabulary();
@@ -103,6 +104,61 @@ class ContentLockTermTest extends BrowserTestBase {
     $assert_session->pageTextContains('This content is now locked by you against simultaneous editing.');
     $this->drupalGet('/taxonomy/term/' . $term1->id() . '/edit');
     $this->submitForm([], 'Save');
+  }
+
+  /**
+   * Tests deleting terms with content locks.
+   *
+   * @covers content_lock_entity_access
+   */
+  public function testContentLockTermDeleteAccess(): void {
+    // Create vocabulary and terms.
+    $vocabulary = $this->createVocabulary();
+    $term1 = $this->createTerm($vocabulary, ['name' => 'Term for user without break permission']);
+    $term2 = $this->createTerm($vocabulary, ['name' => 'Term for user with break permission']);
+
+    $admin = $this->drupalCreateUser([
+      'administer taxonomy',
+      'administer content lock',
+    ]);
+
+    // User without break lock permission.
+    $user1 = $this->drupalCreateUser([
+      'administer taxonomy',
+      'access content',
+    ]);
+
+    // User with break lock permission.
+    $user2 = $this->drupalCreateUser([
+      'administer taxonomy',
+      'break content lock',
+    ]);
+
+    // We protect the bundle created.
+    $this->drupalLogin($admin);
+    $edit = [
+      'taxonomy_term[bundles][' . $term1->bundle() . ']' => 1,
+    ];
+    $this->drupalGet('admin/config/content/content_lock');
+    $this->submitForm($edit, 'Save configuration');
+
+    // Lock both terms.
+    $this->drupalGet("taxonomy/term/{$term1->id()}/edit");
+    $this->drupalGet("taxonomy/term/{$term2->id()}/edit");
+
+    // Test user1 (without break lock permission) cannot delete the locked term.
+    $this->drupalLogin($user1);
+    $this->drupalGet("taxonomy/term/{$term1->id()}/delete");
+    $assert_session = $this->assertSession();
+    $assert_session->statusCodeEquals(403);
+
+    // Test user2 (with break lock permission) can delete the locked term.
+    $this->drupalLogin($user2);
+    $this->drupalGet("taxonomy/term/{$term2->id()}/delete");
+    $assert_session->statusCodeEquals(200);
+    $assert_session->pageTextContains('Are you sure you want to delete');
+    // In order to delete the term this way we will need to click the break lock
+    // link which is tested above.
   }
 
 }

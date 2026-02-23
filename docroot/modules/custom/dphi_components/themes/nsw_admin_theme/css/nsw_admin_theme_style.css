@@ -96,3 +96,50 @@ ol.lower-roman > li > ol li {
 div.ck.ck-toolbar.ck-toolbar_grouping>.ck-toolbar__items {
   flex-wrap: wrap;
 }
+
+.colorbox-icon-wrap {
+  display: none;
+}
+
+/* Media report page and Content report page styles. */
+.view-id-content_reports .views-exposed-form__item.views-exposed-form__item {
+  margin-block: var(--space-l);
+  margin: 21px;
+}
+view-id-content_reports .views-exposed-form__item.views-exposed-form__item .form-element {
+  margin-block: var(--space-s);
+}
+.view-id-media_reports .views-exposed-form__item.views-exposed-form__item label,
+.view-id-content_reports .views-exposed-form__item.views-exposed-form__item label {
+  font-size: 16px;
+  padding-block: var(--space-l);
+  line-height: var(--space-m);
+}
+.view-id-content_reports .views-exposed-form__item.views-exposed-form__item label {
+  padding-block: var(--space-m);
+}
+
+.view-id-media_reports .views-exposed-form__item.views-exposed-form__item,
+.view-id-media_reports fieldset {
+  padding-top: var(--space-m);
+  line-height: var(--space-m);
+  padding-bottom: var(--space-m);
+  margin-right: var(--space-s);
+}
+.view-id-media_reports fieldset,
+.view-id-content_reports fieldset {
+  margin-right: var(--space-s);
+  margin-left: var(--space-s);
+}
+
+.view-id-media_reports .views-exposed-form__item.views-exposed-form__item {
+  margin-block: var(--space-s);
+}
+.view-id-media_reports .views-exposed-form .form-item--no-label,
+.view-id-content_reports .views-exposed-form .form-item--no-label {
+  margin-top: var(--space-s);
+}
+.view-id-media_reports .views-exposed-form__item.views-exposed-form__item.views-exposed-form__item--actions,
+.view-id-content_reports .views-exposed-form__item.views-exposed-form__item.views-exposed-form__item--actions {
+  margin-top: calc(var(--line-height-form-label) + var(--space-xl) + var(--space-xs));
+}

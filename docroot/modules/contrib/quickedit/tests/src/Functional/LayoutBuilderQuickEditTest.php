@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\quickedit\Functional;
 
-use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\Tests\BrowserTestBase;
 
 /**
@@ -40,10 +39,6 @@ class LayoutBuilderQuickEditTest extends BrowserTestBase {
     $this->createNode([
       'type' => 'bundle_with_section_field',
     ]);
-    LayoutBuilderEntityViewDisplay::load('node.bundle_with_section_field.default')
-      ->enableLayoutBuilder()
-      ->setOverridable()
-      ->save();
   }
 
   /**
@@ -54,8 +49,14 @@ class LayoutBuilderQuickEditTest extends BrowserTestBase {
 
     $this->drupalLogin($this->drupalCreateUser([
       'configure any layout',
+      'administer node display',
       'access in-place editing',
     ]));
+
+    // From the manage display page, go to manage the layout.
+    $this->drupalGet('admin/structure/types/manage/bundle_with_section_field/display/default');
+    $this->submitForm(['layout[enabled]' => TRUE], 'Save');
+    $this->submitForm(['layout[allow_custom]' => TRUE], 'Save');
 
     // Place a field block for a user entity field.
     $this->drupalGet('node/1/layout');

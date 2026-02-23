@@ -2,8 +2,8 @@
 
 namespace Drupal\migrate_devel\Plugin\migrate\process;
 
-use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\MigrateExecutableInterface;
+use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
 
 /**
@@ -63,12 +63,9 @@ class Debug extends ProcessPluginBase {
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
     if (isset($this->configuration['label'])) {
-      print_r($this->configuration['label']);
+      dump($this->configuration['label']);
     }
-    print_r($value);
-    if (!is_array($value)) {
-      print_r(PHP_EOL);
-    }
+    dump($value);
 
     return $value;
   }

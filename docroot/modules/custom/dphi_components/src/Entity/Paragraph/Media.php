@@ -20,7 +20,7 @@ class Media extends Paragraph {
     $link = $this->get('field_link')->first();
     $media = $this->get('field_media')->entity;
     return [
-      'media' => $media ? \Drupal::entityTypeManager()->getViewBuilder('media')->view($media) : null,
+      'media' => ($media && (\Drupal::currentUser()->isAuthenticated() || $media->isPublished())) ? \Drupal::entityTypeManager()->getViewBuilder('media')->view($media) : null,
       'link' => $link ? [
         'text' => $link->title,
         'url' => $link->getUrl()

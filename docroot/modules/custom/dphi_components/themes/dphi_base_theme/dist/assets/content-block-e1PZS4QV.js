@@ -1,0 +1,1 @@
+Drupal.behaviors.contentListing={attach:function(e,n){jQuery(e).bind("cbox_complete",function(){jQuery("#cboxTitle:empty",e).length==!1&&(jQuery("#cboxLoadedContent img",e).unbind(),jQuery("#cboxOverlay",e).unbind())})}};

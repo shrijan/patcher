@@ -14,20 +14,12 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class SchedulerEventSubscriber implements EventSubscriberInterface {
 
   /**
-   * The moderation information service.
-   *
-   * @var \Drupal\content_moderation\ModerationInformationInterface
-   */
-  protected $moderationInformation;
-
-  /**
    * New instance of SchedulerEventSubscriber.
    *
-   * @param \Drupal\content_moderation\ModerationInformationInterface $moderation_information
+   * @param \Drupal\content_moderation\ModerationInformationInterface $moderationInformation
    *   The moderation information service.
    */
-  public function __construct(ModerationInformationInterface $moderation_information) {
-    $this->moderationInformation = $moderation_information;
+  public function __construct(protected ModerationInformationInterface $moderationInformation) {
   }
 
   /**
@@ -38,8 +30,7 @@ class SchedulerEventSubscriber implements EventSubscriberInterface {
    * @param \Drupal\scheduler\Event\SchedulerEvent $event
    *   The event being acted on.
    */
-  public function publishImmediately(SchedulerEvent $event) {
-    /** @var Drupal\Core\Entity\EntityInterface $entity */
+  public function publishImmediately(SchedulerEvent $event): void {
     $entity = $event->getNode();
 
     if (!$this->moderationInformation->isModeratedEntity($entity)) {
@@ -54,7 +45,7 @@ class SchedulerEventSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     // The values in the arrays give the function names above. The same function
     // can be used for all supported entity types.
     $events[SchedulerNodeEvents::PUBLISH_IMMEDIATELY][] = ['publishImmediately'];

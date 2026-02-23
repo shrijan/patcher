@@ -7,39 +7,45 @@ Drupal.behaviors.dataTableEntry = {
   attach: () => {
     once('dataTableEntry', '.tab-data-table').forEach(element => {
       const loadModals = () => {
-        element.closest('.cl--data-table').parentNode.querySelectorAll('.nsw-dialog').forEach(dialogElement => {
-          const dialog = new Dialog(dialogElement)
-          dialog.init()
+        const container = element.closest('.cl--data-table').parentNode
+        setTimeout(() => {
+          element.querySelectorAll('button[class^="js-open-dialog-"], button[class*=" js-open-dialog-"]').forEach(openBtn => {
+            const id = Array.from(openBtn.classList).find(className => className.startsWith('js-open-dialog-')).substr('js-open-dialog-'.length)
 
-          dialog.focusableEls[0].addEventListener('blur', event => {
-            if (!dialog.element.contains(event.relatedTarget)) {
-              dialog.focusableEls[dialog.focusableEls.length - 1].focus()
-            }
-          })
+            // The id starts with a number, so # cannot be used as a selector
+            const dialog = new Dialog(container.querySelector('.nsw-dialog[id="'+id+'"]'))
+            dialog.init()
 
-          dialog.openBtn.forEach((btn) => {
-            btn.addEventListener('keydown', event => {
-              if (event.key == 'Enter') {
-                // Temporarily disable closing through the keyboard
-                dialog.closeBtn.forEach((btn) => {
-                  btn.removeEventListener('click', dialog.closeEvent)
-                })
-                document.addEventListener('keyup', () => {
-                  // And re-enable it, once the original key has been lifted
+            dialog.focusableEls[0].addEventListener('blur', event => {
+              if (!dialog.element.contains(event.relatedTarget)) {
+                dialog.focusableEls[dialog.focusableEls.length - 1].focus()
+              }
+            })
+
+            dialog.openBtn.forEach(btn => {
+              btn.addEventListener('keydown', event => {
+                if (event.key == 'Enter') {
+                  // Temporarily disable closing through the keyboard
                   dialog.closeBtn.forEach((btn) => {
-                    btn.addEventListener('click', dialog.closeEvent, false)
+                    btn.removeEventListener('click', dialog.closeEvent)
                   })
-                }, {once: true})
+                  document.addEventListener('keyup', () => {
+                    // And re-enable it, once the original key has been lifted
+                    dialog.closeBtn.forEach((btn) => {
+                      btn.addEventListener('click', dialog.closeEvent, false)
+                    })
+                  }, {once: true})
+                }
+              })
+            })
+
+            dialog.elementWrapper.addEventListener('keydown', event => {
+              if (event.key == 'Escape') {
+                dialog.closeDialog()
               }
             })
           })
-
-          dialog.elementWrapper.addEventListener('keydown', event => {
-            if (event.key == 'Escape') {
-              dialog.closeDialog()
-            }
-          })
-        })
+        }, 0)
       }
       loadModals()
 

@@ -1,0 +1,5 @@
+decision_tool.decision_tool:
+  title: Decision Tool
+  route_name: view.decision_tool.page_1
+  base_route: system.admin_content
+  weight: -9

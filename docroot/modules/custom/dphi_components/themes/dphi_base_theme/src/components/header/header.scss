@@ -6,7 +6,8 @@
   z-index: 1250; // Raise above admin toolbar
 }
 
-#block-dphi-base-theme-mainnavigation {
+nav[id$="-mainnavigation"].contextual-region {
+  // Allow navigation sidebar to work when logged in
   position: static;
 }
 

@@ -47,11 +47,11 @@
 			</div>
 			<ul class="nsw-main-nav__list">
 			{% endif %}
-			{% for item in items %}
+			{% for key, item in items %}
 				{% if menu_level == 0 %}
 					<li>
 						{% if item.below %}
-							<a href="{{ item.url }}">
+							<a href="{{ item.url }}" data-menu-id="{{ key|replace({'menu_link_content:': ''}) }}">
 								<span>{{ item.title }}</span>
 								<span class="material-icons nsw-material-icons" focusable="false" aria-hidden="true">keyboard_arrow_right</span>
 							</a>

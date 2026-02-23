@@ -29,9 +29,10 @@ quickedit:
   dependencies:
     - core/jquery
     - core/once
-    - core/internal.underscore
-    - core/internal.backbone
-    - core/internal.jquery.form
+    - core/jquery.once.bc
+    - core/underscore
+    - core/backbone
+    - core/jquery.form
     - core/drupal
     - core/drupal.displace
     - core/drupal.form
@@ -39,7 +40,7 @@ quickedit:
     - core/drupal.debounce
     - core/drupalSettings
     - core/drupal.dialog
-    - quickedit/internal.popperjs
+    - core/popperjs
 
 quickedit.inPlaceEditor.form:
   version: VERSION
@@ -48,18 +49,15 @@ quickedit.inPlaceEditor.form:
   dependencies:
     - quickedit/quickedit
 
-quickedit.ckeditor5-temporary-work-around:
-  # "Temporary work-around until https://www.drupal.org/project/drupal/issues/3196689 lands."
-  css:
-    theme:
-      css/editors/formattedText/ckeditor5.workaround.css: { }
+quickedit.inPlaceEditor.plainText:
+  version: VERSION
+  js:
+    js/editors/plainTextEditor.js: {}
+  dependencies:
+    - quickedit/quickedit
 
 quickedit.inPlaceEditor.formattedText:
   version: VERSION
-  css:
-    component:
-      css/editors/formattedText.ckeditor.css: {}
-      css/editors/formattedText.ckeditor5.css: {}
   js:
     js/editors/formattedTextEditor.js: { attributes: { defer: true } }
   dependencies:
@@ -67,13 +65,6 @@ quickedit.inPlaceEditor.formattedText:
     - editor/drupal.editor
     - core/drupal.ajax
     - core/drupalSettings
-
-quickedit.inPlaceEditor.plainText:
-  version: VERSION
-  js:
-    js/editors/plainTextEditor.js: {}
-  dependencies:
-    - quickedit/quickedit
 
 quickedit.inPlaceEditor.image:
   version: VERSION
@@ -88,18 +79,5 @@ quickedit.inPlaceEditor.image:
   dependencies:
     - core/jquery
     - core/drupal
-    - core/internal.underscore
+    - core/underscore
     - quickedit/quickedit
-
-internal.popperjs:
-  version: "2.11.5"
-  license:
-    name: MIT
-    url: https://raw.githubusercontent.com/popperjs/popper-core/v2.11.5/LICENSE.md
-    gpl-compatible: true
-  js:
-    '//cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js': { minified: true, external: true }
-  dependencies:
-    - core/drupal.array.find
-    - core/es6-promise
-    - core/drupal.object.assign

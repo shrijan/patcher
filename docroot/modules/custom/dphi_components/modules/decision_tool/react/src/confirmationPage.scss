@@ -1,0 +1,30 @@
+.decisionToolTracker > ul > li > p:nth-child(2) {
+  margin-top: 0;
+}
+
+.decisionToolFooter .branding {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+
+  img {
+    height: 76px;
+  }
+
+  span {
+    color: var(--nsw-brand-dark);
+    font-size: 24px;
+    font-weight: bold;
+  }
+}
+
+@media print {
+  .nsw-button--dark {
+    color: var(--nsw-text-light) !important;
+    background-color: var(--nsw-brand-dark) !important;
+
+    &::after {
+      color: var(--nsw-text-light) !important;
+    }
+  }
+}

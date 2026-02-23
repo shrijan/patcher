@@ -30,7 +30,7 @@ class SettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, Request $request = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?Request $request = NULL) {
     $config = $this->config('tinypng.settings');
     $form['api_key'] = [
       '#type' => 'textfield',

@@ -2,8 +2,6 @@
 
 namespace Drupal\moderated_content_bulk_publish\Plugin\Action;
 
-//use Drupal\views_bulk_operations\Action\ViewsBulkOperationsActionBase;
-//use Drupal\views_bulk_operations\Action\ViewsBulkOperationsPreconfigurationInterface;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Action\ActionBase;
 use Drupal\Core\Plugin\PluginFormInterface;
@@ -26,11 +24,7 @@ use Drupal\Core\Access\AccessResult;
  *   confirm = TRUE,
  * )
  */
-//only need to add "implements" keywords below if we are goign to add configuration forms to the confirmation step.... not the case here!
-class PublishLatestRevisionAction extends ActionBase/*extends ViewsBulkOperationsActionBase implements ViewsBulkOperationsPreconfigurationInterface, PluginFormInterface*/
-{
-
-
+class PublishLatestRevisionAction extends ActionBase {
 
   /**
    * {@inheritdoc}
@@ -47,9 +41,6 @@ class PublishLatestRevisionAction extends ActionBase/*extends ViewsBulkOperation
      * the public getView() method.
      */
 
-    // Do some processing..
-    // ...
-    //\Drupal::Messenger()->addStatus(mb_convert_encoding('Publish bulk operation by moderated_content_bulk_publish module', 'UTF-8'));
     $user = \Drupal::currentUser();
 
     if ($user->hasPermission('moderated content bulk publish')) {
@@ -136,7 +127,7 @@ class PublishLatestRevisionAction extends ActionBase/*extends ViewsBulkOperation
    * Submit handler for the action configuration form.
    *
    * If not implemented, the cleaned form values will be
-   * passed direclty to the action $configuration parameter.
+   * passed directly to the action $configuration parameter.
    *
    * @param array $form
    *   Form array.

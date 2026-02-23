@@ -1,0 +1,575 @@
+<?php
+use Drupal\Component\Utility\Html;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\node\Entity\Node;
+use Drupal\paragraphs\Entity\Paragraph;
+use Drupal\taxonomy\Entity\Term;
+use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\views\ResultRow;
+use Drupal\views\ViewExecutable;
+use Drupal\decision_tool\Controller\ApiController;
+
+function _decision_tool_page_from_paragraph(Paragraph $paragraph): string {
+  $parent = $paragraph->getParentEntity();
+  while ($parent->getType() != 'page') {
+    $parent = $parent->getParentEntity();
+  }
+  return $parent->id();
+}
+
+function _decision_tool_is_confirmation_page($node): bool {
+  if ($node && $node->getType() == 'page') {
+    $data = \Drupal::request()->request->get('decisionTool');
+    if ($data) {
+      return true;
+    }
+
+    $category = $node->get('field_content_category')[0];
+    if ($category && $category->getValue()['value'] == 6) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function _decision_tool_get_confirmation_page_data($node): array {
+  if ($node && $node->getType() == 'page') {
+    $data = \Drupal::request()->request->get('decisionTool');
+    if ($data) {
+      $data = json_decode($data, true);
+
+      $firstQuestion = Node::load($data['id']);
+      $collection = $firstQuestion->get('field_collection')[0]->entity;
+    } else {
+      $category = $node->get('field_content_category')[0];
+      if ($category && $category->getValue()['value'] == 6) {
+        // This is a confirmation page that is being accessed directly
+        $data = [
+          'step'=>2,
+          'progressIndicator'=>true,
+          'tracker'=>[
+            [
+              'text'=>'No responses'
+            ]
+          ]
+        ];
+
+        // It is unknown what collection this is in
+        // First, try and find if any answers link to it
+        $answer_ids = \Drupal::entityQuery('paragraph')
+                             ->condition('type', 'answer')
+                             ->condition('field_confirmation_page', $node->id())
+                             ->range(0, 1)
+                             ->accessCheck(TRUE)
+                             ->execute();
+        if ($answer_ids) {
+          $answer = Paragraph::load(array_pop($answer_ids));
+          $question = $answer->getParentEntity();
+          if ($question) {
+            $collection_id = $question->get('field_collection')[0]->target_id;
+          }
+        }
+        if (empty($collection_id)) {
+          // No answer links to this page
+          // So pick any collection
+          $collection_ids = \Drupal::entityQuery('taxonomy_term')
+                                   ->condition('status', 1)
+                                   ->condition('vid', 'decision_tool_collection')
+                                   ->range(0, 1)
+                                   ->accessCheck(TRUE)
+                                   ->execute();
+          $collection_id = array_pop($collection_ids);
+        }
+        if (!empty($collection_id)) {
+          $collection = Term::load($collection_id);
+        }
+      }
+    }
+    if (!empty($collection)) {
+      if (empty($data['entryPageId'])) {
+        $question_ids = \Drupal::entityQuery('node')
+                        ->condition('type', 'question')
+                        ->condition('field_collection', $collection->id())
+                        ->accessCheck(TRUE)
+                        ->execute();
+        $starting_paragraph_ids = \Drupal::entityQuery('paragraph')
+                                         ->condition('type', 'decision_tool')
+                                         ->condition('field_question', $question_ids, 'IN')
+                                         ->range(0, 1)
+                                         ->accessCheck(TRUE)
+                                         ->execute();
+        if ($starting_paragraph_ids) {
+          $paragraph = Paragraph::load(array_pop($starting_paragraph_ids));
+          $data['entryPageId'] = _decision_tool_page_from_paragraph($paragraph);
+        }
+      }
+
+      $data['title'] = $collection->get('field_title')->getValue()[0]['value'];
+
+      $file_url_generator = \Drupal::service('file_url_generator');
+      $media = $collection->get('field_image')[0];
+      if ($media) {
+        $fileUri = $media->entity->get('field_media_image')->entity->getFileUri();
+        $data['logo'] = [
+          'src'=>$file_url_generator->generate($fileUri)->toString(),
+          'alt'=>$media->entity->thumbnail->alt
+        ];
+
+        $url = $collection->get('field_url')[0];
+        if ($url) {
+          $data['logo']['url'] = $url->getUrl()->toString();
+          $data['logo']['external'] = $url->isExternal();
+        }
+      }
+    }
+    return $data ?: [];
+  }
+  return [];
+}
+
+function decision_tool_page_attachments_alter(array &$attachments): void {
+  if (\Drupal::service('router.admin_context')->isAdminRoute()) {
+    $user = \Drupal::currentUser();
+    if ($user->hasPermission('create question content') && $user->hasPermission('edit any page content')) {
+      if (\Drupal::request()->getRequestUri() == '/node/add/page') {
+        $attachments['#attached']['library'][] = 'decision_tool/decisionToolPage';
+      } else if (\Drupal::request()->getRequestUri() == '/node/add/question') {
+        $attachments['#attached']['library'][] = 'decision_tool/decisionTool';
+      } else {
+        $node = \Drupal::routeMatch()->getParameter('node');
+        if ($node) {
+          if ($node->getType() == 'page') {
+            $attachments['#attached']['library'][] = 'decision_tool/decisionToolPage';
+          } else if ($node->getType() == 'question') {
+            $attachments['#attached']['library'][] = 'decision_tool/decisionTool';
+          }
+        }
+      }
+    }
+    return;
+  }
+
+  $route = \Drupal::service('current_route_match')->getRouteName();
+  if ($route == 'entity.node.canonical') {
+    $node = \Drupal::routeMatch()->getParameter('node');
+    if (_decision_tool_is_confirmation_page($node)) {
+      $attachments['#attached']['library'][] = 'decision_tool/decisionTool';
+    }
+  } else if ($route == 'entity.feeds_feed.canonical') {
+    $attachments['#attached']['library'][] = 'decision_tool/decisionToolFeed';
+  } else if (in_array($route, ['view.questions.page_1', 'view.confirmation_page.page_1'])) {
+    $attachments['#attached']['library'][] = 'decision_tool/decisionToolView';
+  }
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * Allows for templates
+ */
+function decision_tool_theme($existing, $type, $theme, $path): array {
+  return [
+    'node__question' => [],
+    'paragraph__decision_tool' => [],
+    'admin_export_links' => [
+      'variables' => [
+        'collections' => NULL
+      ]
+    ]
+  ];
+}
+
+function decision_tool_metatags_alter(&$variables): void {
+  // Update the page title, working with the 'metatag' module
+  $node = \Drupal::routeMatch()->getParameter('node');
+  if ($node && $node->getType() == 'question') {
+    $title = $node->get('field_question')->getValue()[0]['value'];
+  } else if (_decision_tool_is_confirmation_page($node)) {
+    $title = 'Your next steps';
+  }
+  if (!empty($title)) {
+    $parts = explode(' | ', $variables['title']);
+    if ($parts) {
+      $parts[0] = $title;
+      $variables['title'] = implode(' | ', $parts);
+    } else {
+      $variables['title'] = $title;
+    }
+  }
+}
+
+function decision_tool_preprocess(&$variables, $hook): void {
+  if ($hook == 'container' && ($variables['element']['#theme'] ?? '') == 'export_icon') {
+    // Download CSV button on views
+    $variables['attributes']['class'] = ['nsw-container', 'nsw-m-bottom-md'];
+  } else if ($hook == 'paragraph') {
+    $paragraph = $variables['elements']['#paragraph'];
+    if ($paragraph->getType() == 'decision_tool') {
+      $variables['entry_page_id'] = _decision_tool_page_from_paragraph($paragraph);
+    }
+  } else if ($hook == 'node') {
+    $node = $variables['elements']['#node'];
+    if ($node->getType() == 'page') {
+      $data = _decision_tool_get_confirmation_page_data($node);
+      if ($data) {
+        // Add elements to a confirmation page
+        $top_section = $variables['content']['field_top_section'];
+        $h1_already_present = false;
+        if (!empty($top_section['#items'])) {
+          foreach ($top_section['#items'][0]->entity->get('field_section_content')->referencedEntities() as $paragraph) {
+            if ($paragraph->get('field_title')[0]) {
+              $h1_already_present = true;
+              break;
+            }
+          }
+        }
+        $variables['content']['field_middle_left_section']['#post_render'][] = function ($html) use ($data, $h1_already_present) {
+          $step = $data['step'];
+          $tag = $h1_already_present ? 'h2' : 'h1';
+          $left = '<div class="nsw-container">';
+          if (!empty($data['title'])) {
+            $left .= '<'.$tag.'>'.$data['title'].'</'.$tag.'>';
+          }
+          if (!empty($data['progressIndicator'])) {
+            $left .= '<div class="decisionToolProgress nsw-progress-indicator">
+              <div class="nsw-progress-indicator__count">Step '.$step.' of '.$step.'</div>
+              <div class="nsw-progress-indicator__bar">
+                '.str_repeat('<div class="active"></div>', $step).'
+              </div>
+            </div>';
+          }
+          return $left.'<div class="decisionToolTitle">
+              <h2>'.$step.'. Your next steps</h2>
+            </div>
+          </div>'.$html;
+        };
+        if (!empty($data['tracker'])) {
+          $variables['content']['field_middle_right_section']['#post_render'][] = function ($html) use ($data) {
+            return '<div class="decisionToolTracker nsw-bg--info-light">
+              <h3 class="nsw-h6">Response tracker</h3>
+              <hr />
+              <ul>
+                '.implode('', array_map(function ($response) {
+                  $text = '<li>';
+                  if (!empty($response['title'])) {
+                    $text .= '<strong class="nsw-display-block">'.Html::escape($response['title']).'</strong>';
+                  }
+                  return $text.$response['text'].'</li>';
+                }, $data['tracker'])).'
+              </ul>
+            </div>'.$html;
+          };
+        }
+        $variables['content']['field_bottom_section']['#post_render'][] = function ($html) use ($data) {
+          $left = '';
+          if (!empty($data['logo'])) {
+            $left .= '<img src="'.$data['logo']['src'].'" alt="'.$data['logo']['alt'].'">';
+            if (!empty($data['logo']['url'])) {
+              $link = '<a href="'.$data['logo']['url'].'"';
+              if ($data['logo']['external']) {
+                $link .= ' target="_blank"';
+              }
+              $left = $link.'>'.$left.'</a>';
+            }
+          }
+          if (!empty($data['entryPageId'])) {
+            $left .= '<a href="'.Node::load($data['entryPageId'])->toUrl()->toString().'" class="nsw-button nsw-button--dark-outline-solid">Start a new enquiry</a>';
+          }
+
+          $bottom = '<div class="decisionToolFooter nsw-container">';
+          if ($left) {
+            $bottom .= '<div class="left">'.$left.'</div>';
+          }
+          return $bottom.'
+            <button class="nsw-button nsw-button--dark printButton">Save this page</button>
+          </div>'.$html;
+        };
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_views_pre_render().
+ */
+function decision_tool_views_pre_render(ViewExecutable $view): void {
+  if ($view->id() == 'content') {
+    $query = \Drupal::request()->query;
+    if ($query->get('questions') == 'orphan') {
+      // Add title to /admin/content?questions=orphan
+      $view->setTitle('Orphan questions');
+    }
+  } else if ($view->id() == 'decision_tool') {
+    // Modify the results at /admin/content/decision_tool
+    $query = \Drupal::request()->query;
+    if ($query->get('field_collection_target_id') != 'All' && in_array($query->get('type'), ['page', 'All'])) {
+      // Get all pages with a Decision Tool paragraph
+      $ids = [];
+      $collection_id = $query->get('field_collection_target_id');
+      $paragraph_ids = \Drupal::entityQuery('paragraph')
+                              ->condition('type', 'decision_tool')
+                              ->condition('field_collection', $collection_id)
+                              ->accessCheck(TRUE)
+                              ->execute();
+      foreach (Paragraph::loadMultiple($paragraph_ids) as $paragraph) {
+        $ids[] = $paragraph->getParentEntity()->get('parent_id')[0]->getValue()['value'];
+      }
+
+      // Get all pages linked to from the question answers
+      $question_ids = \Drupal::entityQuery('node')
+                             ->condition('type', 'question')
+                             ->condition('field_collection', $collection_id)
+                             ->accessCheck(TRUE)
+                             ->execute();
+      foreach (Node::loadMultiple($question_ids) as $question) {
+        foreach ($question->get('field_answers')->referencedEntities() as $answer) {
+          $reference = $answer->get('field_confirmation_page')[0];
+          if ($reference) {
+            $id = $reference->get('target_id')->getValue();
+            if (!in_array($id, $ids)) {
+              $ids[] = $id;
+            }
+          }
+        }
+      }
+
+      $title = $query->get('title');
+      $status = $query->get('status');
+      foreach ($ids as $id) {
+        $node = Node::load($id);
+        if (!$node) {
+          continue;
+        }
+        if ($status == '1') {
+          // Only published
+          if (!$node->isPublished()) {
+            continue;
+          }
+        } else if ($status == '2') {
+          // Only unpublished
+          if ($node->isPublished()) {
+            continue;
+          }
+        }
+        if ($title && stripos($node->getTitle(), $title) === false) {
+          continue;
+        }
+
+        $view->result[] = new ResultRow([
+          '_entity'=>$node,
+          '_relationship_entities'=>[
+            'uid'=>$node->getOwner(),
+          ],
+          'index'=>count($view->result)
+        ]);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_views_pre_view().
+ *
+ * Remove filters from /admin/content?questions=orphan
+ */
+function decision_tool_views_pre_view(ViewExecutable $view): void {
+  if ($view->id() == 'content' && \Drupal::request()->query->get('questions') == 'orphan') {
+    $display = $view->getDisplay();
+    $display->setOption('filters', []);
+  }
+}
+
+/**
+ * Implements hook_views_query_alter().
+ *
+ * Only show orphan questions at /admin/content?questions=orphan
+ */
+function decision_tool_views_query_alter(ViewExecutable $view, QueryPluginBase $query): void {
+  if ($view->id() == 'content' && \Drupal::request()->query->get('questions') == 'orphan') {
+    $query->where = [
+      [
+        'conditions'=>[
+          [
+            'field'=>'node_field_data.nid',
+            'operator'=>'in',
+            'value'=>ApiController::getOrphanQuestionIds()
+          ]
+        ],
+        'type'=>'AND'
+      ]
+    ];
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function decision_tool_form_alter(&$form, FormStateInterface $form_state, $form_id): void {
+  if ($form_id == 'node_page_edit_form') {
+    $form['#validate'][] = 'decision_tool_page_validate';
+  } else if ($form_id == 'node_question_edit_form') {
+    $form['#validate'][] = 'decision_tool_question_validate';
+  } else if ($form_id == 'feeds_feed_question_import_form') {
+    // Add instructions to /feed/add/question_import
+    $collection_ids = \Drupal::entityQuery('taxonomy_term')
+                             ->condition('status', 1)
+                             ->condition('vid', 'decision_tool_collection')
+                             ->accessCheck(TRUE)
+                             ->execute();
+    $markup = '';
+    if ($collection_ids) {
+      $markup = 'When entering the "Collection" and "Step" ids, use the following values.<ul>';
+      foreach ($collection_ids as $collection_id) {
+        $markup .= '<li>';
+        $collection = Term::load($collection_id);
+        $markup .= 'Collection ID: '.$collection->id().'. Title: '.$collection->getName();
+        $markup .= '<ul>';
+        foreach ($collection->get('field_steps')->referencedEntities() as $step) {
+          $markup .= '<li>';
+          $markup .= 'Step ID: '.$step->id().'. Title: '.$step->get('field_title')[0]->getValue()['value'];
+          $markup .= '</li>';
+        }
+        $markup .= '</ul>';
+        $markup .= '</li>';
+      }
+      $markup .= '</ul>';
+    }
+    $form['step_help'] = [
+      '#markup' => $markup,
+      '#weight' => -1,
+    ];
+  } else if ($form_id == 'feeds_feed_answer_import_form') {
+    // Add instructions to /feed/add/answer_import
+    $form['question_help'] = [
+      '#markup' => t('Find the Question Id <a target="_blank" href="/questions">here</a>. You need to add Question Id to Answer template.'),
+      '#weight' => -1,
+    ];
+  }
+}
+
+/**
+ * See decision_tool_form_alter().
+ *
+ * Prevent more than one 'Decision Tool' paragraph on a page
+ */
+function decision_tool_page_validate(array $form, FormStateInterface $form_state): void {
+  $decision_tool_paragraphs = 0;
+  foreach (['middle_left', 'bottom'] as $section_name) {
+    $section = $form['field_'.$section_name.'_section']['widget'][0]['subform']['field_section_content']['widget'] ?? [];
+    $i = 0;
+    while (true) {
+      if (empty($section[$i])) {
+        break;
+      }
+      if ($section[$i]['#paragraph_type'] == 'decision_tool') {
+        $decision_tool_paragraphs += 1;
+      }
+      $i++;
+    }
+  }
+  if ($decision_tool_paragraphs > 1) {
+    $form_state->setErrorByName('decision_tool_paragraphs', t('Only one Decision Tool paragraph is allowed on a page.'));
+  }
+}
+
+/**
+ * See decision_tool_form_alter().
+ *
+ * Prevent questions from a different collection being used as an answer
+ */
+function decision_tool_question_validate(array $form, FormStateInterface $form_state): void {
+  $collection_id = $form_state->getValue('field_collection')[0]['target_id'];
+  $answers = $form_state->getValue('field_answers');
+  $i = 0;
+  while (true) {
+    if (empty($answers[$i])) {
+      break;
+    }
+    $question_id = $answers[$i]['subform']['field_next_question'][0]['target_id'] ?? null;
+    if ($question_id) {
+      $question = Node::load($question_id);
+      if ($question && $question->get('field_collection')[0]->get('target_id')->getValue() != $collection_id) {
+        $form_state->setErrorByName('decision_tool_answer_collection', t('Only questions from the same collection can be used.'));
+        break;
+      }
+    }
+    $i++;
+  }
+}
+
+/**
+ * Implements hook_preprocess_form_element().
+ *
+ * Hide the 'Published' checbox so that questions cannot be unpublished
+ */
+function decision_tool_preprocess_form_element(&$variables): void {
+  if (($variables['element']['#id'] ?? '') == 'edit-status-value') {
+    if (\Drupal::request()->getRequestUri() == '/node/add/question') {
+      $hide = true;
+    } else {
+      $node = \Drupal::routeMatch()->getParameter('node');
+      if ($node && $node->getType() == 'question') {
+        $hide = true;
+      }
+    }
+    if (!empty($hide)) {
+      $variables['attributes']['hidden'] = true;
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_select().
+ *
+ * Remove the bulk unpublish action so that questions cannot be unpublished
+ */
+function decision_tool_preprocess_select(&$variables): void {
+  if ($variables['attributes']['id'] == 'edit-action') {
+    $variables['options'] = array_filter($variables['options'], function ($option) {
+      return $option['value'] != 'node_unpublish_action';
+    });
+  }
+}
+
+/**
+ * Implements hook_entity_insert().
+ *
+ * Attach the imported answer paragraph to the question node
+ */
+function decision_tool_entity_insert(EntityInterface $entity): void {
+  if ($entity->getEntityTypeId() === 'paragraph' && $entity->bundle() === 'answer') {
+    if (
+      $entity->hasField('parent_type') &&
+      $entity->hasField('parent_id') &&
+      $entity->hasField('parent_field_name')
+    ) {
+      $parent_type = $entity->get('parent_type')->value;
+      $parent_id = $entity->get('parent_id')->value;
+      $parent_field = $entity->get('parent_field_name')->value;
+
+      if ($parent_type === 'node' && $parent_id && $parent_field) {
+        /** @var \Drupal\node\NodeInterface|null $node */
+        $node = \Drupal::entityTypeManager()->getStorage('node')->load($parent_id);
+        if ($node instanceof Node && $node->hasField($parent_field)) {
+          $node->get($parent_field)->appendItem([
+            'target_id' => $entity->id(),
+            'target_revision_id' => $entity->getRevisionId(),
+          ]);
+          $node->save();
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_create_access().
+ *
+ * Without this, an 'Answer Import' does not work with normally created questions
+ */
+function decision_tool_paragraph_create_access(AccountInterface $account, array $context, $entity_bundle) {
+  return AccessResult::allowedIf($account->hasPermission('create question content'));
+}

@@ -473,7 +473,7 @@ class SmartTrimFormatter extends FormatterBase implements ContainerFactoryPlugin
           // @todo Change to use config translation when #2546212 merged in core.
           // phpcs:ignore
           $more = $this->t($more_settings['text']);
-          $this->token->replace($more, $tokenData, [
+          $more = $this->token->replace($more, $tokenData, [
             'langcode' => $langcode,
           ]);
           $class = $more_settings['class'];

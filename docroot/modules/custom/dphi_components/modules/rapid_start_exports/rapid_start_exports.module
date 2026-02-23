@@ -1,0 +1,30 @@
+<?php
+
+/**
+ * Implements hook_views_data_alter().
+ */
+function rapid_start_exports_views_data_alter(array &$data) {
+  foreach (\Drupal::entityTypeManager()->getDefinitions() as $entity_type_name => $entity_type) {
+    if ($base_table = $entity_type->getBaseTable()) {
+      $entity_keys = $entity_type->get('entity_keys');
+      if (isset($entity_keys['id'])) {
+        $data[$base_table]['entity_usage_count'] = [
+          'title' => t('Entity usage count'),
+          'help' => t('Displays the usage count of the entity.'),
+          'field' => [
+            'id' => 'entity_usage_count',
+            'real field' => $entity_keys['id'],
+          ],
+        ];
+        $data[$base_table]['entity_usage_nids'] = [
+          'title' => t('Entity usage NIDs'),
+          'help' => t('Displays the usage count of the entity.'),
+          'field' => [
+            'id' => 'entity_usage_nids',
+            'real field' => $entity_keys['id'],
+          ],
+        ];
+      }
+    }
+  }
+}

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Drupal\trash\Handler;
 
 use Drupal\Core\Config\BootstrapConfigStorageFactory;
+use Drupal\trash\PathAlias\TrashAliasRepository;
+use Drupal\trash\PathAlias\TrashWorkspacesAliasRepository;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
@@ -32,19 +34,15 @@ class TrashHandlerPass implements CompilerPassInterface {
     foreach ($trash_handlers as $id => $attributes) {
       $entity_type_id = $attributes[0]['entity_type_id'];
 
-      // Remove trash handlers for entity types that aren't enabled.
-      if (!isset($enabled_entity_types[$entity_type_id])) {
-        $container->removeDefinition($id);
-      }
-      else {
+      if (isset($enabled_entity_types[$entity_type_id])) {
         // Keep track of entity types without a dedicated trash handler so we
         // can create one for them automatically.
         unset($enabled_entity_types[$entity_type_id]);
-
-        $container->getDefinition($id)
-          ->addMethodCall('setEntityTypeId', [$entity_type_id])
-          ->setConfigurator(new Reference('trash.handler_configurator'));
       }
+
+      $container->getDefinition($id)
+        ->addMethodCall('setEntityTypeId', [$entity_type_id])
+        ->setConfigurator(new Reference('trash.handler_configurator'));
     }
 
     // Register a trash handler for entity types without a dedicated one.
@@ -53,6 +51,24 @@ class TrashHandlerPass implements CompilerPassInterface {
         ->addTag('trash_handler', ['entity_type_id' => $entity_type_id])
         ->addMethodCall('setEntityTypeId', [$entity_type_id])
         ->setConfigurator(new Reference('trash.handler_configurator'));
+    }
+
+    // Replace the class of the 'path_alias.repository' service. We have to do
+    // it here so it gets executed after Workspaces' service provider.
+    if ($container->hasDefinition('path_alias.repository')) {
+      $definition = $container->getDefinition('path_alias.repository');
+      // Use the workspaces-aware version if workspaces module is enabled.
+      if ($container->hasDefinition('workspaces.manager')) {
+        $definition
+          ->setClass(TrashWorkspacesAliasRepository::class)
+          ->addMethodCall('setWorkspacesManager', [new Reference('workspaces.manager')])
+          ->addMethodCall('setTrashManager', [new Reference('trash.manager')]);
+      }
+      else {
+        $definition
+          ->setClass(TrashAliasRepository::class)
+          ->addMethodCall('setTrashManager', [new Reference('trash.manager')]);
+      }
     }
   }
 

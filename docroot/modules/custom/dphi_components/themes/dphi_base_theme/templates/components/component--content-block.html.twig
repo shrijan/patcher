@@ -14,7 +14,7 @@
       {% if contentBlock.type == 'icon' %}</div>{% endif %}
     </div>
   {% endif %}
-  <div class="nsw-content-block__content">
+  <div class="nsw-content-block__content{{ contentBlock.title_left_content_right ? ' title-left' : ''}}">
     {% if contentBlock.title %}
       <{{ contentBlock.titleAsH2 ? 'h2' : 'h3' }} class="{{ contentBlock.titleAsH2 ? '' : 'nsw-content-block__title ' }}nsw-p-{{ contentBlock.type == 'icon' and contentBlock.image ? 'bottom' : 'y' }}-sm">
         {{ contentBlock.title }}

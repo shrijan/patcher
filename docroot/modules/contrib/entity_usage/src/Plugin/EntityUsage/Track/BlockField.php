@@ -2,21 +2,23 @@
 
 namespace Drupal\entity_usage\Plugin\EntityUsage\Track;
 
-use Drupal\Core\Field\FieldItemInterface;
 use Drupal\block_content\Plugin\Block\BlockContentBlock;
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Field\FieldItemInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\entity_usage\Attribute\EntityUsageTrack;
 use Drupal\entity_usage\EntityUsageTrackBase;
 
 /**
  * Tracks usage of entities related in block_field fields.
- *
- * @EntityUsageTrack(
- *   id = "block_field",
- *   label = @Translation("Block Field"),
- *   description = @Translation("Tracks relationships created with 'Block Field' fields."),
- *   field_types = {"block_field"},
- *   source_entity_class = "Drupal\Core\Entity\FieldableEntityInterface",
- * )
  */
+#[EntityUsageTrack(
+  id: 'block_field',
+  label: new TranslatableMarkup('Block Field'),
+  description: new TranslatableMarkup("Tracks relationships created with 'Block Field' fields."),
+  field_types: ['block_field'],
+  source_entity_class: FieldableEntityInterface::class,
+)]
 class BlockField extends EntityUsageTrackBase {
 
   /**
@@ -34,7 +36,7 @@ class BlockField extends EntityUsageTrackBase {
 
     // If there is a view inside this block, track the view entity instead.
     if ($block_instance->getBaseId() === 'views_block' && $this->isEntityTypeTracked('view')) {
-      [$view_name, $display_id] = explode('-', $block_instance->getDerivativeId(), 2);
+      [$view_name] = explode('-', $block_instance->getDerivativeId(), 2);
       // @todo worth trying to track the display id as well?
       // At this point the view is supposed to exist. Only track it if so.
       $exists = (bool) $this->entityTypeManager->getStorage('view')

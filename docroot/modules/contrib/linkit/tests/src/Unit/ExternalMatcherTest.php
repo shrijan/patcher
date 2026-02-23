@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\linkit\Unit;
 
 use Drupal\linkit\Plugin\Linkit\Matcher\ExternalMatcher;
@@ -13,7 +15,7 @@ use Drupal\Tests\UnitTestCase;
 class ExternalMatcherTest extends UnitTestCase {
 
   /**
-   * @covers Drupal\linkit\Plugin\Linkit\Matcher\ExternalMatcher::canBeUrl;
+   * @covers \Drupal\linkit\Plugin\Linkit\Matcher\ExternalMatcher::canBeUrl
    */
   public function testValidExternalUrls() {
     $tests = [

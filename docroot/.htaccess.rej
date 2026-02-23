@@ -1,0 +1,11 @@
+--- docroot/.htaccess	(revision 0986a80d27bcc51e6aeb03e19e221ec16ba2ebf0)
++++ docroot/.htaccess	(date 1726810981352)
+@@ -149,6 +161,8 @@
+   RewriteCond %{REQUEST_URI} !/core/[^/]*\.php$
+   # Allow access to test-specific PHP files:
+   RewriteCond %{REQUEST_URI} !/core/modules/system/tests/https?\.php
++  # Allow access to simplesaml paths
++  RewriteCond %{REQUEST_URI} !^/simplesaml
+   # Allow access to Statistics module's custom front controller.
+   # Copy and adapt this rule to directly execute PHP files in contributed or
+   # custom modules or to run another PHP application in the same directory.

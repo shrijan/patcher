@@ -7,13 +7,15 @@ namespace Drupal\Tests\content_lock\FunctionalJavascript;
 use Drupal\editor\Entity\Editor;
 use Drupal\filter\Entity\FilterFormat;
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
+use Drupal\Tests\content_lock\Tools\LogoutTrait;
 
 /**
- * Tests JS locking for Nodes.
+ * Tests locking for Nodes.
  *
  * @group content_lock
  */
 class ContentLockNodeTest extends WebDriverTestBase {
+  use LogoutTrait;
 
   /**
    * {@inheritdoc}
@@ -30,9 +32,9 @@ class ContentLockNodeTest extends WebDriverTestBase {
   ];
 
   /**
-   * Test forms on nodes when JS lock is enabled.
+   * Tests forms on nodes when locking is enabled.
    */
-  public function testContentLockNodeWithJsLock() {
+  public function testContentLockNodeWithLock(): void {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
 
@@ -80,7 +82,6 @@ class ContentLockNodeTest extends WebDriverTestBase {
     $this->drupalLogin($admin);
     $this->drupalGet('admin/config/content/content_lock');
     $this->click('#edit-entity-types-node');
-    $this->click('#edit-node-settings-js-lock');
     $page->pressButton('Save configuration');
 
     // Lock the article page.

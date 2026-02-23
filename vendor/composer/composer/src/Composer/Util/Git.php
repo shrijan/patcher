@@ -228,7 +228,7 @@ class Git
                     $message = 'Enter your Bitbucket credentials to access private repos';
 
                     if (!$bitbucketUtil->authorizeOAuth($domain) && $this->io->isInteractive()) {
-                        $bitbucketUtil->authorizeOAuthInteractively($match[1], $message);
+                        $bitbucketUtil->authorizeOAuthInteractively($domain, $message);
                         $accessToken = $bitbucketUtil->getToken();
                         $this->io->setAuthentication($domain, 'x-token-auth', $accessToken);
                     }
@@ -239,6 +239,13 @@ class Git
                 // password in there.
                 if ($this->io->hasAuthentication($domain)) {
                     $auth = $this->io->getAuthentication($domain);
+
+                    // Bitbucket API tokens use the email address as the username for HTTP API calls and
+                    // either the Bitbucket username or 'x-bitbucket-api-token-auth' as the username for git operations.
+                    if (strpos((string) $auth['password'], 'ATAT') === 0) {
+                        $auth['username'] = 'x-bitbucket-api-token-auth';
+                    }
+
                     $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $domain . '/' . $repo_with_git_part;
 
                     if (0 === $runCommands($authUrl)) {
@@ -319,7 +326,7 @@ class Git
                     $defaultUsername = null;
                     if (isset($authParts) && $authParts !== '') {
                         if (str_contains($authParts, ':')) {
-                            [$defaultUsername, ] = explode(':', $authParts, 2);
+                            [$defaultUsername] = explode(':', $authParts, 2);
                         } else {
                             $defaultUsername = $authParts;
                         }
@@ -354,7 +361,9 @@ class Git
                 $this->filesystem->removeDirectory($origCwd);
             }
 
-            $lastCommand = implode(' ', $lastCommand);
+            if (\is_array($lastCommand)) {
+                $lastCommand = implode(' ', $lastCommand);
+            }
             if (count($credentials) > 0) {
                 $lastCommand = $this->maskCredentials($lastCommand, $credentials);
                 $errorMsg = $this->maskCredentials($errorMsg, $credentials);
@@ -438,7 +447,7 @@ class Git
     public static function getNoShowSignatureFlag(ProcessExecutor $process): string
     {
         $gitVersion = self::getVersion($process);
-        if ($gitVersion && version_compare($gitVersion, '2.10.0-rc0', '>=')) {
+        if ($gitVersion !== null && version_compare($gitVersion, '2.10.0-rc0', '>=')) {
             return ' --no-show-signature';
         }
 
@@ -456,6 +465,54 @@ class Git
         }
 
         return explode(' ', substr($flags, 1));
+    }
+
+    /**
+     * Checks if git version supports --no-commit-header flag (git 2.33+)
+     *
+     * @internal
+     */
+    public static function supportsNoCommitHeaderFlag(ProcessExecutor $process): bool
+    {
+        $gitVersion = self::getVersion($process);
+
+        return $gitVersion !== null && version_compare($gitVersion, '2.33.0-rc0', '>=');
+    }
+
+    /**
+     * Builds a git rev-list command with --no-commit-header flag when supported (git 2.33+)
+     *
+     * @internal
+     * @param list<string> $arguments Additional arguments for git rev-list
+     * @return non-empty-list<string>
+     */
+    public static function buildRevListCommand(ProcessExecutor $process, array $arguments): array
+    {
+        $command = ['git', 'rev-list'];
+        if (self::supportsNoCommitHeaderFlag($process)) {
+            $command[] = '--no-commit-header';
+        }
+
+        return array_merge($command, $arguments);
+    }
+
+    /**
+     * Parses git rev-list output, removing 'commit <hash>' header lines for git < 2.33.
+     *
+     * When --no-commit-header is not available (git < 2.33), git rev-list --format outputs
+     * "commit <hash>" before formatted output. This removes those lines.
+     *
+     * @internal
+     */
+    public static function parseRevListOutput(string $output, ProcessExecutor $process): string
+    {
+        // If git supports --no-commit-header, output is already clean
+        if (self::supportsNoCommitHeaderFlag($process)) {
+            return $output;
+        }
+
+        // Filter out "commit <hash>" lines for older git versions
+        return Preg::replace('{^commit [a-f0-9]{40}\n?}m', '', $output);
     }
 
     private function checkRefIsInMirror(string $dir, string $ref): bool
@@ -530,11 +587,19 @@ class Git
         return null;
     }
 
-    public static function cleanEnv(): void
+    public static function cleanEnv(?ProcessExecutor $process = null): void
     {
-        // added in git 1.7.1, prevents prompting the user for username/password
-        if (Platform::getEnv('GIT_ASKPASS') !== 'echo') {
-            Platform::putEnv('GIT_ASKPASS', 'echo');
+        $gitVersion = self::getVersion($process ?? new ProcessExecutor());
+        if ($gitVersion !== null && version_compare($gitVersion, '2.3.0', '>=')) {
+            // added in git 2.3.0, prevents prompting the user for username/password
+            if (Platform::getEnv('GIT_TERMINAL_PROMPT') !== '0') {
+                Platform::putEnv('GIT_TERMINAL_PROMPT', '0');
+            }
+        } else {
+            // added in git 1.7.1, prevents prompting the user for username/password
+            if (Platform::getEnv('GIT_ASKPASS') !== 'echo') {
+                Platform::putEnv('GIT_ASKPASS', 'echo');
+            }
         }
 
         // clean up rogue git env vars in case this is running in a git hook

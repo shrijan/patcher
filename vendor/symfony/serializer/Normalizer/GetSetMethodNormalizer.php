@@ -34,43 +34,25 @@ use Symfony\Component\Serializer\Attribute\Ignore;
  *
  * @author Nils Adermann <naderman@naderman.de>
  * @author Kévin Dunglas <dunglas@gmail.com>
- *
- * @final since Symfony 6.3
  */
-class GetSetMethodNormalizer extends AbstractObjectNormalizer
+final class GetSetMethodNormalizer extends AbstractObjectNormalizer
 {
     private static $reflectionCache = [];
     private static array $setterAccessibleCache = [];
 
     public function getSupportedTypes(?string $format): array
     {
-        return ['object' => __CLASS__ === static::class || $this->hasCacheableSupportsMethod()];
+        return ['object' => true];
     }
 
-    /**
-     * @param array $context
-     */
-    public function supportsNormalization(mixed $data, ?string $format = null /* , array $context = [] */): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return parent::supportsNormalization($data, $format) && $this->supports($data::class, true);
     }
 
-    /**
-     * @param array $context
-     */
-    public function supportsDenormalization(mixed $data, string $type, ?string $format = null /* , array $context = [] */): bool
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         return parent::supportsDenormalization($data, $type, $format) && $this->supports($type, false);
-    }
-
-    /**
-     * @deprecated since Symfony 6.3, use "getSupportedTypes()" instead
-     */
-    public function hasCacheableSupportsMethod(): bool
-    {
-        trigger_deprecation('symfony/serializer', '6.3', 'The "%s()" method is deprecated, implement "%s::getSupportedTypes()" instead.', __METHOD__, get_debug_type($this));
-
-        return __CLASS__ === static::class;
     }
 
     /**
@@ -105,8 +87,9 @@ class GetSetMethodNormalizer extends AbstractObjectNormalizer
         return !$method->isStatic()
             && !($method->getAttributes(Ignore::class) || $method->getAttributes(LegacyIgnore::class))
             && !$method->getNumberOfRequiredParameters()
+            && !\in_array((string) $method->getReturnType(), ['void', 'never'], true)
             && ((2 < ($methodLength = \strlen($method->name)) && str_starts_with($method->name, 'is') && !ctype_lower($method->name[2]))
-                || (3 < $methodLength && (str_starts_with($method->name, 'has') || str_starts_with($method->name, 'get')) && !ctype_lower($method->name[3]))
+                || (3 < $methodLength && (str_starts_with($method->name, 'has') || str_starts_with($method->name, 'get') || str_starts_with($method->name, 'can')) && !ctype_lower($method->name[3]))
             );
     }
 
@@ -165,10 +148,7 @@ class GetSetMethodNormalizer extends AbstractObjectNormalizer
         return null;
     }
 
-    /**
-     * @return void
-     */
-    protected function setAttributeValue(object $object, string $attribute, mixed $value, ?string $format = null, array $context = [])
+    protected function setAttributeValue(object $object, string $attribute, mixed $value, ?string $format = null, array $context = []): void
     {
         $setter = 'set'.$attribute;
         $key = $object::class.':'.$setter;
@@ -182,13 +162,17 @@ class GetSetMethodNormalizer extends AbstractObjectNormalizer
         }
     }
 
-    protected function isAllowedAttribute($classOrObject, string $attribute, ?string $format = null, array $context = [])
+    protected function isAllowedAttribute($classOrObject, string $attribute, ?string $format = null, array $context = []): bool
     {
         if (!parent::isAllowedAttribute($classOrObject, $attribute, $format, $context)) {
             return false;
         }
 
         $class = \is_object($classOrObject) ? $classOrObject::class : $classOrObject;
+
+        if ($this->classDiscriminatorResolver?->getMappingForMappedObject($classOrObject)?->getTypeProperty() === $attribute) {
+            return true;
+        }
 
         if (!isset(self::$reflectionCache[$class])) {
             self::$reflectionCache[$class] = new \ReflectionClass($class);

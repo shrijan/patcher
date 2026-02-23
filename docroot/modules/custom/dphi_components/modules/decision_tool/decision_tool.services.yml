@@ -1,0 +1,5 @@
+services:
+  decision_tool_feed_process:
+    class: Drupal\decision_tool\Service\FeedsService
+    tags:
+      - { name: 'event_subscriber' }

@@ -12,6 +12,7 @@
  */
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -33,7 +34,7 @@ require_once dirname(__FILE__) . '/includes/scheduler_hooks.inc';
  * what is done in content_moderation_entity_access() by checking for valid
  * transitions.
  */
-function scheduler_content_moderation_integration_entity_access(EntityInterface $entity, $operation, AccountInterface $account) {
+function scheduler_content_moderation_integration_entity_access(EntityInterface $entity, $operation, AccountInterface $account): AccessResultInterface {
   /** @var \Drupal\content_moderation\ModerationInformationInterface $moderation_info */
   $moderation_info = Drupal::service('content_moderation.moderation_information');
 
@@ -59,7 +60,7 @@ function scheduler_content_moderation_integration_entity_access(EntityInterface 
           return AccessResult::forbidden('Scheduled transition is not valid for the given account.');
         }
       }
-      catch (\InvalidArgumentException $exception) {
+      catch (\InvalidArgumentException) {
         // Just move on when there is no valid state.
       }
     }
@@ -71,7 +72,7 @@ function scheduler_content_moderation_integration_entity_access(EntityInterface 
 /**
  * Implements hook_entity_base_field_info().
  */
-function scheduler_content_moderation_integration_entity_base_field_info(EntityTypeInterface $entity_type) {
+function scheduler_content_moderation_integration_entity_base_field_info(EntityTypeInterface $entity_type): array {
   $fields = [];
   // Cater for all entity types supported by the Scheduler entity plugins.
   $entity_types = &drupal_static(__FUNCTION__);
@@ -131,7 +132,7 @@ function scheduler_content_moderation_integration_entity_base_field_info(EntityT
  *
  * This is called from hook_update_9001 and hook_modules_installed().
  */
-function _scheduler_content_moderation_integration_add_fields() {
+function _scheduler_content_moderation_integration_add_fields(): array {
   $entityUpdateManager = \Drupal::entityDefinitionUpdateManager();
   $list = $entityUpdateManager->getChangeList();
   $output = [];
@@ -165,7 +166,7 @@ function _scheduler_content_moderation_integration_add_fields() {
  * the problem. It is called from hook_update_9003 but can also be called via
  * drush ev "_scheduler_content_moderation_integration_remove_fields()".
  */
-function _scheduler_content_moderation_integration_remove_fields() {
+function _scheduler_content_moderation_integration_remove_fields(): array {
   // Find all changed entity definitions.
   $entityUpdateManager = \Drupal::entityDefinitionUpdateManager();
   $list = $entityUpdateManager->getChangeList();
@@ -199,7 +200,7 @@ function _scheduler_content_moderation_integration_remove_fields() {
  *
  * This is called from hook_update_9002 and hook_install().
  */
-function _scheduler_content_moderation_integration_reset_form_display() {
+function _scheduler_content_moderation_integration_reset_form_display(): array {
   /** @var \Drupal\scheduler\SchedulerManager $scheduler_manager */
   $scheduler_manager = \Drupal::service('scheduler.manager');
 
@@ -278,7 +279,7 @@ function _scheduler_content_moderation_integration_reset_form_display() {
 /**
  * Helper function to format the list of fields on bundles.
  */
-function _scheduler_content_moderation_integration_format_text($fields) {
+function _scheduler_content_moderation_integration_format_text($fields): string {
   return implode(', ', array_map(function ($name, $bundles) {
     return "$name (" . implode(', ', $bundles) . ")";
   }, array_keys($fields), $fields));
@@ -287,7 +288,7 @@ function _scheduler_content_moderation_integration_format_text($fields) {
 /**
  * Implements hook_modules_installed().
  */
-function scheduler_content_moderation_integration_modules_installed($modules) {
+function scheduler_content_moderation_integration_modules_installed($modules): void {
   /** @var \Drupal\scheduler\SchedulerManager $scheduler_manager */
   $scheduler_manager = \Drupal::service('scheduler.manager');
   $scheduler_manager->invalidatePluginCache();
@@ -318,7 +319,7 @@ function scheduler_content_moderation_integration_modules_installed($modules) {
 /**
  * Implements hook_form_alter().
  */
-function scheduler_content_moderation_integration_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+function scheduler_content_moderation_integration_form_alter(&$form, FormStateInterface $form_state, $form_id): void {
   // Get all 'add' and 'edit' form ids for all supported entity types.
   $scheduler_manager = \Drupal::service('scheduler.manager');
 
@@ -355,7 +356,7 @@ function scheduler_content_moderation_integration_form_alter(&$form, FormStateIn
 /**
  * Entity type form submit handler.
  */
-function _scheduler_content_moderation_integration_form_entity_type_submit($form, FormStateInterface $form_state) {
+function _scheduler_content_moderation_integration_form_entity_type_submit($form, FormStateInterface $form_state): void {
   // Get the entity type id (node, media, taxonomy_term, etc.)
   $entity_type_id = $form_state->getFormObject()->getEntity()->getEntityType()->getBundleOf();
   // Get the entity bundle id (page, article, image, etc.)
@@ -406,7 +407,7 @@ function _scheduler_content_moderation_integration_form_entity_type_submit($form
 /**
  * Form API callback: Hide state element if there are no options to select.
  */
-function _scheduler_content_moderation_integration_hide_empty_state_options(array $element, FormStateInterface $form_state) {
+function _scheduler_content_moderation_integration_hide_empty_state_options(array $element, FormStateInterface $form_state): array {
   foreach (Element::getVisibleChildren($element) as $key) {
     // Hide the element if there are no options.
     if (empty($element[$key]['#options'])) {
@@ -441,7 +442,7 @@ function _scheduler_content_moderation_integration_hide_empty_state_options(arra
  * @return array
  *   The array of allowed values.
  */
-function _scheduler_content_moderation_integration_states_values(FieldStorageDefinitionInterface $definition, ?FieldableEntityInterface $entity = NULL, &$cacheable = FALSE) {
+function _scheduler_content_moderation_integration_states_values(FieldStorageDefinitionInterface $definition, ?FieldableEntityInterface $entity = NULL, bool &$cacheable = FALSE): array {
   $options = [];
 
   // Fetch all possible states if no entity is given.
@@ -549,7 +550,7 @@ function scheduler_content_moderation_integration_module_implements_alter(array 
  *
  * @see https://www.drupal.org/project/scheduler_content_moderation_integration/issues/3423224
  */
-function scheduler_content_moderation_integration_entity_presave(EntityInterface $entity) {
+function scheduler_content_moderation_integration_entity_presave(EntityInterface $entity): void {
   /** @var \Drupal\content_moderation\ModerationInformationInterface $moderation_information */
   $moderation_information = \Drupal::service('content_moderation.moderation_information');
   if (!$moderation_information->isModeratedEntity($entity)) {
