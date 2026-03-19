@@ -3,7 +3,7 @@
         'name' => 'oehgovernance/rapid-start-latest',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '4dae61791045aa16ebf4ad33848bee9668377134',
+        'reference' => '1621190431ef43f6fe84bceb3d0b36d7bfd23deb',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -1518,6 +1518,15 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'drupal/tfa_email_otp' => array(
+            'pretty_version' => '1.0.1',
+            'version' => '1.0.1.0',
+            'reference' => '1.0.1',
+            'type' => 'drupal-module',
+            'install_path' => __DIR__ . '/../../docroot/modules/contrib/tfa_email_otp',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'drupal/tinypng' => array(
             'pretty_version' => '2.0.1',
             'version' => '2.0.1.0',
@@ -2013,7 +2022,7 @@
         'oehgovernance/rapid-start-latest' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '4dae61791045aa16ebf4ad33848bee9668377134',
+            'reference' => '1621190431ef43f6fe84bceb3d0b36d7bfd23deb',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -2451,8 +2460,8 @@
         'psr/http-client-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '*',
-                1 => '1.0',
+                0 => '1.0',
+                1 => '*',
             ),
         ),
         'psr/http-factory' => array(
@@ -2467,9 +2476,9 @@
         'psr/http-factory-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '*',
-                1 => '1.0',
-                2 => '^1.0',
+                0 => '1.0',
+                1 => '^1.0',
+                2 => '*',
             ),
         ),
         'psr/http-message' => array(
@@ -2484,8 +2493,8 @@
         'psr/http-message-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '*',
-                1 => '1.0',
+                0 => '1.0',
+                1 => '*',
             ),
         ),
         'psr/log' => array(
@@ -2500,8 +2509,8 @@
         'psr/log-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '1.0|2.0|3.0',
-                1 => '1.0.0 || 2.0.0 || 3.0.0',
+                0 => '1.0.0 || 2.0.0 || 3.0.0',
+                1 => '1.0|2.0|3.0',
             ),
         ),
         'psr/simple-cache' => array(

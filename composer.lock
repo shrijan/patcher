@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7473f0f79ecd5dc07ee244aceec34738",
+    "content-hash": "26208115f5ea0185c5765ae15ebe8183",
     "packages": [
         {
             "name": "acquia/http-hmac-php",
@@ -8840,6 +8840,58 @@
             "homepage": "https://www.drupal.org/project/tfa",
             "support": {
                 "source": "https://git.drupalcode.org/project/tfa"
+            }
+        },
+        {
+            "name": "drupal/tfa_email_otp",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/tfa_email_otp.git",
+                "reference": "1.0.1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/tfa_email_otp-1.0.1.zip",
+                "reference": "1.0.1",
+                "shasum": "341bf0962b5dcebcb73ab9b0f74129b893cd2fa2"
+            },
+            "require": {
+                "drupal/core": "^10.1 || ^11",
+                "drupal/encrypt": "^3.1",
+                "drupal/tfa": "^1.4",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "drupal/encrypt": "*",
+                "drupal/key": "*",
+                "drupal/tfa": "*"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "1.0.1",
+                    "datestamp": "1768269420",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "mingsong",
+                    "homepage": "https://www.drupal.org/user/2986445"
+                }
+            ],
+            "description": "A TFA Email OTP plugin working with TFA module.",
+            "homepage": "https://www.drupal.org/project/tfa_email_otp",
+            "support": {
+                "source": "https://git.drupalcode.org/project/tfa_email_otp"
             }
         },
         {

@@ -123,6 +123,7 @@
         "drupal/structure_sync": "^2.0",
         "drupal/svg_image": "^3.0",
         "drupal/tfa": "^1.12",
+        "drupal/tfa_email_otp": "^1.0",
         "drupal/tinypng": "^2.0",
         "drupal/token": "^1.14",
         "drupal/trash": "^3.0",
@@ -219,7 +220,8 @@
             },
             "drupal/core": {
                 "Argument #1 ($value) must be of type Countable|array, null given in count():3252288": "https://www.drupal.org/files/issues/2022-05-18/3252288-10.patch",
-                "updateConfiguration() is passed a NULL:2718657": "https://www.drupal.org/files/issues/2020-09-21/language-2718657-30.patch"
+                "updateConfiguration() is passed a NULL:2718657": "https://www.drupal.org/files/issues/2020-09-21/language-2718657-30.patch",
+                "Dialog js setting unavailable (MR14655 re-rolled for 11.3.2)": "patches/dialog.patch"
             },
             "drupal/entity_browser": {
                 "Microcontent works best with this patch applied": "patches/entity_browser.patch"
@@ -233,6 +235,10 @@
             },
             "drupal/media_entity_file_replace": {
                 "Add integration with Purge module to purge cache of file path after replacement https://www.drupal.org/project/media_entity_file_replace/issues/3115477": "patches/3115477-19.patch"
+            },
+            "drupal/dropzonejs":{
+                "Drupal 11 issue": "https://www.drupal.org/files/issues/2026-02-16/3517358-filevalidateextensions-and-filevalidatesize.patch",
+                "file upload issue": "https://www.drupal.org/files/issues/2024-03-06/dropzonejs-ajax-bug-3120553-15.patch"
             },
             "drupal/media_file_delete": {
                 "Alter delete form": "patches/MediaDeleteForm.patch"

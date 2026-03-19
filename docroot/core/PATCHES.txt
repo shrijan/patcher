@@ -9,3 +9,7 @@ updateConfiguration() is passed a NULL:2718657
 Source: https://www.drupal.org/files/issues/2020-09-21/language-2718657-30.patch
 
 
+Dialog js setting unavailable (MR14655 re-rolled for 11.3.2)
+Source: patches/dialog.patch
+
+
