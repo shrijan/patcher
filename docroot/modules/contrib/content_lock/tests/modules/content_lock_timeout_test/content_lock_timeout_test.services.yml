@@ -1,6 +1,0 @@
-services:
-  _defaults:
-    autoconfigure: true
-    autowire: true
-  Drupal\content_lock_timeout_test\TimeChanger:
-    decorates: datetime.time

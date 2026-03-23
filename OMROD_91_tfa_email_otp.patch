@@ -1,0 +1,22 @@
+diff --git a/docroot/modules/contrib/tfa_email_otp/src/Plugin/TfaValidation/TfaEmailOtpValidation.php b/docroot/modules/contrib/tfa_email_otp/src/Plugin/TfaValidation/TfaEmailOtpValidation.php
+index d94fdaea7..30424792a 100644
+--- a/docroot/modules/contrib/tfa_email_otp/src/Plugin/TfaValidation/TfaEmailOtpValidation.php
++++ b/docroot/modules/contrib/tfa_email_otp/src/Plugin/TfaValidation/TfaEmailOtpValidation.php
+@@ -277,7 +277,7 @@ public function getForm(array $form, FormStateInterface $form_state) {
+     $form['actions']['send'] = [
+       '#type' => 'button',
+       '#button_type' => 'primary',
+-      '#value' => $code_sent ? $this->t('Resend') : $this->t('Send'),
++      '#value' => $this->t('Get Authentication Code'),
+       '#limit_validation_errors' => [['']],
+     ];
+     return $form;
+@@ -369,7 +369,7 @@ public function validateForm(array $form, FormStateInterface $form_state) {
+     $values = $form_state->getValues();
+     // If user is asking for sending the code,
+     // no need to validate the input.
+-    if (isset($values['op']) && in_array($values['op']->getUntranslatedString(), ['Send', 'Resend'], TRUE)) {
++    if (isset($values['op']) && $values['op']->getUntranslatedString() === 'Get Authentication Code') {
+       // Check flood control for email sending to prevent email bombing.
+       $flood_identifier = 'tfa_email_otp_send_' . $this->uid;
+       if (!$this->flood->isAllowed('tfa_email_otp.send', static::EMAIL_SEND_FLOOD_THRESHOLD, static::EMAIL_SEND_FLOOD_WINDOW, $flood_identifier)) {

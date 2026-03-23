@@ -1,0 +1,29 @@
+diff --git a/docroot/modules/custom/dphi_components/themes/dphi_base_theme/dphi_base_theme.module b/docroot/modules/custom/dphi_components/themes/dphi_base_theme/dphi_base_theme.module
+new file mode 100644
+index 000000000..fd9c23337
+--- /dev/null
++++ b/docroot/modules/custom/dphi_components/themes/dphi_base_theme/dphi_base_theme.module
+@@ -0,0 +1,22 @@
++<?php
++
++use Symfony\Component\HttpFoundation\RequestStack;
++
++/**
++ * Implements hook_preprocess_sitemap().
++ */
++function dphi_base_theme_preprocess_sitemap(array &$variables) {
++  // Get the current request
++  $request = \Drupal::service('request_stack')->getCurrentRequest();
++
++  // Get the title using the TitleResolver service
++  $title = \Drupal::service('title_resolver')->getTitle($request, \Drupal::routeMatch()->getRouteObject());
++
++  // Fallback if title is not available
++  if (!$title) {
++    $title = \Drupal::routeMatch()->getRouteName();
++  }
++
++  // Pass the title to the Twig template
++  $variables['sitemap_title'] = $title;
++}
+\ No newline at end of file

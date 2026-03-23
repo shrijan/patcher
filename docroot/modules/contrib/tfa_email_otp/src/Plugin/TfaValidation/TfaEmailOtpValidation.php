@@ -277,7 +277,7 @@ class TfaEmailOtpValidation extends TfaBasePlugin implements TfaValidationInterf
     $form['actions']['send'] = [
       '#type' => 'button',
       '#button_type' => 'primary',
-      '#value' => $code_sent ? $this->t('Resend') : $this->t('Send'),
+      '#value' => $this->t('Get Authentication Code'),
       '#limit_validation_errors' => [['']],
     ];
     return $form;
@@ -369,7 +369,7 @@ class TfaEmailOtpValidation extends TfaBasePlugin implements TfaValidationInterf
     $values = $form_state->getValues();
     // If user is asking for sending the code,
     // no need to validate the input.
-    if (isset($values['op']) && in_array($values['op']->getUntranslatedString(), ['Send', 'Resend'], TRUE)) {
+    if (isset($values['op']) && $values['op']->getUntranslatedString() === 'Get Authentication Code') {
       // Check flood control for email sending to prevent email bombing.
       $flood_identifier = 'tfa_email_otp_send_' . $this->uid;
       if (!$this->flood->isAllowed('tfa_email_otp.send', static::EMAIL_SEND_FLOOD_THRESHOLD, static::EMAIL_SEND_FLOOD_WINDOW, $flood_identifier)) {

@@ -1,0 +1,10 @@
+diff --git a/docroot/modules/custom/dphi_components/themes/dphi_base_theme/templates/sitemap.html.twig b/docroot/modules/custom/dphi_components/themes/dphi_base_theme/templates/sitemap.html.twig
+index e1ea2c944..db574eaf5 100644
+--- a/docroot/modules/custom/dphi_components/themes/dphi_base_theme/templates/sitemap.html.twig
++++ b/docroot/modules/custom/dphi_components/themes/dphi_base_theme/templates/sitemap.html.twig
+@@ -1,4 +1,5 @@
+ <div class="nsw-container">
++  <h1>{{ sitemap_title }}</h1>
+   <div class="sitemap">
+     {% if message %}
+       <div class="sitemap-message">

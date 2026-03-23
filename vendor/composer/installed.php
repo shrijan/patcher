@@ -3,7 +3,7 @@
         'name' => 'oehgovernance/rapid-start-latest',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '1621190431ef43f6fe84bceb3d0b36d7bfd23deb',
+        'reference' => 'ed5ca1502af51ef7c1902804a2f12ecb255b28f4',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -2022,7 +2022,7 @@
         'oehgovernance/rapid-start-latest' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '1621190431ef43f6fe84bceb3d0b36d7bfd23deb',
+            'reference' => 'ed5ca1502af51ef7c1902804a2f12ecb255b28f4',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

@@ -31,7 +31,7 @@
         "composer/installers": "^2.3",
         "cweagans/composer-patches": "^1.7",
         "defuse/php-encryption": " ^2.2",
-        "dphi/dphi_components": "^2025.08",
+        "dphi/dphi_components": "^v2025.11",
         "drupal/acquia_connector": "^4.1",
         "drupal/acquia_purge": "^1.2",
         "drupal/acquia_search": "^3.1",

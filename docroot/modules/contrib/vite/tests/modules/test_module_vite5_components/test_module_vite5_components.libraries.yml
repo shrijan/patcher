@@ -1,6 +1,0 @@
-test_library:
-  css:
-    theme:
-      scss/styles.scss: {}
-  js:
-    js/script.js: {}
