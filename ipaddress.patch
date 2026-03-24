@@ -1,0 +1,58 @@
+diff --git a/docroot/modules/contrib/block_ipaddress/js/ipAddress.js b/docroot/modules/contrib/block_ipaddress/js/ipAddress.js
+index 30330e830..7ff7a57b3 100644
+--- a/docroot/modules/contrib/block_ipaddress/js/ipAddress.js
++++ b/docroot/modules/contrib/block_ipaddress/js/ipAddress.js
+@@ -3,35 +3,30 @@
+  * Provides JavaScript additions to the managed Ip Address field.
+  */
+ 
+-(function ($, window, Drupal) {
++(function (Drupal, $, once) {
+ 
+   'use strict';
+ 
+-  /**
+-   * Provide the summary information for the block settings vertical tabs.
+-   *
+-   * @type {Drupal~behavior}
+-   *
+-   * @prop {Drupal~behaviorAttach} attach
+-   *   Attaches the behavior for the block settings summaries.
+-   */
+   Drupal.behaviors.blockSettingsSummaryIpAddress = {
+-    attach() {
+-      // The drupalSetSummary method required for this behavior is not available
+-      // on the Blocks administration page, so we need to make sure this
+-      // behavior is processed only if drupalSetSummary is defined.
++    attach: function (context) {
++      // Ensure drupalSetSummary exists.
+       if (typeof $.fn.drupalSetSummary === 'undefined') {
+         return;
+       }
+ 
+-      $('[data-drupal-selector="edit-visibility-ipaddress"]').drupalSetSummary((context) => {
+-        const $pages = $(context).find('textarea[name="visibility[ipaddress][ipaddress]"]');
+-        if (!$pages.val()) {
+-          return Drupal.t('Not restricted');
+-        }
+-        return Drupal.t('Restricted to certain IP Address');
+-      });
+-    },
++      $(once('block-settings-summary-ipaddress', '[data-drupal-selector="edit-visibility-ipaddress"]', context))
++        .each(function () {
++          $(this).drupalSetSummary(function (context) {
++            var $pages = $(context).find('textarea[name="visibility[ipaddress][ipaddress]"]');
++
++            if (!$pages.val()) {
++              return Drupal.t('Not restricted');
++            }
++
++            return Drupal.t('Restricted to certain IP Address');
++          });
++        });
++    }
+   };
+-}(jQuery, window, Drupal));
+ 
++})(Drupal, jQuery, once);
+\ No newline at end of file

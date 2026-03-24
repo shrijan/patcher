@@ -1,0 +1,96 @@
+--- README.md
++++ README.md
+@@ -160,8 +160,10 @@
+   # By default `<path_to_module|theme>/dist/`.
+   baseUrl: '/themes/custom/my_theme/dist/'
+   # Vite dev server url, by default http://localhost:5173.
+-  devServerUrl: 'http://localhost:9999`
+-
++  devServerUrl: 'http://localhost:9999'
++  # Library dependencies used in dev mode only.
++  devDependencies:
++    - mymodule/reactapp.devmode
+ ```
+ 
+ These settings can also be overwritten in site settings.php:
+@@ -176,13 +178,16 @@
+   // Global overrides.
+   /* Make note that these are global so they will take effect for all drupal
+    * asset libraries, so setting enabled => TRUE here is not really recommended.
+-   * Probably the only useful to set here would be devServerUrl to globally
++   * Probably the only useful thing to set here would be devServerUrl to globally
+    * override the default one.
+    */
+   'enabled' => TRUE,
+   'manifest' => 'vue_app/dist/manifest.json',
+   'baseUrl' => '/some/custom/base/url/used/in/production/for/dist/assets/',
+   'devServerUrl' => 'http://localhost:9999',
++  'devDependencies' => [
++    'mymodule/override.devmode'
++  ]
+   'overrides' => [
+     // Per module/theme overrides.
+     '<module|theme>' => [
+@@ -193,7 +198,6 @@
+       // ... settings like the global ones
+     ]
+   ],
+-
+ ]
+ 
+ ```
+@@ -215,3 +219,54 @@
+      dependencies:
+        - core/drupalSettings
+ ```
++
++If your vite loaded app needs to declare dependencies that are only used while
++in dev mode you can use the `devDependencies` option. This is particularly
++useful for React apps which need the `@react-refresh` preamble injected before
++the app is loaded.
++
++An example `@react-refresh` preamble loaded with `devDependencies` for React
++might look like this:
++
++```js
++/* /modules/custom/mymodule/js/viteDevMode.js */
++
++const thisScript = document.currentScript;
++const devServerUrl = thisScript.dataset.viteDevServer;
++
++import(`${devServerUrl}/@react-refresh`)
++  .then((RefreshRuntime) => {
++    const injectIntoGlobalHook = RefreshRuntime.default.injectIntoGlobalHook;
++    injectIntoGlobalHook(window);
++    window.$RefreshReg$ = () => {};
++    window.$RefreashSig$ = () => (type) => type;
++    window.__vite_plugin_react_preamble_installed__ = true;
++  })
++  .catch(() => {
++    console.log('Could not load RefreshRuntime from the vite dev server');
++  });
++```
++
++And loaded like this:
++
++```yaml
++# /modules/custom/mymodule/mymodule.libraries.yml
++
++reactapp.devmode:
++  js:
++    js/viteDevMode.js: {}
++
++reactapp:
++  vite:
++    manifest: app/dist/.vite/manifest.json
++    baseUrl: '/modules/custom/mymodule/app/dist/'
++    devServerUrl: 'http://host.docker.internal:5173/modules/custom/mymodule/app'
++    devDependencies:
++      - mymodule/reactapp.devmode # This loads the viteDevMode.js when in dev mode only
++  js:
++    src/main.tsx: {}
++  dependencies:
++    - core/drupal
++    - core/drupalSettings
++    - locale/translations
++```
