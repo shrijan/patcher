@@ -52,6 +52,7 @@ class ComposerStaticInit38b1a4243e641728f024b426e597b201
         '801c31d8ed748cfa537fa45402288c95' => __DIR__ . '/..' . '/psy/psysh/src/functions.php',
         '74ed299072414d276bb7568fe71d5b0c' => __DIR__ . '/..' . '/tinify/tinify/lib/Tinify.php',
         '9635627915aaea7a98d6d14d04ca5b56' => __DIR__ . '/..' . '/tinify/tinify/lib/Tinify/Exception.php',
+        'a386e918510c0eb48d5b6624d60b138e' => __DIR__ . '/..' . '/mglaman/composer-drupal-lenient/src/autoload.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -295,6 +296,7 @@ class ComposerStaticInit38b1a4243e641728f024b426e597b201
             'Composer\\ClassMapGenerator\\' => 27,
             'Composer\\CaBundle\\' => 18,
             'Composer\\' => 9,
+            'ComposerDrupalLenient\\' => 22,
             'Complex\\' => 8,
             'ColinODell\\PsrTestLogger\\' => 25,
         ),
@@ -980,6 +982,10 @@ class ComposerStaticInit38b1a4243e641728f024b426e597b201
         'Composer\\' => 
         array (
             0 => __DIR__ . '/..' . '/composer/composer/src/Composer',
+        ),
+        'ComposerDrupalLenient\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mglaman/composer-drupal-lenient/src',
         ),
         'Complex\\' => 
         array (

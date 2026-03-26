@@ -1,0 +1,1473 @@
+diff --git a/docroot/modules/contrib/media_bulk_upload/UploadRedirectManager.php b/docroot/modules/contrib/media_bulk_upload/UploadRedirectManager.php
+new file mode 100644
+index 000000000..80c1ee131
+--- /dev/null
++++ b/docroot/modules/contrib/media_bulk_upload/UploadRedirectManager.php
+@@ -0,0 +1,174 @@
++<?php
++
++namespace Drupal\media_bulk_upload;
++
++use Drupal\Core\Form\FormStateInterface;
++use Drupal\Core\Session\AccountProxyInterface;
++use Drupal\Core\Url;
++use Symfony\Component\HttpFoundation\Session\SessionInterface;
++
++/**
++ * Upload Redirect Manager.
++ */
++class UploadRedirectManager {
++
++  /**
++   * The current user.
++   *
++   * @var \Drupal\Core\Session\AccountProxyInterface
++   */
++  protected $account;
++
++  /**
++   * The session.
++   *
++   * @var \Symfony\Component\HttpFoundation\Session\SessionInterface
++   */
++  protected $session;
++
++  /**
++   * Path to redirect to when editing is done.
++   *
++   * @var string
++   */
++  protected $editFinishPath;
++
++  /**
++   * Constructs UploadRedirectManager object.
++   *
++   * @param \Drupal\Core\Session\AccountProxyInterface $account
++   *   Drupal account object.
++   * @param \Symfony\Component\HttpFoundation\Session\SessionInterface $session
++   *   The session.
++   */
++  public function __construct(AccountProxyInterface $account, SessionInterface $session) {
++    $this->account = $account;
++    $this->session = $session;
++    $this->editFinishPath = '';
++  }
++
++  /**
++   * Get the ids of the entities that have been created via bulk upload.
++   */
++  public function getCreatedEntityIds() {
++    $key = 'media_bulk_uploads_' . $this->account->id();
++    $createdEntityIds = $this->session->get($key);
++
++    if (!$createdEntityIds) {
++      $createdEntityIds = [];
++      $this->session->set($key, $createdEntityIds);
++    }
++
++    return $createdEntityIds;
++  }
++
++  /**
++   * Clear the list.
++   */
++  public function removeAllItems() {
++    $this->session->set('media_bulk_uploads_' . $this->account->id(), []);
++  }
++
++  /**
++   * Add a created entity id.
++   */
++  public function addItem($entityId) {
++    $createdEntityIds = $this->getCreatedEntityIds();
++    $createdEntityIds[$entityId] = $entityId;
++    $this->session->set('media_bulk_uploads_' . $this->account->id(), $createdEntityIds);
++  }
++
++  /**
++   * Remove a created entity id.
++   */
++  public function removeItem($entityId) {
++    $createdEntityIds = $this->getCreatedEntityIds();
++    // Remove item from cart.
++    if (isset($createdEntityIds[$entityId])) {
++        unset($createdEntityIds[$entityId]);
++        $this->session->set('media_bulk_uploads_' . $this->account->id(), $createdEntityIds);
++    }
++  }
++
++  /**
++   * Implements hook_form_FORM_ID_alter().
++   *
++   * Alter the Media adit form.
++   */
++  public function alterMediaEditForm(&$form, FormStateInterface $form_state, $edit_finish_path) {
++    // Set editFinishPath.
++    $this->editFinishPath = $edit_finish_path;
++
++    // Get current Media entity from route.
++    $media = \Drupal::routeMatch()->getParameter('media');
++    $media_id = $media->id();
++
++    // Get the list of newly created media entities.
++    $new_items = $this->getCreatedEntityIds();
++
++    // Do nothing if current Media entity is not in the list.
++    if (!isset($new_items[$media_id])) {
++      return;
++    }
++
++    // Add count indicator to title.
++    /** @var \Drupal\media\MediaTypeInterface $media_type */
++    $media_type = $media->bundle->entity;
++    $total = count($new_items);
++    $current = array_search($media_id, array_keys($new_items));
++    $current++;
++    $form['#title'] = t("Edit %type_label @label - $current/$total of newly uploaded items", [
++      '%type_label' => $media_type->label(),
++      '@label' => $media->label(),
++    ]);
++
++    // If this is not the last item.
++    if ($current < $total) {
++      // Change Submit button text.
++      $form['actions']['submit']['#value'] = t('Save and edit next item');
++
++      // Set redirect to the next media edit page.
++      $form['actions']['submit']['#submit'][] = [$this, 'redirectNextHandler'];
++    }
++
++    // If this is the last item.
++    if ($media_id == array_key_last($new_items)) {
++      $form['actions']['submit']['#value'] = t('Save and finish editing');
++      // Set redirect to the next media edit page.
++      $form['actions']['submit']['#submit'][] = [$this, 'redirectFinishedHandler'];
++    }
++
++    // Add new action button to stop editing.
++    $form['actions']['stop_editing'] = [
++      '#type' => 'button',
++      '#value' => 'Close and stop editing items',
++      '#submit' => [[$this, 'redirectFinishedHandler']],
++      '#executes_submit_callback' => TRUE,
++      '#limit_validation_errors' => [],
++    ];
++  }
++
++  /**
++   * Submit handler to go to the next media edit page.
++   */
++  function redirectNextHandler($form, FormStateInterface $form_state) {
++    // Get current Media entity from route.
++    $media = \Drupal::routeMatch()->getParameter('media');
++    $media_id = $media->id();
++    // Get the media id of the next item.
++    $array_keys = array_keys($this->getCreatedEntityIds());
++    $next_id = $array_keys[array_search($media_id,$array_keys) + 1];
++    $form_state->setRedirect('entity.media.edit_form', ['media' => $next_id]);
++  }
++
++  /**
++   * Submit handler to finish editing
++   */
++  function redirectFinishedHandler($form, FormStateInterface $form_state) {
++    // Clear all items.
++    $this->removeAllItems();
++    // Redirect to the path from 'Redirect to this path after finishing editing'.
++    $route_name = Url::fromUserInput($this->editFinishPath)->getRouteName();
++    $form_state->setRedirect($route_name);
++  }
++}
+\ No newline at end of file
+diff --git a/docroot/modules/contrib/media_bulk_upload/config/schema/media_bulk_config.schema.yml b/docroot/modules/contrib/media_bulk_upload/config/schema/media_bulk_config.schema.yml
+index 5d0945028..8ec8b2282 100644
+--- a/docroot/modules/contrib/media_bulk_upload/config/schema/media_bulk_config.schema.yml
++++ b/docroot/modules/contrib/media_bulk_upload/config/schema/media_bulk_config.schema.yml
+@@ -13,9 +13,24 @@ media_bulk_upload.media_bulk_config.*:
+     media_types:
+       type: sequence
+       label: 'Media Types'
++    show_alt:
++      type: boolean
++      label: 'Show Alt text input'
++    alt_required:
++      type: boolean
++      label: 'Alt text required'
++    show_title:
++      type: boolean
++      label: 'Show Title text input'
+     form_mode:
+       label: 'Form Mode'
+       type: string
+     upload_location:
+       label: 'Upload Location'
+       type: string
++    edit_after_upload:
++      type: boolean
++      label: 'Edit each Media item after upload'
++    edit_finish_path:
++      type: path
++      label: 'Redirect to this path after finishing editing'
+diff --git a/docroot/modules/contrib/media_bulk_upload/media_bulk_upload.info.yml b/docroot/modules/contrib/media_bulk_upload/media_bulk_upload.info.yml
+index bdd729fec..6453842cd 100644
+--- a/docroot/modules/contrib/media_bulk_upload/media_bulk_upload.info.yml
++++ b/docroot/modules/contrib/media_bulk_upload/media_bulk_upload.info.yml
+@@ -7,7 +7,7 @@ dependencies:
+   - drupal:media
+ configure: entity.media_bulk_config.collection
+ 
+-# Information added by Drupal.org packaging script on 2026-01-19
+-version: '3.0.5'
++# Information added by Drupal.org packaging script on 2025-06-10
++version: '3.0.4'
+ project: 'media_bulk_upload'
+-datestamp: 1768830487
++datestamp: 1749524325
+diff --git a/docroot/modules/contrib/media_bulk_upload/media_bulk_upload.module b/docroot/modules/contrib/media_bulk_upload/media_bulk_upload.module
+index 77f2ab850..c6c175b2c 100644
+--- a/docroot/modules/contrib/media_bulk_upload/media_bulk_upload.module
++++ b/docroot/modules/contrib/media_bulk_upload/media_bulk_upload.module
+@@ -7,7 +7,8 @@
+ 
+ use Drupal\Core\Form\FormStateInterface;
+ use Drupal\Core\Routing\RouteMatchInterface;
+-use Drupal\media\MediaTypeInterface;
++use Drupal\media\Entity\MediaType;
++use Drupal\media_bulk_upload\Entity\MediaBulkConfig;
+ 
+ /**
+  * Implements hook_help().
+@@ -36,4 +37,49 @@ function media_bulk_upload_menu_links_discovered_alter(&$links) {
+      */
+     $links['entity.media_bulk.collection']['parent'] = 'admin_toolbar_tools.extra_links:media_page';
+   }
+-}
+\ No newline at end of file
++}
++
++/**
++ * Implements hook_form_alter().
++ *
++ * Alter Media edit forms.
++ *
++ * @TODO: save the actual vbo config in MediaBulkUploadForm,
++ * by using UploadRedirectManager and retrieve values here,
++ * instead of getting the first config.
++ */
++function media_bulk_upload_form_alter(&$form, FormStateInterface $form_state, $form_id) {
++
++  // Check the redirect to media edit setting.
++  // For now we just check it for the first media bulk upload configuration we can find.
++  $bulk_upload_configurations = MediaBulkConfig::loadMultiple();
++  // Opt out if there are no bulk configurations yet.
++  if (empty($bulk_upload_configurations)) {
++    return;
++  }
++
++  // Get the first view bulk operation config.
++  $configuration = reset($bulk_upload_configurations);
++
++  // Opt out if the setting is not enabled.
++  if (!$configuration->edit_after_upload) {
++    return;
++  }
++
++  $edit_finish_path = $configuration->edit_finish_path ?: '';
++
++  // Now we need to load all Media types to have all media edit form ids.
++  $media_types = MediaType::loadMultiple();
++
++  // Loop all media types to see if current form needs to be altered.
++  foreach ($media_types as $media_type) {
++
++    // Get the media type / bundle.
++    $bundle = $media_type->id();
++
++    // Alter the current media Edit form.
++    if ($form_id == 'media_' . $bundle . '_edit_form') {
++      \Drupal::service('media_bulk_upload.redirect_manager')->alterMediaEditForm($form, $form_state, $edit_finish_path);
++    }
++  }
++}
+diff --git a/docroot/modules/contrib/media_bulk_upload/media_bulk_upload.services.yml b/docroot/modules/contrib/media_bulk_upload/media_bulk_upload.services.yml
+index b07656d27..364ae7ad1 100644
+--- a/docroot/modules/contrib/media_bulk_upload/media_bulk_upload.services.yml
++++ b/docroot/modules/contrib/media_bulk_upload/media_bulk_upload.services.yml
+@@ -5,3 +5,6 @@ services:
+   media_bulk_upload.media_type_manager:
+     class: Drupal\media_bulk_upload\MediaTypeManager
+     arguments: ['@entity_type.manager', '@entity_field.manager']
++  media_bulk_upload.redirect_manager:
++    class: Drupal\media_bulk_upload\UploadRedirectManager
++    arguments: ['@current_user', '@session']
+diff --git a/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/media_bulk_upload_dropzonejs.info.yml b/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/media_bulk_upload_dropzonejs.info.yml
+index f8ad1dfda..5c5e7e728 100644
+--- a/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/media_bulk_upload_dropzonejs.info.yml
++++ b/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/media_bulk_upload_dropzonejs.info.yml
+@@ -7,7 +7,7 @@ dependencies:
+   - media_bulk_upload
+   - dropzonejs
+ 
+-# Information added by Drupal.org packaging script on 2026-01-19
+-version: '3.0.5'
++# Information added by Drupal.org packaging script on 2025-06-10
++version: '3.0.4'
+ project: 'media_bulk_upload'
+-datestamp: 1768830487
++datestamp: 1749524325
+diff --git a/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/media_bulk_upload_dropzonejs.info.yml.rej b/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/media_bulk_upload_dropzonejs.info.yml.rej
+new file mode 100644
+index 000000000..4fde74f22
+--- /dev/null
++++ b/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/media_bulk_upload_dropzonejs.info.yml.rej
+@@ -0,0 +1,11 @@
++--- modules/dropzonejs/media_bulk_upload_dropzonejs.info.yml
+++++ modules/dropzonejs/media_bulk_upload_dropzonejs.info.yml
++@@ -7,3 +7,8 @@ package: Media
++ dependencies:
++   - media_bulk_upload
++   - dropzonejs
+++
+++# Information added by Drupal.org packaging script on 2023-04-12
+++version: '3.0.2'
+++project: 'media_bulk_upload'
+++datestamp: 1681285222
+diff --git a/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/media_bulk_upload_dropzonejs.module b/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/media_bulk_upload_dropzonejs.module
+index 7b4432830..fe4d635e4 100644
+--- a/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/media_bulk_upload_dropzonejs.module
++++ b/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/media_bulk_upload_dropzonejs.module
+@@ -1,38 +1,73 @@
+ <?php
+ 
++use Drupal\Core\Entity\EntityInterface;
++use Drupal\Core\StringTranslation\TranslatableMarkup;
++use Drupal\Core\Form\FormStateInterface;
++use Drupal\file\FileInterface;
++use Drupal\media_bulk_upload\Entity\MediaBulkConfigInterface;
++
+ /**
+  * Implements hook_media_bulk_upload_file_ids_alter().
+  *
+- * @param array $file_ids
+- * @param string $media_bulk_config_id
++ * @param array $files_data
++ *   The uploaded files data.
++ * @param \Drupal\media_bulk_upload\Entity\MediaBulkConfigInterface $media_bulk_config
++ *   The bulk media upload config ID.
+  *
+  * @return void
+  */
+-function media_bulk_upload_dropzonejs_media_bulk_upload_file_ids_alter(array &$file_ids, string $media_bulk_config_id) {
+-  if (!isset($file_ids['uploaded_files'])) {
++function media_bulk_upload_dropzonejs_media_bulk_upload_files_alter(array &$files_data, MediaBulkConfigInterface $media_bulk_config) {
++  if (!isset($files_data['uploaded_files'])) {
+     return;
+   }
+ 
+-  $fileIds = [];
+-  $fileStorage = \Drupal::entityTypeManager()->getStorage('file');
++  $files = [];
++  $file_storage = \Drupal::entityTypeManager()->getStorage('file');
+ 
+-  foreach ($file_ids['uploaded_files'] as $fileData) {
+-    if (!is_array($fileData) || !isset($fileData['path'])) {
++  foreach ($files_data['uploaded_files'] as $file_data) {
++    if (!is_array($file_data) || !isset($file_data['path'])) {
+       continue;
+     }
+ 
+-    /** @var \Drupal\file\FileInterface $fileEntity */
+-    $fileEntity = $fileStorage->create([
+-      'uri' => $fileData['path'],
++    /** @var \Drupal\file\FileInterface $file_entity */
++    $file_entity = $file_storage->create([
++      'uri' => $file_data['path'],
+       'uid' => \Drupal::currentUser()->id(),
+-      'filename' => $fileData['filename'],
++      'filename' => $file_data['filename'],
+     ]);
+-    $fileEntity->setPermanent();
+-    $fileEntity->save();
+-    $fileIds[] = $fileEntity->id();
++    $file_entity->setTemporary();
++    $file_entity->save();
++    $metadata = [];
++    if ($media_bulk_config->get('show_alt')) {
++      $metadata['alt'] = $file_data['metadata']['alt'];
++    }
++    if ($media_bulk_config->get('show_title')) {
++      $metadata['title'] = $file_data['metadata']['title'];
++    }
++    $files[$file_entity->id()] = [
++      'file' => $file_entity,
++      'metadata' => $metadata,
++    ];
++  }
++
++  if (!empty($files)) {
++    $files_data = $files;
+   }
++}
++
++/**
++ * Implements hook_form_FORM_ID_alter().
++ */
++function media_bulk_upload_dropzonejs_form_media_bulk_upload_form_alter(
++  &$form,
++  FormStateInterface $form_state
++) {
++
++  $form['file_upload']['#type'] = 'dropzonejs';
++  $form['file_upload']['#disable_form_buttons'] = '.button.form-submit';
++  $form['file_upload']['#dropzone_description'] = new TranslatableMarkup('Click or drop your files here');
+ 
+-  if (!empty($fileIds)) {
+-    $file_ids = $fileIds;
++  if (isset($form['file_upload']['#upload_validators']['FileExtension']['extensions'])) {
++    $form['file_upload']['#extensions'] = $form['file_upload']['#upload_validators']['FileExtension']['extensions'];
+   }
+ }
+diff --git a/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/media_bulk_upload_dropzonejs.services.yml b/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/media_bulk_upload_dropzonejs.services.yml
+deleted file mode 100644
+index 8f1ce1556..000000000
+--- a/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/media_bulk_upload_dropzonejs.services.yml
++++ /dev/null
+@@ -1,5 +0,0 @@
+-services:
+-  media_bulk_upload_dropzonejs.route_subscriber:
+-    class: Drupal\media_bulk_upload_dropzonejs\Routing\MediaBulkUploadDropzoneJsRouteSubscriber
+-    tags:
+-      - { name: event_subscriber }
+diff --git a/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/src/Form/MediaBulkUploadDropzoneJsForm.php b/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/src/Form/MediaBulkUploadDropzoneJsForm.php
+deleted file mode 100644
+index 59470155e..000000000
+--- a/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/src/Form/MediaBulkUploadDropzoneJsForm.php
++++ /dev/null
+@@ -1,85 +0,0 @@
+-<?php
+-
+-declare(strict_types=1);
+-
+-namespace Drupal\media_bulk_upload_dropzonejs\Form;
+-
+-use Drupal\Core\Form\FormStateInterface;
+-use Drupal\Core\Utility\Error;
+-use Drupal\media_bulk_upload\Form\MediaBulkUploadForm;
+-use Drupal\media_bulk_upload\Entity\MediaBulkConfigInterface;
+-
+-/**
+- * Bulk media upload form using DropzoneJS.
+- *
+- * @package Drupal\media_upload\Form
+- */
+-class MediaBulkUploadDropzoneJsForm extends MediaBulkUploadForm {
+-
+-  /**
+-   * {@inheritdoc}
+-   */
+-  public function getFormId(): string {
+-    return 'media_bulk_upload_dropzone_js_form';
+-  }
+-
+-  /**
+-   * {@inheritdoc}
+-   */
+-  public function buildForm(array $form, FormStateInterface $form_state, ?MediaBulkConfigInterface $media_bulk_config = NULL): array {
+-    $form = parent::buildForm($form, $form_state, $media_bulk_config);
+-    $form['file_upload']['#type'] = 'dropzonejs';
+-    $form['file_upload']['#disable_form_buttons'] = '.button.form-submit';
+-    $form['file_upload']['#dropzone_description'] = $this->t('Click or drop your files here');
+-
+-    if (isset($form['file_upload']['#upload_validators']['FileExtension']['extensions'])) {
+-      $form['file_upload']['#extensions'] = $form['file_upload']['#upload_validators']['FileExtension']['extensions'];
+-    }
+-    return $form;
+-  }
+-
+-  /**
+-   * {@inheritdoc}
+-   */
+-  public function validateForm(array &$form, FormStateInterface $form_state): void {
+-    // Validate all uploaded files.
+-    $uploaded_files = $form_state->getValue(['file_upload', 'uploaded_files']);
+-    if (empty($uploaded_files)) {
+-      $form_state->setErrorByName('file_upload', $this->t('No media files have been provided.'));
+-    }
+-    else {
+-      foreach ($uploaded_files as $uploaded_file) {
+-        // Create a new file entity since some modules only validate new files.
+-        $file = $this->fileStorage->create([
+-          'uri' => $uploaded_file['path'],
+-        ]);
+-
+-        // Let other modules perform validation on the new file.
+-        $errors = \Drupal::moduleHandler()->invokeAll('file_validate', [
+-          $file,
+-        ]);
+-
+-        // Process any reported errors.
+-        if (!empty($errors)) {
+-          $form_state->setErrorByName('file_upload', 'Errors for file ' . $file->getFilename() . ': ' . implode(', ', $errors));
+-
+-          try {
+-            // Delete the uploaded file if it has validation errors.
+-            $file_system = \Drupal::service('file_system');
+-            $file_system->delete($uploaded_file['path']);
+-          }
+-          catch (Exception $e) {
+-            if (method_exists(Error::class, 'logException')) {
+-              Error::logException($this->getLogger('media_bulk_upload'), $e);
+-            }
+-            else {
+-              // @phpstan-ignore-next-line
+-              watchdog_exception('media_bulk_upload', $e);
+-            }
+-          }
+-        }
+-      }
+-    }
+-  }
+-
+-}
+diff --git a/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/src/Routing/MediaBulkUploadDropzoneJsRouteSubscriber.php b/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/src/Routing/MediaBulkUploadDropzoneJsRouteSubscriber.php
+deleted file mode 100644
+index 22636b04b..000000000
+--- a/docroot/modules/contrib/media_bulk_upload/modules/dropzonejs/src/Routing/MediaBulkUploadDropzoneJsRouteSubscriber.php
++++ /dev/null
+@@ -1,22 +0,0 @@
+-<?php
+-
+-namespace Drupal\media_bulk_upload_dropzonejs\Routing;
+-
+-use Drupal\Core\Routing\RouteSubscriberBase;
+-use Drupal\media_bulk_upload_dropzonejs\Form\MediaBulkUploadDropzoneJsForm;
+-use Symfony\Component\Routing\RouteCollection;
+-
+-/**
+- * Media Bulk Upload route subscriber.
+- */
+-class MediaBulkUploadDropzoneJsRouteSubscriber extends RouteSubscriberBase {
+-
+-  /**
+-   * {@inheritdoc}
+-   */
+-  protected function alterRoutes(RouteCollection $collection) {
+-    $route = $collection->get('media_bulk_upload.upload_form');
+-    $route->setDefault('_form', MediaBulkUploadDropzoneJsForm::class);
+-  }
+-
+-}
+diff --git a/docroot/modules/contrib/media_bulk_upload/src/Entity/MediaBulkConfig.php b/docroot/modules/contrib/media_bulk_upload/src/Entity/MediaBulkConfig.php
+index fda5da1ed..11578422f 100644
+--- a/docroot/modules/contrib/media_bulk_upload/src/Entity/MediaBulkConfig.php
++++ b/docroot/modules/contrib/media_bulk_upload/src/Entity/MediaBulkConfig.php
+@@ -36,9 +36,12 @@
+  *     "uuid",
+  *     "media_types",
+  *     "show_alt",
++ *     "alt_required",
+  *     "show_title",
+  *     "form_mode",
+  *     "upload_location",
++ *     "edit_after_upload",
++ *     "edit_finish_path",
+  *   },
+  *   links = {
+  *     "canonical" = "/admin/config/media/media-bulk-config/{media_bulk_config}",
+diff --git a/docroot/modules/contrib/media_bulk_upload/src/Form/MediaBulkConfigForm.php b/docroot/modules/contrib/media_bulk_upload/src/Form/MediaBulkConfigForm.php
+index 020a64a59..921c023a6 100644
+--- a/docroot/modules/contrib/media_bulk_upload/src/Form/MediaBulkConfigForm.php
++++ b/docroot/modules/contrib/media_bulk_upload/src/Form/MediaBulkConfigForm.php
+@@ -5,11 +5,12 @@
+ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+ use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
+ use Drupal\Core\Entity\EntityForm;
+-use Drupal\Core\File\FileSystemInterface;
+ use Drupal\Core\Form\FormStateInterface;
+ use Drupal\Core\Messenger\MessengerInterface;
+-use Drupal\Core\StreamWrapper\PrivateStream;
+ use Symfony\Component\DependencyInjection\ContainerInterface;
++use Drupal\Core\Config\ConfigFactoryInterface;
++use Drupal\path_alias\AliasManagerInterface;
++use Drupal\Core\Routing\RequestContext;
+ 
+ /**
+  * Class MediaBulkConfigForm.
+@@ -23,6 +24,27 @@ class MediaBulkConfigForm extends EntityForm implements ContainerInjectionInterf
+    */
+   protected $entityDisplayRepository;
+ 
++  /**
++   * The config factory service.
++   *
++   * @var \Drupal\Core\Config\ConfigFactoryInterface
++   */
++  protected $configFactory;
++
++  /**
++   * The path alias manager.
++   *
++   * @var \Drupal\path_alias\AliasManagerInterface
++   */
++  protected $aliasManager;
++
++  /**
++   * The request context.
++   *
++   * @var \Drupal\Core\Routing\RequestContext
++   */
++  protected $requestContext;
++
+   /**
+    * MediaBulkConfigForm constructor.
+    *
+@@ -30,10 +52,19 @@ class MediaBulkConfigForm extends EntityForm implements ContainerInjectionInterf
+    *   Entity Display repository.
+    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+    *   The messenger.
++   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
++   *   The config factory.
++   * @param \Drupal\path_alias\AliasManagerInterface $aliasManager
++   *   The path alias manager.
++   * @param \Drupal\Core\Routing\RequestContext $requestContext
++   *   The request context.
+    */
+-  public function __construct(EntityDisplayRepositoryInterface $entityDisplayRepository, MessengerInterface $messenger) {
++  public function __construct(EntityDisplayRepositoryInterface $entityDisplayRepository, MessengerInterface $messenger, ConfigFactoryInterface $configFactory, AliasManagerInterface $aliasManager, RequestContext $requestContext) {
+     $this->entityDisplayRepository = $entityDisplayRepository;
+     $this->messenger = $messenger;
++    $this->configFactory = $configFactory;
++    $this->aliasManager = $aliasManager;
++    $this->requestContext = $requestContext;
+   }
+ 
+   /**
+@@ -42,7 +73,10 @@ public function __construct(EntityDisplayRepositoryInterface $entityDisplayRepos
+   public static function create(ContainerInterface $container) {
+     return new static(
+       $container->get('entity_display.repository'),
+-      $container->get('messenger')
++      $container->get('messenger'),
++      $container->get('config.factory'),
++      $container->get('path_alias.manager'),
++      $container->get('router.request_context')
+     );
+   }
+ 
+@@ -89,6 +123,32 @@ public function form(array $form, FormStateInterface $form_state) {
+       '#required' => TRUE,
+     ];
+ 
++    $show_alt = $mediaBulkConfig->get('show_alt');
++    $form['show_alt'] = [
++      '#type' => 'checkbox',
++      '#title' => $this->t('Show Alt text input for uploaded files.'),
++      '#description' => $this->t('Check if you want to be able to add Alt text
++        to the uploaded files. Please do NOT use [ or ] symbols in your text.'),
++      '#default_value' => (boolean) $show_alt,
++    ];
++
++    $alt_required = $mediaBulkConfig->get('alt_required');
++    $form['alt_required'] = [
++      '#type' => 'checkbox',
++      '#title' => $this->t('Make Alt text input required.'),
++      '#description' => $this->t('Check if you want the Alt text to be required for image files.'),
++      '#default_value' => (boolean) $alt_required,
++    ];
++
++    $show_title = $mediaBulkConfig->get('show_title');
++    $form['show_title'] = [
++      '#type' => 'checkbox',
++      '#title' => $this->t('Show title text input for uploaded files.'),
++      '#description' => $this->t('Check if you want to be able to add title text
++        to the uploaded files. Please do NOT use [ or ] symbols in your text.'),
++      '#default_value' => (boolean) $show_title,
++    ];
++
+     $form['form_mode'] = [
+       '#type' => 'select',
+       '#title' => $this->t('Form Mode'),
+@@ -105,8 +165,24 @@ public function form(array $form, FormStateInterface $form_state) {
+       '#title' => $this->t('Upload location'),
+       '#description' => $this->t('Location to initially upload the files before they are moved to the determined
+       location in the media types.'),
+-      '#default_value' => $mediaBulkConfig->get('upload_location') ?: 'temporary://media-bulk-upload',
+-      '#required' => TRUE,
++      '#default_value' => $mediaBulkConfig->get('upload_location'),
++    ];
++
++    $form['edit_after_upload'] = [
++      '#type' => 'checkbox',
++      '#title' => $this->t('Edit each Media item after upload'),
++      '#description' => $this->t('When checked, you will be redirected to the edit page of each Media item that was created after upload.'),
++      '#default_value' => $mediaBulkConfig->get('edit_after_upload'),
++    ];
++
++    $edit_finish_path = $mediaBulkConfig->get('edit_finish_path') ?: $this->aliasManager->getAliasByPath($this->configFactory->get('system.site')->get('page.front'));
++    $form['edit_finish_path'] = [
++      '#type' => 'textfield',
++      '#title' => $this->t('Redirect to this path after finishing editing'),
++      '#default_value' => $edit_finish_path,
++      '#size' => 40,
++      '#description' => $this->t('Optionally, specify a relative URL. Leave blank to redirect to the default front page.'),
++      '#field_prefix' => $this->requestContext->getCompleteBaseUrl(),
+     ];
+ 
+     return $form;
+@@ -127,52 +203,6 @@ private function getMediaTypeOptions() {
+     return $mediaTypeOptions;
+   }
+ 
+-  /**
+-   * {@inheritdoc}
+-   */
+-  public function validateForm(array &$form, FormStateInterface $form_state) {
+-    $upload_location = $form_state->getValue('upload_location');
+-    $upload_location_ok = FALSE;
+-    $upload_location_error = NULL;
+-
+-    // Check for file system and schema issues before using
+-    // FileSystemInterface::prepareDirectory() to create/check the directory.
+-    try {
+-      /** @var \Drupal\Core\File\FileSystemInterface $file_system */
+-      $file_system = \Drupal::service('file_system');
+-      /** @var \Drupal\Core\StreamWrapper\StreamWrapperManager $stream_wrapper_manager */
+-      $stream_wrapper_manager = \Drupal::service('stream_wrapper_manager');
+-
+-      if (empty($upload_location)) {
+-        $upload_location_error = t('No upload location provided.');
+-      }
+-      elseif (str_starts_with($upload_location, 'private://') && !PrivateStream::basePath()) {
+-        $upload_location_error = t('You need to configure and set up your private files directory before you can use it for Media Bulk Uploads.');
+-      }
+-      elseif (str_starts_with($upload_location, 'temporary://')) {
+-        if (!$file_system->getTempDirectory()) {
+-          $upload_location_error = t('You need to configure and set up your temporary files directory before you can use it for Media Bulk Uploads.');
+-        }
+-      }
+-      elseif ($stream_wrapper_manager::getScheme($upload_location) && !$stream_wrapper_manager->isValidScheme($stream_wrapper_manager::getScheme($upload_location))) {
+-        $upload_location_error = t('Invalid scheme provided. Standard schemes include public:// , private:// and temporary://');
+-      }
+-
+-      // Create the directory and give it the permissions needed.
+-      if (empty($upload_location_error)) {
+-        $upload_location_ok = $file_system->prepareDirectory($upload_location, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+-      }
+-    }
+-    catch (\Exception $e) {
+-      $form_state->setError($form['upload_location'], 'Media upload location does not exist, or could not be created. [ Error: ' . $e->getMessage() . ']');
+-    }
+-
+-    // Check the result.
+-    if (!$upload_location_ok) {
+-      $form_state->setError($form['upload_location'], $upload_location_error ?? 'Media upload location does not exist, or could not be created.');
+-    }
+-  }
+-
+   /**
+    * {@inheritdoc}
+    */
+diff --git a/docroot/modules/contrib/media_bulk_upload/src/Form/MediaBulkUploadForm.php b/docroot/modules/contrib/media_bulk_upload/src/Form/MediaBulkUploadForm.php
+index e5365d8b1..fb5dbf020 100644
+--- a/docroot/modules/contrib/media_bulk_upload/src/Form/MediaBulkUploadForm.php
++++ b/docroot/modules/contrib/media_bulk_upload/src/Form/MediaBulkUploadForm.php
+@@ -21,8 +21,12 @@
+ use Drupal\media\MediaTypeInterface;
+ use Drupal\media_bulk_upload\Entity\MediaBulkConfigInterface;
+ use Drupal\media_bulk_upload\MediaSubFormManager;
++use Drupal\media_bulk_upload\UploadRedirectManager;
+ use Exception;
+ use Symfony\Component\DependencyInjection\ContainerInterface;
++use Symfony\Component\HttpFoundation\RedirectResponse;
++use Drupal\Core\Extension\ModuleHandlerInterface;
++use Symfony\Component\Mime\MimeTypeGuesserInterface;
+ 
+ /**
+  * Class BulkMediaUploadForm.
+@@ -80,6 +84,27 @@ class MediaBulkUploadForm extends FormBase {
+    */
+   protected $allowed_extensions = [];
+ 
++  /**
++   * The module handler.
++   *
++   * @var \Drupal\Core\Extension\ModuleHandlerInterface
++   */
++  private $moduleHandler;
++
++  /**
++   * The mime type guesser.
++   *
++   * @var \Symfony\Component\Mime\MimeTypeGuesserInterface
++   */
++  private $mimeTypeGuesser;
++
++  /**
++   * The file system.
++   *
++   * @var \Drupal\Core\File\FileSystemInterface
++   */
++  private $fileSystem;
++
+   /**
+    * The current user.
+    *
+@@ -94,6 +119,19 @@ class MediaBulkUploadForm extends FormBase {
+    */
+   protected $fileRepository;
+ 
++  /**
++   * The upload redirect manager.
++   *
++   * @var \Drupal\media_bulk_upload\UploadRedirectManager
++   */
++  protected $uploadRedirectManager;
++  /**
++   * If we need to redirect to media edit page after the bulk upload.
++   *
++   * @var bool
++   */
++  protected $editAfterUpload = FALSE;
++
+   /**
+    * The file validation service.
+    *
+@@ -173,7 +211,7 @@ public function getFormId() {
+    *
+    * @throws \Exception
+    */
+-  public function buildForm(array $form, FormStateInterface $form_state, ?MediaBulkConfigInterface $media_bulk_config = NULL) {
++  public function buildForm(array $form, FormStateInterface $form_state, MediaBulkConfigInterface $media_bulk_config = NULL) {
+     $mediaBulkConfig = $media_bulk_config;
+ 
+     if ($mediaBulkConfig === NULL) {
+@@ -250,6 +288,9 @@ public function buildForm(array $form, FormStateInterface $form_state, ?MediaBul
+       '#description' => $this->t('Click or drop your files here. You can upload up to <strong>@limit</strong> files at once.', ['@limit' => ini_get('max_file_uploads')]),
+       '#upload_validators' => $validators,
+       '#upload_location' => $mediaBulkConfig->get('upload_location'),
++      '#show_alt' => (boolean) $mediaBulkConfig->get('show_alt'),
++      '#alt_required' => (boolean) $mediaBulkConfig->get('alt_required'),
++      '#show_title' => (boolean) $mediaBulkConfig->get('show_title'),
+     ];
+ 
+     if ($this->mediaSubFormManager->validateMediaFormDisplayUse($mediaBulkConfig)) {
+@@ -299,7 +340,7 @@ protected function addAllowedExtensions(array $extensions) {
+    *   File Size.
+    *
+    * @return bool
+-   *  TRUE if the given size is larger than the one that is set.
++   *   TRUE if the given size is larger than the one that is set.
+    */
+   protected function isMaxFileSizeLarger($MaxFileSize) {
+     $size = Bytes::toNumber($MaxFileSize);
+@@ -340,16 +381,27 @@ public function submitForm(array &$form, FormStateInterface $form_state) {
+ 
+     /** @var MediaBulkConfigInterface $mediaBulkConfig */
+     $mediaBulkConfig = $this->mediaBulkConfigStorage->load($mediaBundleConfigId);
+-    $fileIds = $values['file_upload'];
++    $filesData = $values['file_upload'];
+ 
+-    \Drupal::moduleHandler()->alter('media_bulk_upload_file_ids', $fileIds, $mediaBundleConfigId);
++    // Did not figure out yet how to access config in batchFinished(), so saving the value here.
++    $this->editAfterUpload = $mediaBulkConfig->edit_after_upload;
++    
++    
++    $module_handler = $this->moduleHandler ?: \Drupal::moduleHandler();
++    $module_handler->alter('media_bulk_upload_files', $filesData, $mediaBulkConfig);
++   // die();
+ 
+-    if (empty($fileIds)) {
++    if (empty($filesData)) {
+       return;
+     }
+ 
++    $metadata = [];
++    foreach ($filesData as $file) {
++      $metadata[$file['file']->id()] = $file['metadata'];
++    }
++
+     /** @var \Drupal\file\FileInterface[] $files */
+-    $files = $this->fileStorage->loadMultiple($fileIds);
++    $files = $this->fileStorage->loadMultiple(array_keys($filesData));
+ 
+     $mediaTypes = $this->mediaSubFormManager->getMediaTypeManager()->getBulkMediaTypes($mediaBulkConfig);
+     $mediaType = reset($mediaTypes);
+@@ -368,6 +420,7 @@ public function submitForm(array &$form, FormStateInterface $form_state) {
+             'media_bulk_config' => $mediaBulkConfig,
+             'media_form_display' => $mediaFormDisplay,
+             'file' => $file,
++            'metadata' => $metadata[$file->id()],
+             'form' => $form,
+             'form_state' => $form_state,
+           ],
+@@ -402,15 +455,21 @@ public function batchOperation($id, array $operation_details, array &$context) {
+     $mediaBulkConfig = $operation_details['media_bulk_config'];
+     $mediaFormDisplay = $operation_details['media_form_display'];
+     $file = $operation_details['file'];
++    $metadata = $operation_details['metadata'];
+     $form = $operation_details['form'];
+     $form_state = $operation_details['form_state'];
+     try {
+-      $media = $this->processFile($mediaBulkConfig, $file);
++      $media = $this->processFile($mediaBulkConfig, $file, $metadata);
+       if ($this->mediaSubFormManager->validateMediaFormDisplayUse($operation_details['media_bulk_config'])) {
+         $extracted = $mediaFormDisplay->extractFormValues($media, $form['fields']['shared'], $form_state);
+         $this->copyFormValuesToEntity($media, $extracted, $form_state);
+       }
+       $media->save();
++
++      // Save the created media entity ID for if we need to redirect to the media edit page afterwards.
++      $upload_redirect_manager = $this->uploadRedirectManager ?: \Drupal::service('media_bulk_upload.redirect_manager');
++      $upload_redirect_manager->addItem($media->id());
++
+       $context['results'][] = $id;
+ 
+       $context['message'] = $this->t('Processing file @id.',
+@@ -441,9 +500,22 @@ public function batchOperation($id, array $operation_details, array &$context) {
+    */
+   public function batchFinished($success, array $results, array $operations) {
+     if ($success) {
++      // Check if we need to redirect to media edit page.
++      $upload_redirect_manager = $this->uploadRedirectManager ?: \Drupal::service('media_bulk_upload.redirect_manager');
++      $media_ids = $upload_redirect_manager->getCreatedEntityIds();
++      if ($this->editAfterUpload && !empty($media_ids)) {
++        // Custom message when redirecting.
++        $this->messenger()->addMessage($this->t('@count media have been created. You can now make changes to each item one by one.', ['@count' => count($results)]));
++        // Redirect to the edit page of the first media entity that was created.
++        $media_id = reset($media_ids);
++        return new RedirectResponse(Url::fromRoute('entity.media.edit_form', ['media' => $media_id], [])->toString());
++      }
++
++      // Default message when not redirecting.
+       $this->messenger()->addMessage($this->t('@count media have been created.', ['@count' => count($results)]));
+     }
+-    else {
++
++    if (!$success) {
+       $errorOperation = reset($operations);
+       $this->messenger()->addError(
+         $this->t('An error occurred while processing @operation with arguments : @args',
+@@ -465,6 +537,8 @@ public function batchFinished($success, array $results, array $operations) {
+    *   Media Bulk Config.
+    * @param \Drupal\file\FileInterface $file
+    *   File entity.
++   * @param array $metadata
++   *   Additional metadata for the file.
+    *
+    * @return \Drupal\media\MediaInterface
+    *   The unsaved media entity that is created.
+@@ -474,7 +548,7 @@ public function batchFinished($success, array $results, array $operations) {
+    * @throws \Drupal\Core\Entity\EntityStorageException
+    * @throws \Exception
+    */
+-  protected function processFile(MediaBulkConfigInterface $mediaBulkConfig, FileInterface $file) {
++  protected function processFile(MediaBulkConfigInterface $mediaBulkConfig, FileInterface $file, array $metadata = []) {
+     $filename = $file->getFilename();
+ 
+     if (!$this->validateFile($file)) {
+@@ -524,7 +598,7 @@ protected function processFile(MediaBulkConfigInterface $mediaBulkConfig, FileIn
+       throw new Exception('File entity could not be moved.');
+     }
+ 
+-    $values = $this->getNewMediaValues($mediaType, $file);
++    $values = $this->getNewMediaValues($mediaType, $file, $metadata);
+     /** @var \Drupal\media\MediaInterface $media */
+ 
+     return $this->mediaStorage->create($values);
+@@ -560,7 +634,7 @@ protected function validateFileSize(MediaTypeInterface $mediaType, FileInterface
+       : Environment::getUploadMaxSize();
+ 
+     if ((int) $maxFileSize === 0) {
+-      return true;
++      return TRUE;
+     }
+ 
+     return $fileSize <= $maxFileSize;
+@@ -577,7 +651,7 @@ protected function validateFileSize(MediaTypeInterface $mediaType, FileInterface
+    * @return array
+    *   Array of errors provided by fileValidator->validate.
+    */
+-  protected function validateImageResolution(MediaTypeInterface $mediaType, FileInterface $file) : array {
++  protected function validateImageResolution(MediaTypeInterface $mediaType, FileInterface $file): array {
+     $field_settings = $this->mediaSubFormManager
+       ->getMediaTypeManager()
+       ->getTargetFieldSettings($mediaType);
+@@ -607,21 +681,42 @@ protected function validateImageResolution(MediaTypeInterface $mediaType, FileIn
+    *   Media Type ID.
+    * @param \Drupal\file\FileInterface $file
+    *   File entity.
++   * @param array $metadata
++   *   Additional metadata for the file.
+    *
+    * @return array
+    *   Return an array describing the new media entity.
+    */
+-  protected function getNewMediaValues(MediaTypeInterface $mediaType, FileInterface $file) {
++  protected function getNewMediaValues(MediaTypeInterface $mediaType, FileInterface $file, array $metadata) {
+     $targetFieldName = $this->mediaSubFormManager->getMediaTypeManager()
+       ->getTargetFieldName($mediaType);
+-    return [
+-      'bundle' => $mediaType->id(),
+-      'name' => $file->getFilename(),
++
++    // Get filename without extension.
++    $pathinfo = pathinfo($file->getFilename());
++    // When uploading, Drupal replaces spaces in filename with underscores.
++    // Drupal also lowercases filenames.
++    // For alt and title values, we replace it back.
++    $clean_filename = ucfirst(str_replace("_", " ", $pathinfo['filename']));
++
++    $media_data = ['bundle' => $mediaType->id(),
++      'name' => $clean_filename,
+       $targetFieldName => [
+         'target_id' => $file->id(),
+-        'title' => $file->getFilename(),
++        'title' => $clean_filename,
++        'alt' => $clean_filename,
+       ],
+     ];
++
++    if (isset($metadata['title'])) {
++      $media_data['name'] = $metadata['title'];
++      $media_data[$targetFieldName]['title'] = $metadata['title'];
++    }
++
++    if (isset($metadata['alt'])) {
++      $media_data[$targetFieldName]['alt'] = $metadata['alt'];
++    }
++
++    return $media_data;
+   }
+ 
+   /**
+@@ -663,4 +758,76 @@ protected function prepareFormValues(FormStateInterface $form_state) {
+     return $this;
+   }
+ 
++  /**
++   * {@inheritdoc}
++   */
++  public function validateForm(array &$form, FormStateInterface $form_state) {
++    // Validate all uploaded files.
++    $uploaded_files = $form_state->getValue(['file_upload', 'uploaded_files']);
++    $media_bundle_config_id = $form_state->getValue(['media_bundle_config']);
++    $media_bulk_config = $this->mediaBulkConfigStorage->load($media_bundle_config_id);
++
++    if (empty($uploaded_files)) {
++      $form_state->setErrorByName('file_upload', $this->t('No media files have been provided.'));
++    }
++    else {
++      $show_alt = (boolean) $media_bulk_config->get('show_alt');
++      $alt_required = (boolean) $media_bulk_config->get('alt_required');
++
++      foreach ($uploaded_files as $uploaded_file) {
++        $errors = [];
++
++        // Validate file alt.
++        //$mime = $this->mimeTypeGuesser->guessMimeType($uploaded_file['path']);
++        $mime = NULL;
++        if (!empty($uploaded_file['path'])) {
++          if ($this->mimeTypeGuesser) {
++            $mime = $this->mimeTypeGuesser->guessMimeType($uploaded_file['path']);
++          }
++          else {
++            $mime = \Drupal::service('file.mime_type.guesser')->guessMimeType($uploaded_file['path']);
++          }
++        }
++        if (
++          strpos($mime, 'image/') !== FALSE
++          && $show_alt
++          && $alt_required
++          && empty($uploaded_file['metadata']['alt'])
++        ) {
++          $errors[] = $this->t('Alt value for images is required.');
++        }
++
++        // Create a new file entity since some modules only validate new files.
++        $file = $this->fileStorage->create([
++          'uri' => $uploaded_file['path'],
++        ]);
++
++        // Let other modules perform validation on the new file.
++        $module_handler = $this->moduleHandler ?: \Drupal::moduleHandler();
++$errors = array_merge($errors, $module_handler->invokeAll('file_validate', [
++  $file,
++]));
++
++        // Process any reported errors.
++        if (!empty($errors)) {
++          $form_state->setErrorByName('file_upload', 'Errors for file ' . $file->getFilename() . ': ' . implode(', ', $errors));
++
++          try {
++            // Delete the uploaded file if it has validation errors.
++            $this->fileSystem->delete($uploaded_file['path']);
++          }
++          catch (Exception $e) {
++            if (method_exists(Error::class, 'logException')) {
++              Error::logException($this->getLogger('media_bulk_upload'), $e);
++            }
++            else {
++              // @phpstan-ignore-next-line
++              watchdog_exception('media_bulk_upload', $e);
++            }
++          }
++        }
++      }
++    }
++  }
++
+ }
+diff --git a/docroot/modules/contrib/media_bulk_upload/src/Form/MediaBulkUploadForm.php.rej b/docroot/modules/contrib/media_bulk_upload/src/Form/MediaBulkUploadForm.php.rej
+new file mode 100644
+index 000000000..06af80e91
+--- /dev/null
++++ b/docroot/modules/contrib/media_bulk_upload/src/Form/MediaBulkUploadForm.php.rej
+@@ -0,0 +1,83 @@
++--- src/Form/MediaBulkUploadForm.php
+++++ src/Form/MediaBulkUploadForm.php
++@@ -11,6 +11,7 @@ use Drupal\Core\Form\FormBase;
++ use Drupal\Core\Form\FormStateInterface;
++ use Drupal\Core\Messenger\MessengerInterface;
++ use Drupal\Core\Session\AccountProxyInterface;
+++use Drupal\Core\Url;
++ use Drupal\file\Entity\File;
++ use Drupal\file\FileInterface;
++ use Drupal\file\FileRepositoryInterface;
++@@ -140,11 +179,31 @@ class MediaBulkUploadForm extends FormBase {
++    *   Current User.
++    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
++    *   The messenger.
+++   * @param \Drupal\file\FileRepositoryInterface $fileRepository
+++   *   The file repository.
+++   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+++   *   The module handler.
+++   * @param \Symfony\Component\Mime\MimeTypeGuesserInterface $mimeTypeGuesser
+++   *   The mime type guesser.
+++   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+++   *   The file system.
+++   * @param \Drupal\media_bulk_upload\UploadRedirectManager $uploadRedirectManager
+++   *   The upload redirect manager.
++    *
++    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
++    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
++    */
++-  public function __construct(EntityTypeManagerInterface $entityTypeManager, MediaSubFormManager $mediaSubFormManager, AccountProxyInterface $currentUser, MessengerInterface $messenger, FileRepositoryInterface $fileRepository) {
+++  public function __construct(
+++    EntityTypeManagerInterface $entityTypeManager,
+++    MediaSubFormManager $mediaSubFormManager,
+++    AccountProxyInterface $currentUser,
+++    MessengerInterface $messenger,
+++    FileRepositoryInterface $fileRepository,
+++    ModuleHandlerInterface $moduleHandler,
+++    MimeTypeGuesserInterface $mimeTypeGuesser,
+++    FileSystemInterface $fileSystem,
+++    UploadRedirectManager $uploadRedirectManager
+++  ) {
++     $this->mediaTypeStorage = $entityTypeManager->getStorage('media_type');
++     $this->mediaBulkConfigStorage = $entityTypeManager->getStorage('media_bulk_config');
++     $this->mediaStorage = $entityTypeManager->getStorage('media');
++@@ -153,7 +212,13 @@ class MediaBulkUploadForm extends FormBase {
++     $this->currentUser = $currentUser;
++     $this->messenger = $messenger;
++     $this->fileRepository = $fileRepository;
+++    $this->moduleHandler = $moduleHandler;
+++    $this->mimeTypeGuesser = $mimeTypeGuesser;
+++    $this->fileSystem = $fileSystem;
++     $this->maxFileSizeForm = '';
+++    $this->uploadRedirectManager = $uploadRedirectManager;
+++    // Start with empty list of uploaded items.
+++    $this->uploadRedirectManager->removeAllItems();
++   }
++ 
++   /**
++@@ -168,7 +233,11 @@ class MediaBulkUploadForm extends FormBase {
++       $container->get('media_bulk_upload.subform_manager'),
++       $container->get('current_user'),
++       $container->get('messenger'),
++-      $container->get('file.repository')
+++      $container->get('file.repository'),
+++      $container->get('module_handler'),
+++      $container->get('file.mime_type.guesser'),
+++      $container->get('file_system'),
+++      $container->get('media_bulk_upload.redirect_manager'),
++     );
++   }
++ 
++@@ -459,9 +545,11 @@ class MediaBulkUploadForm extends FormBase {
++           '@id' => $id,
++         ]
++       );
++-    } catch (Exception $e) {
+++    }
+++    catch (Exception $e) {
++       watchdog_exception('media_bulk_upload', $e);
++     }
+++
++   }
++ 
++   /**
+diff --git a/docroot/modules/contrib/media_bulk_upload/src/MediaSubFormManager.php b/docroot/modules/contrib/media_bulk_upload/src/MediaSubFormManager.php
+index 1966b676d..113d436f4 100644
+--- a/docroot/modules/contrib/media_bulk_upload/src/MediaSubFormManager.php
++++ b/docroot/modules/contrib/media_bulk_upload/src/MediaSubFormManager.php
+@@ -3,14 +3,13 @@
+ namespace Drupal\media_bulk_upload;
+ 
+ use Drupal\Component\Render\PlainTextOutput;
++use Drupal\Component\Utility\Bytes;
+ use Drupal\Component\Utility\Environment;
+ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+ use Drupal\Core\Entity\EntityTypeManagerInterface;
+ use Drupal\Core\File\FileSystemInterface;
+ use Drupal\Core\Form\FormStateInterface;
+-use Drupal\Core\Language\LanguageInterface;
+ use Drupal\Core\Render\Element;
+-use Drupal\Core\StringTranslation\ByteSizeMarkup;
+ use Drupal\media\MediaTypeInterface;
+ use Drupal\media_bulk_upload\Entity\MediaBulkConfigInterface;
+ use Drupal\Core\Utility\Token;
+@@ -92,10 +91,40 @@ public function __construct(EntityTypeManagerInterface $entityTypeManager, Media
+     $this->mediaStorage = $entityTypeManager->getStorage('media');
+     $this->entityFormDisplayStorage = $entityTypeManager->getStorage('entity_form_display');
+     $this->token = $token;
+-    $this->defaultMaxFileSize = ByteSizeMarkup::create(Environment::getUploadMaxSize(), LanguageInterface::LANGCODE_NOT_SPECIFIED);
++    $this->defaultMaxFileSize = $this->formatSize(Environment::getUploadMaxSize());
+     $this->fileSystem = $fileSystem;
+   }
+ 
++  /**
++   * Format the amount of bites into a common string format.
++   *
++   * @param int $size
++   *  Size in bytes.
++   *
++   * @return string
++   *   Formatted file size.
++   */
++  private function formatSize($size) {
++    $unit = 'B';
++    $calculatedSize = $size;
++    if ($size >= Bytes::KILOBYTE) {
++      $calculatedSize = $size / Bytes::KILOBYTE;
++      $units = ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
++
++      foreach ($units as $unit) {
++        if (round($calculatedSize, 2) >= Bytes::KILOBYTE) {
++          $calculatedSize /= Bytes::KILOBYTE;
++        }
++        else {
++          break;
++        }
++      }
++    }
++
++    $calculatedSize = round($calculatedSize, 2);
++    return sprintf('%d ' . $unit, $calculatedSize);
++  }
++
+   /**
+    * {@inheritdoc}
+    *
+diff --git a/docroot/modules/contrib/media_bulk_upload/src/MediaTypeManager.php b/docroot/modules/contrib/media_bulk_upload/src/MediaTypeManager.php
+index 76d50604c..83ab95f33 100644
+--- a/docroot/modules/contrib/media_bulk_upload/src/MediaTypeManager.php
++++ b/docroot/modules/contrib/media_bulk_upload/src/MediaTypeManager.php
+@@ -2,7 +2,7 @@
+ 
+ namespace Drupal\media_bulk_upload;
+ 
+-use Drupal\Core\Language\LanguageInterface;
++use Drupal\Component\Utility\DeprecationHelper;
+ use Drupal\Core\StringTranslation\ByteSizeMarkup;
+ use Drupal\Component\Utility\Environment;
+ use Drupal\Core\Entity\EntityFieldManagerInterface;
+@@ -144,7 +144,7 @@ public function getMediaTypeIdsByFileExtension($extension) {
+   public function getTargetFieldMaxSize(MediaTypeInterface $mediaType) {
+     $targetFieldSettings = $this->getTargetFieldSettings($mediaType);
+ 
+-    return !empty($targetFieldSettings['max_filesize']) ? $targetFieldSettings['max_filesize'] : ByteSizeMarkup::create(Environment::getUploadMaxSize(), LanguageInterface::LANGCODE_NOT_SPECIFIED);
++    return !empty($targetFieldSettings['max_filesize']) ? $targetFieldSettings['max_filesize'] : ByteSizeMarkup::create(Environment::getUploadMaxSize());
+   }
+ 
+   /**
+diff --git a/docroot/modules/contrib/media_bulk_upload/src/UploadRedirectManager.php b/docroot/modules/contrib/media_bulk_upload/src/UploadRedirectManager.php
+new file mode 100644
+index 000000000..80c1ee131
+--- /dev/null
++++ b/docroot/modules/contrib/media_bulk_upload/src/UploadRedirectManager.php
+@@ -0,0 +1,174 @@
++<?php
++
++namespace Drupal\media_bulk_upload;
++
++use Drupal\Core\Form\FormStateInterface;
++use Drupal\Core\Session\AccountProxyInterface;
++use Drupal\Core\Url;
++use Symfony\Component\HttpFoundation\Session\SessionInterface;
++
++/**
++ * Upload Redirect Manager.
++ */
++class UploadRedirectManager {
++
++  /**
++   * The current user.
++   *
++   * @var \Drupal\Core\Session\AccountProxyInterface
++   */
++  protected $account;
++
++  /**
++   * The session.
++   *
++   * @var \Symfony\Component\HttpFoundation\Session\SessionInterface
++   */
++  protected $session;
++
++  /**
++   * Path to redirect to when editing is done.
++   *
++   * @var string
++   */
++  protected $editFinishPath;
++
++  /**
++   * Constructs UploadRedirectManager object.
++   *
++   * @param \Drupal\Core\Session\AccountProxyInterface $account
++   *   Drupal account object.
++   * @param \Symfony\Component\HttpFoundation\Session\SessionInterface $session
++   *   The session.
++   */
++  public function __construct(AccountProxyInterface $account, SessionInterface $session) {
++    $this->account = $account;
++    $this->session = $session;
++    $this->editFinishPath = '';
++  }
++
++  /**
++   * Get the ids of the entities that have been created via bulk upload.
++   */
++  public function getCreatedEntityIds() {
++    $key = 'media_bulk_uploads_' . $this->account->id();
++    $createdEntityIds = $this->session->get($key);
++
++    if (!$createdEntityIds) {
++      $createdEntityIds = [];
++      $this->session->set($key, $createdEntityIds);
++    }
++
++    return $createdEntityIds;
++  }
++
++  /**
++   * Clear the list.
++   */
++  public function removeAllItems() {
++    $this->session->set('media_bulk_uploads_' . $this->account->id(), []);
++  }
++
++  /**
++   * Add a created entity id.
++   */
++  public function addItem($entityId) {
++    $createdEntityIds = $this->getCreatedEntityIds();
++    $createdEntityIds[$entityId] = $entityId;
++    $this->session->set('media_bulk_uploads_' . $this->account->id(), $createdEntityIds);
++  }
++
++  /**
++   * Remove a created entity id.
++   */
++  public function removeItem($entityId) {
++    $createdEntityIds = $this->getCreatedEntityIds();
++    // Remove item from cart.
++    if (isset($createdEntityIds[$entityId])) {
++        unset($createdEntityIds[$entityId]);
++        $this->session->set('media_bulk_uploads_' . $this->account->id(), $createdEntityIds);
++    }
++  }
++
++  /**
++   * Implements hook_form_FORM_ID_alter().
++   *
++   * Alter the Media adit form.
++   */
++  public function alterMediaEditForm(&$form, FormStateInterface $form_state, $edit_finish_path) {
++    // Set editFinishPath.
++    $this->editFinishPath = $edit_finish_path;
++
++    // Get current Media entity from route.
++    $media = \Drupal::routeMatch()->getParameter('media');
++    $media_id = $media->id();
++
++    // Get the list of newly created media entities.
++    $new_items = $this->getCreatedEntityIds();
++
++    // Do nothing if current Media entity is not in the list.
++    if (!isset($new_items[$media_id])) {
++      return;
++    }
++
++    // Add count indicator to title.
++    /** @var \Drupal\media\MediaTypeInterface $media_type */
++    $media_type = $media->bundle->entity;
++    $total = count($new_items);
++    $current = array_search($media_id, array_keys($new_items));
++    $current++;
++    $form['#title'] = t("Edit %type_label @label - $current/$total of newly uploaded items", [
++      '%type_label' => $media_type->label(),
++      '@label' => $media->label(),
++    ]);
++
++    // If this is not the last item.
++    if ($current < $total) {
++      // Change Submit button text.
++      $form['actions']['submit']['#value'] = t('Save and edit next item');
++
++      // Set redirect to the next media edit page.
++      $form['actions']['submit']['#submit'][] = [$this, 'redirectNextHandler'];
++    }
++
++    // If this is the last item.
++    if ($media_id == array_key_last($new_items)) {
++      $form['actions']['submit']['#value'] = t('Save and finish editing');
++      // Set redirect to the next media edit page.
++      $form['actions']['submit']['#submit'][] = [$this, 'redirectFinishedHandler'];
++    }
++
++    // Add new action button to stop editing.
++    $form['actions']['stop_editing'] = [
++      '#type' => 'button',
++      '#value' => 'Close and stop editing items',
++      '#submit' => [[$this, 'redirectFinishedHandler']],
++      '#executes_submit_callback' => TRUE,
++      '#limit_validation_errors' => [],
++    ];
++  }
++
++  /**
++   * Submit handler to go to the next media edit page.
++   */
++  function redirectNextHandler($form, FormStateInterface $form_state) {
++    // Get current Media entity from route.
++    $media = \Drupal::routeMatch()->getParameter('media');
++    $media_id = $media->id();
++    // Get the media id of the next item.
++    $array_keys = array_keys($this->getCreatedEntityIds());
++    $next_id = $array_keys[array_search($media_id,$array_keys) + 1];
++    $form_state->setRedirect('entity.media.edit_form', ['media' => $next_id]);
++  }
++
++  /**
++   * Submit handler to finish editing
++   */
++  function redirectFinishedHandler($form, FormStateInterface $form_state) {
++    // Clear all items.
++    $this->removeAllItems();
++    // Redirect to the path from 'Redirect to this path after finishing editing'.
++    $route_name = Url::fromUserInput($this->editFinishPath)->getRouteName();
++    $form_state->setRedirect($route_name);
++  }
++}
+\ No newline at end of file

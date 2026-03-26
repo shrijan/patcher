@@ -5,11 +5,12 @@ namespace Drupal\media_bulk_upload\Form;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityForm;
-use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\Core\StreamWrapper\PrivateStream;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\path_alias\AliasManagerInterface;
+use Drupal\Core\Routing\RequestContext;
 
 /**
  * Class MediaBulkConfigForm.
@@ -24,16 +25,46 @@ class MediaBulkConfigForm extends EntityForm implements ContainerInjectionInterf
   protected $entityDisplayRepository;
 
   /**
+   * The config factory service.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
+   * The path alias manager.
+   *
+   * @var \Drupal\path_alias\AliasManagerInterface
+   */
+  protected $aliasManager;
+
+  /**
+   * The request context.
+   *
+   * @var \Drupal\Core\Routing\RequestContext
+   */
+  protected $requestContext;
+
+  /**
    * MediaBulkConfigForm constructor.
    *
    * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
    *   Entity Display repository.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory.
+   * @param \Drupal\path_alias\AliasManagerInterface $aliasManager
+   *   The path alias manager.
+   * @param \Drupal\Core\Routing\RequestContext $requestContext
+   *   The request context.
    */
-  public function __construct(EntityDisplayRepositoryInterface $entityDisplayRepository, MessengerInterface $messenger) {
+  public function __construct(EntityDisplayRepositoryInterface $entityDisplayRepository, MessengerInterface $messenger, ConfigFactoryInterface $configFactory, AliasManagerInterface $aliasManager, RequestContext $requestContext) {
     $this->entityDisplayRepository = $entityDisplayRepository;
     $this->messenger = $messenger;
+    $this->configFactory = $configFactory;
+    $this->aliasManager = $aliasManager;
+    $this->requestContext = $requestContext;
   }
 
   /**
@@ -42,7 +73,10 @@ class MediaBulkConfigForm extends EntityForm implements ContainerInjectionInterf
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity_display.repository'),
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('config.factory'),
+      $container->get('path_alias.manager'),
+      $container->get('router.request_context')
     );
   }
 
@@ -89,6 +123,32 @@ class MediaBulkConfigForm extends EntityForm implements ContainerInjectionInterf
       '#required' => TRUE,
     ];
 
+    $show_alt = $mediaBulkConfig->get('show_alt');
+    $form['show_alt'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show Alt text input for uploaded files.'),
+      '#description' => $this->t('Check if you want to be able to add Alt text
+        to the uploaded files. Please do NOT use [ or ] symbols in your text.'),
+      '#default_value' => (boolean) $show_alt,
+    ];
+
+    $alt_required = $mediaBulkConfig->get('alt_required');
+    $form['alt_required'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Make Alt text input required.'),
+      '#description' => $this->t('Check if you want the Alt text to be required for image files.'),
+      '#default_value' => (boolean) $alt_required,
+    ];
+
+    $show_title = $mediaBulkConfig->get('show_title');
+    $form['show_title'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show title text input for uploaded files.'),
+      '#description' => $this->t('Check if you want to be able to add title text
+        to the uploaded files. Please do NOT use [ or ] symbols in your text.'),
+      '#default_value' => (boolean) $show_title,
+    ];
+
     $form['form_mode'] = [
       '#type' => 'select',
       '#title' => $this->t('Form Mode'),
@@ -105,8 +165,24 @@ class MediaBulkConfigForm extends EntityForm implements ContainerInjectionInterf
       '#title' => $this->t('Upload location'),
       '#description' => $this->t('Location to initially upload the files before they are moved to the determined
       location in the media types.'),
-      '#default_value' => $mediaBulkConfig->get('upload_location') ?: 'temporary://media-bulk-upload',
-      '#required' => TRUE,
+      '#default_value' => $mediaBulkConfig->get('upload_location'),
+    ];
+
+    $form['edit_after_upload'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Edit each Media item after upload'),
+      '#description' => $this->t('When checked, you will be redirected to the edit page of each Media item that was created after upload.'),
+      '#default_value' => $mediaBulkConfig->get('edit_after_upload'),
+    ];
+
+    $edit_finish_path = $mediaBulkConfig->get('edit_finish_path') ?: $this->aliasManager->getAliasByPath($this->configFactory->get('system.site')->get('page.front'));
+    $form['edit_finish_path'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Redirect to this path after finishing editing'),
+      '#default_value' => $edit_finish_path,
+      '#size' => 40,
+      '#description' => $this->t('Optionally, specify a relative URL. Leave blank to redirect to the default front page.'),
+      '#field_prefix' => $this->requestContext->getCompleteBaseUrl(),
     ];
 
     return $form;
@@ -125,52 +201,6 @@ class MediaBulkConfigForm extends EntityForm implements ContainerInjectionInterf
     natsort($mediaTypeOptions);
 
     return $mediaTypeOptions;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    $upload_location = $form_state->getValue('upload_location');
-    $upload_location_ok = FALSE;
-    $upload_location_error = NULL;
-
-    // Check for file system and schema issues before using
-    // FileSystemInterface::prepareDirectory() to create/check the directory.
-    try {
-      /** @var \Drupal\Core\File\FileSystemInterface $file_system */
-      $file_system = \Drupal::service('file_system');
-      /** @var \Drupal\Core\StreamWrapper\StreamWrapperManager $stream_wrapper_manager */
-      $stream_wrapper_manager = \Drupal::service('stream_wrapper_manager');
-
-      if (empty($upload_location)) {
-        $upload_location_error = t('No upload location provided.');
-      }
-      elseif (str_starts_with($upload_location, 'private://') && !PrivateStream::basePath()) {
-        $upload_location_error = t('You need to configure and set up your private files directory before you can use it for Media Bulk Uploads.');
-      }
-      elseif (str_starts_with($upload_location, 'temporary://')) {
-        if (!$file_system->getTempDirectory()) {
-          $upload_location_error = t('You need to configure and set up your temporary files directory before you can use it for Media Bulk Uploads.');
-        }
-      }
-      elseif ($stream_wrapper_manager::getScheme($upload_location) && !$stream_wrapper_manager->isValidScheme($stream_wrapper_manager::getScheme($upload_location))) {
-        $upload_location_error = t('Invalid scheme provided. Standard schemes include public:// , private:// and temporary://');
-      }
-
-      // Create the directory and give it the permissions needed.
-      if (empty($upload_location_error)) {
-        $upload_location_ok = $file_system->prepareDirectory($upload_location, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-      }
-    }
-    catch (\Exception $e) {
-      $form_state->setError($form['upload_location'], 'Media upload location does not exist, or could not be created. [ Error: ' . $e->getMessage() . ']');
-    }
-
-    // Check the result.
-    if (!$upload_location_ok) {
-      $form_state->setError($form['upload_location'], $upload_location_error ?? 'Media upload location does not exist, or could not be created.');
-    }
   }
 
   /**

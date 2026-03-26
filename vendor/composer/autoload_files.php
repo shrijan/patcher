@@ -51,4 +51,5 @@ return array(
     '801c31d8ed748cfa537fa45402288c95' => $vendorDir . '/psy/psysh/src/functions.php',
     '74ed299072414d276bb7568fe71d5b0c' => $vendorDir . '/tinify/tinify/lib/Tinify.php',
     '9635627915aaea7a98d6d14d04ca5b56' => $vendorDir . '/tinify/tinify/lib/Tinify/Exception.php',
+    'a386e918510c0eb48d5b6624d60b138e' => $vendorDir . '/mglaman/composer-drupal-lenient/src/autoload.php',
 );

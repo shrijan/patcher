@@ -36,9 +36,12 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "uuid",
  *     "media_types",
  *     "show_alt",
+ *     "alt_required",
  *     "show_title",
  *     "form_mode",
  *     "upload_location",
+ *     "edit_after_upload",
+ *     "edit_finish_path",
  *   },
  *   links = {
  *     "canonical" = "/admin/config/media/media-bulk-config/{media_bulk_config}",

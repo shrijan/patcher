@@ -21,8 +21,12 @@ use Drupal\media\MediaInterface;
 use Drupal\media\MediaTypeInterface;
 use Drupal\media_bulk_upload\Entity\MediaBulkConfigInterface;
 use Drupal\media_bulk_upload\MediaSubFormManager;
+use Drupal\media_bulk_upload\UploadRedirectManager;
 use Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Symfony\Component\Mime\MimeTypeGuesserInterface;
 
 /**
  * Class BulkMediaUploadForm.
@@ -81,6 +85,27 @@ class MediaBulkUploadForm extends FormBase {
   protected $allowed_extensions = [];
 
   /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  private $moduleHandler;
+
+  /**
+   * The mime type guesser.
+   *
+   * @var \Symfony\Component\Mime\MimeTypeGuesserInterface
+   */
+  private $mimeTypeGuesser;
+
+  /**
+   * The file system.
+   *
+   * @var \Drupal\Core\File\FileSystemInterface
+   */
+  private $fileSystem;
+
+  /**
    * The current user.
    *
    * @var \Drupal\Core\Session\AccountProxyInterface
@@ -93,6 +118,19 @@ class MediaBulkUploadForm extends FormBase {
    * @var \Drupal\file\FileRepositoryInterface
    */
   protected $fileRepository;
+
+  /**
+   * The upload redirect manager.
+   *
+   * @var \Drupal\media_bulk_upload\UploadRedirectManager
+   */
+  protected $uploadRedirectManager;
+  /**
+   * If we need to redirect to media edit page after the bulk upload.
+   *
+   * @var bool
+   */
+  protected $editAfterUpload = FALSE;
 
   /**
    * The file validation service.
@@ -173,7 +211,7 @@ class MediaBulkUploadForm extends FormBase {
    *
    * @throws \Exception
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?MediaBulkConfigInterface $media_bulk_config = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, MediaBulkConfigInterface $media_bulk_config = NULL) {
     $mediaBulkConfig = $media_bulk_config;
 
     if ($mediaBulkConfig === NULL) {
@@ -250,6 +288,9 @@ class MediaBulkUploadForm extends FormBase {
       '#description' => $this->t('Click or drop your files here. You can upload up to <strong>@limit</strong> files at once.', ['@limit' => ini_get('max_file_uploads')]),
       '#upload_validators' => $validators,
       '#upload_location' => $mediaBulkConfig->get('upload_location'),
+      '#show_alt' => (boolean) $mediaBulkConfig->get('show_alt'),
+      '#alt_required' => (boolean) $mediaBulkConfig->get('alt_required'),
+      '#show_title' => (boolean) $mediaBulkConfig->get('show_title'),
     ];
 
     if ($this->mediaSubFormManager->validateMediaFormDisplayUse($mediaBulkConfig)) {
@@ -299,7 +340,7 @@ class MediaBulkUploadForm extends FormBase {
    *   File Size.
    *
    * @return bool
-   *  TRUE if the given size is larger than the one that is set.
+   *   TRUE if the given size is larger than the one that is set.
    */
   protected function isMaxFileSizeLarger($MaxFileSize) {
     $size = Bytes::toNumber($MaxFileSize);
@@ -340,16 +381,27 @@ class MediaBulkUploadForm extends FormBase {
 
     /** @var MediaBulkConfigInterface $mediaBulkConfig */
     $mediaBulkConfig = $this->mediaBulkConfigStorage->load($mediaBundleConfigId);
-    $fileIds = $values['file_upload'];
+    $filesData = $values['file_upload'];
 
-    \Drupal::moduleHandler()->alter('media_bulk_upload_file_ids', $fileIds, $mediaBundleConfigId);
+    // Did not figure out yet how to access config in batchFinished(), so saving the value here.
+    $this->editAfterUpload = $mediaBulkConfig->edit_after_upload;
+    
+    
+    $module_handler = $this->moduleHandler ?: \Drupal::moduleHandler();
+    $module_handler->alter('media_bulk_upload_files', $filesData, $mediaBulkConfig);
+   // die();
 
-    if (empty($fileIds)) {
+    if (empty($filesData)) {
       return;
     }
 
+    $metadata = [];
+    foreach ($filesData as $file) {
+      $metadata[$file['file']->id()] = $file['metadata'];
+    }
+
     /** @var \Drupal\file\FileInterface[] $files */
-    $files = $this->fileStorage->loadMultiple($fileIds);
+    $files = $this->fileStorage->loadMultiple(array_keys($filesData));
 
     $mediaTypes = $this->mediaSubFormManager->getMediaTypeManager()->getBulkMediaTypes($mediaBulkConfig);
     $mediaType = reset($mediaTypes);
@@ -368,6 +420,7 @@ class MediaBulkUploadForm extends FormBase {
             'media_bulk_config' => $mediaBulkConfig,
             'media_form_display' => $mediaFormDisplay,
             'file' => $file,
+            'metadata' => $metadata[$file->id()],
             'form' => $form,
             'form_state' => $form_state,
           ],
@@ -402,15 +455,21 @@ class MediaBulkUploadForm extends FormBase {
     $mediaBulkConfig = $operation_details['media_bulk_config'];
     $mediaFormDisplay = $operation_details['media_form_display'];
     $file = $operation_details['file'];
+    $metadata = $operation_details['metadata'];
     $form = $operation_details['form'];
     $form_state = $operation_details['form_state'];
     try {
-      $media = $this->processFile($mediaBulkConfig, $file);
+      $media = $this->processFile($mediaBulkConfig, $file, $metadata);
       if ($this->mediaSubFormManager->validateMediaFormDisplayUse($operation_details['media_bulk_config'])) {
         $extracted = $mediaFormDisplay->extractFormValues($media, $form['fields']['shared'], $form_state);
         $this->copyFormValuesToEntity($media, $extracted, $form_state);
       }
       $media->save();
+
+      // Save the created media entity ID for if we need to redirect to the media edit page afterwards.
+      $upload_redirect_manager = $this->uploadRedirectManager ?: \Drupal::service('media_bulk_upload.redirect_manager');
+      $upload_redirect_manager->addItem($media->id());
+
       $context['results'][] = $id;
 
       $context['message'] = $this->t('Processing file @id.',
@@ -441,9 +500,22 @@ class MediaBulkUploadForm extends FormBase {
    */
   public function batchFinished($success, array $results, array $operations) {
     if ($success) {
+      // Check if we need to redirect to media edit page.
+      $upload_redirect_manager = $this->uploadRedirectManager ?: \Drupal::service('media_bulk_upload.redirect_manager');
+      $media_ids = $upload_redirect_manager->getCreatedEntityIds();
+      if ($this->editAfterUpload && !empty($media_ids)) {
+        // Custom message when redirecting.
+        $this->messenger()->addMessage($this->t('@count media have been created. You can now make changes to each item one by one.', ['@count' => count($results)]));
+        // Redirect to the edit page of the first media entity that was created.
+        $media_id = reset($media_ids);
+        return new RedirectResponse(Url::fromRoute('entity.media.edit_form', ['media' => $media_id], [])->toString());
+      }
+
+      // Default message when not redirecting.
       $this->messenger()->addMessage($this->t('@count media have been created.', ['@count' => count($results)]));
     }
-    else {
+
+    if (!$success) {
       $errorOperation = reset($operations);
       $this->messenger()->addError(
         $this->t('An error occurred while processing @operation with arguments : @args',
@@ -465,6 +537,8 @@ class MediaBulkUploadForm extends FormBase {
    *   Media Bulk Config.
    * @param \Drupal\file\FileInterface $file
    *   File entity.
+   * @param array $metadata
+   *   Additional metadata for the file.
    *
    * @return \Drupal\media\MediaInterface
    *   The unsaved media entity that is created.
@@ -474,7 +548,7 @@ class MediaBulkUploadForm extends FormBase {
    * @throws \Drupal\Core\Entity\EntityStorageException
    * @throws \Exception
    */
-  protected function processFile(MediaBulkConfigInterface $mediaBulkConfig, FileInterface $file) {
+  protected function processFile(MediaBulkConfigInterface $mediaBulkConfig, FileInterface $file, array $metadata = []) {
     $filename = $file->getFilename();
 
     if (!$this->validateFile($file)) {
@@ -524,7 +598,7 @@ class MediaBulkUploadForm extends FormBase {
       throw new Exception('File entity could not be moved.');
     }
 
-    $values = $this->getNewMediaValues($mediaType, $file);
+    $values = $this->getNewMediaValues($mediaType, $file, $metadata);
     /** @var \Drupal\media\MediaInterface $media */
 
     return $this->mediaStorage->create($values);
@@ -560,7 +634,7 @@ class MediaBulkUploadForm extends FormBase {
       : Environment::getUploadMaxSize();
 
     if ((int) $maxFileSize === 0) {
-      return true;
+      return TRUE;
     }
 
     return $fileSize <= $maxFileSize;
@@ -577,7 +651,7 @@ class MediaBulkUploadForm extends FormBase {
    * @return array
    *   Array of errors provided by fileValidator->validate.
    */
-  protected function validateImageResolution(MediaTypeInterface $mediaType, FileInterface $file) : array {
+  protected function validateImageResolution(MediaTypeInterface $mediaType, FileInterface $file): array {
     $field_settings = $this->mediaSubFormManager
       ->getMediaTypeManager()
       ->getTargetFieldSettings($mediaType);
@@ -607,21 +681,42 @@ class MediaBulkUploadForm extends FormBase {
    *   Media Type ID.
    * @param \Drupal\file\FileInterface $file
    *   File entity.
+   * @param array $metadata
+   *   Additional metadata for the file.
    *
    * @return array
    *   Return an array describing the new media entity.
    */
-  protected function getNewMediaValues(MediaTypeInterface $mediaType, FileInterface $file) {
+  protected function getNewMediaValues(MediaTypeInterface $mediaType, FileInterface $file, array $metadata) {
     $targetFieldName = $this->mediaSubFormManager->getMediaTypeManager()
       ->getTargetFieldName($mediaType);
-    return [
-      'bundle' => $mediaType->id(),
-      'name' => $file->getFilename(),
+
+    // Get filename without extension.
+    $pathinfo = pathinfo($file->getFilename());
+    // When uploading, Drupal replaces spaces in filename with underscores.
+    // Drupal also lowercases filenames.
+    // For alt and title values, we replace it back.
+    $clean_filename = ucfirst(str_replace("_", " ", $pathinfo['filename']));
+
+    $media_data = ['bundle' => $mediaType->id(),
+      'name' => $clean_filename,
       $targetFieldName => [
         'target_id' => $file->id(),
-        'title' => $file->getFilename(),
+        'title' => $clean_filename,
+        'alt' => $clean_filename,
       ],
     ];
+
+    if (isset($metadata['title'])) {
+      $media_data['name'] = $metadata['title'];
+      $media_data[$targetFieldName]['title'] = $metadata['title'];
+    }
+
+    if (isset($metadata['alt'])) {
+      $media_data[$targetFieldName]['alt'] = $metadata['alt'];
+    }
+
+    return $media_data;
   }
 
   /**
@@ -661,6 +756,78 @@ class MediaBulkUploadForm extends FormBase {
       $form_state->setValue(['fields', 'shared'], $shared);
     }
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    // Validate all uploaded files.
+    $uploaded_files = $form_state->getValue(['file_upload', 'uploaded_files']);
+    $media_bundle_config_id = $form_state->getValue(['media_bundle_config']);
+    $media_bulk_config = $this->mediaBulkConfigStorage->load($media_bundle_config_id);
+
+    if (empty($uploaded_files)) {
+      $form_state->setErrorByName('file_upload', $this->t('No media files have been provided.'));
+    }
+    else {
+      $show_alt = (boolean) $media_bulk_config->get('show_alt');
+      $alt_required = (boolean) $media_bulk_config->get('alt_required');
+
+      foreach ($uploaded_files as $uploaded_file) {
+        $errors = [];
+
+        // Validate file alt.
+        //$mime = $this->mimeTypeGuesser->guessMimeType($uploaded_file['path']);
+        $mime = NULL;
+        if (!empty($uploaded_file['path'])) {
+          if ($this->mimeTypeGuesser) {
+            $mime = $this->mimeTypeGuesser->guessMimeType($uploaded_file['path']);
+          }
+          else {
+            $mime = \Drupal::service('file.mime_type.guesser')->guessMimeType($uploaded_file['path']);
+          }
+        }
+        if (
+          strpos($mime, 'image/') !== FALSE
+          && $show_alt
+          && $alt_required
+          && empty($uploaded_file['metadata']['alt'])
+        ) {
+          $errors[] = $this->t('Alt value for images is required.');
+        }
+
+        // Create a new file entity since some modules only validate new files.
+        $file = $this->fileStorage->create([
+          'uri' => $uploaded_file['path'],
+        ]);
+
+        // Let other modules perform validation on the new file.
+        $module_handler = $this->moduleHandler ?: \Drupal::moduleHandler();
+$errors = array_merge($errors, $module_handler->invokeAll('file_validate', [
+  $file,
+]));
+
+        // Process any reported errors.
+        if (!empty($errors)) {
+          $form_state->setErrorByName('file_upload', 'Errors for file ' . $file->getFilename() . ': ' . implode(', ', $errors));
+
+          try {
+            // Delete the uploaded file if it has validation errors.
+            $this->fileSystem->delete($uploaded_file['path']);
+          }
+          catch (Exception $e) {
+            if (method_exists(Error::class, 'logException')) {
+              Error::logException($this->getLogger('media_bulk_upload'), $e);
+            }
+            else {
+              // @phpstan-ignore-next-line
+              watchdog_exception('media_bulk_upload', $e);
+            }
+          }
+        }
+      }
+    }
   }
 
 }

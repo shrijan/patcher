@@ -1,0 +1,83 @@
+--- src/Form/MediaBulkUploadForm.php
++++ src/Form/MediaBulkUploadForm.php
+@@ -11,6 +11,7 @@ use Drupal\Core\Form\FormBase;
+ use Drupal\Core\Form\FormStateInterface;
+ use Drupal\Core\Messenger\MessengerInterface;
+ use Drupal\Core\Session\AccountProxyInterface;
++use Drupal\Core\Url;
+ use Drupal\file\Entity\File;
+ use Drupal\file\FileInterface;
+ use Drupal\file\FileRepositoryInterface;
+@@ -140,11 +179,31 @@ class MediaBulkUploadForm extends FormBase {
+    *   Current User.
+    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+    *   The messenger.
++   * @param \Drupal\file\FileRepositoryInterface $fileRepository
++   *   The file repository.
++   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
++   *   The module handler.
++   * @param \Symfony\Component\Mime\MimeTypeGuesserInterface $mimeTypeGuesser
++   *   The mime type guesser.
++   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
++   *   The file system.
++   * @param \Drupal\media_bulk_upload\UploadRedirectManager $uploadRedirectManager
++   *   The upload redirect manager.
+    *
+    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+    */
+-  public function __construct(EntityTypeManagerInterface $entityTypeManager, MediaSubFormManager $mediaSubFormManager, AccountProxyInterface $currentUser, MessengerInterface $messenger, FileRepositoryInterface $fileRepository) {
++  public function __construct(
++    EntityTypeManagerInterface $entityTypeManager,
++    MediaSubFormManager $mediaSubFormManager,
++    AccountProxyInterface $currentUser,
++    MessengerInterface $messenger,
++    FileRepositoryInterface $fileRepository,
++    ModuleHandlerInterface $moduleHandler,
++    MimeTypeGuesserInterface $mimeTypeGuesser,
++    FileSystemInterface $fileSystem,
++    UploadRedirectManager $uploadRedirectManager
++  ) {
+     $this->mediaTypeStorage = $entityTypeManager->getStorage('media_type');
+     $this->mediaBulkConfigStorage = $entityTypeManager->getStorage('media_bulk_config');
+     $this->mediaStorage = $entityTypeManager->getStorage('media');
+@@ -153,7 +212,13 @@ class MediaBulkUploadForm extends FormBase {
+     $this->currentUser = $currentUser;
+     $this->messenger = $messenger;
+     $this->fileRepository = $fileRepository;
++    $this->moduleHandler = $moduleHandler;
++    $this->mimeTypeGuesser = $mimeTypeGuesser;
++    $this->fileSystem = $fileSystem;
+     $this->maxFileSizeForm = '';
++    $this->uploadRedirectManager = $uploadRedirectManager;
++    // Start with empty list of uploaded items.
++    $this->uploadRedirectManager->removeAllItems();
+   }
+ 
+   /**
+@@ -168,7 +233,11 @@ class MediaBulkUploadForm extends FormBase {
+       $container->get('media_bulk_upload.subform_manager'),
+       $container->get('current_user'),
+       $container->get('messenger'),
+-      $container->get('file.repository')
++      $container->get('file.repository'),
++      $container->get('module_handler'),
++      $container->get('file.mime_type.guesser'),
++      $container->get('file_system'),
++      $container->get('media_bulk_upload.redirect_manager'),
+     );
+   }
+ 
+@@ -459,9 +545,11 @@ class MediaBulkUploadForm extends FormBase {
+           '@id' => $id,
+         ]
+       );
+-    } catch (Exception $e) {
++    }
++    catch (Exception $e) {
+       watchdog_exception('media_bulk_upload', $e);
+     }
++
+   }
+ 
+   /**

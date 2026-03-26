@@ -3,14 +3,13 @@
 namespace Drupal\media_bulk_upload;
 
 use Drupal\Component\Render\PlainTextOutput;
+use Drupal\Component\Utility\Bytes;
 use Drupal\Component\Utility\Environment;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Render\Element;
-use Drupal\Core\StringTranslation\ByteSizeMarkup;
 use Drupal\media\MediaTypeInterface;
 use Drupal\media_bulk_upload\Entity\MediaBulkConfigInterface;
 use Drupal\Core\Utility\Token;
@@ -92,8 +91,38 @@ class MediaSubFormManager implements ContainerInjectionInterface, MediaSubFormMa
     $this->mediaStorage = $entityTypeManager->getStorage('media');
     $this->entityFormDisplayStorage = $entityTypeManager->getStorage('entity_form_display');
     $this->token = $token;
-    $this->defaultMaxFileSize = ByteSizeMarkup::create(Environment::getUploadMaxSize(), LanguageInterface::LANGCODE_NOT_SPECIFIED);
+    $this->defaultMaxFileSize = $this->formatSize(Environment::getUploadMaxSize());
     $this->fileSystem = $fileSystem;
+  }
+
+  /**
+   * Format the amount of bites into a common string format.
+   *
+   * @param int $size
+   *  Size in bytes.
+   *
+   * @return string
+   *   Formatted file size.
+   */
+  private function formatSize($size) {
+    $unit = 'B';
+    $calculatedSize = $size;
+    if ($size >= Bytes::KILOBYTE) {
+      $calculatedSize = $size / Bytes::KILOBYTE;
+      $units = ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+      foreach ($units as $unit) {
+        if (round($calculatedSize, 2) >= Bytes::KILOBYTE) {
+          $calculatedSize /= Bytes::KILOBYTE;
+        }
+        else {
+          break;
+        }
+      }
+    }
+
+    $calculatedSize = round($calculatedSize, 2);
+    return sprintf('%d ' . $unit, $calculatedSize);
   }
 
   /**

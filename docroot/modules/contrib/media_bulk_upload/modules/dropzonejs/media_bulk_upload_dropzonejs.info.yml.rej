@@ -1,0 +1,11 @@
+--- modules/dropzonejs/media_bulk_upload_dropzonejs.info.yml
++++ modules/dropzonejs/media_bulk_upload_dropzonejs.info.yml
+@@ -7,3 +7,8 @@ package: Media
+ dependencies:
+   - media_bulk_upload
+   - dropzonejs
++
++# Information added by Drupal.org packaging script on 2023-04-12
++version: '3.0.2'
++project: 'media_bulk_upload'
++datestamp: 1681285222

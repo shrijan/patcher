@@ -13,9 +13,24 @@ media_bulk_upload.media_bulk_config.*:
     media_types:
       type: sequence
       label: 'Media Types'
+    show_alt:
+      type: boolean
+      label: 'Show Alt text input'
+    alt_required:
+      type: boolean
+      label: 'Alt text required'
+    show_title:
+      type: boolean
+      label: 'Show Title text input'
     form_mode:
       label: 'Form Mode'
       type: string
     upload_location:
       label: 'Upload Location'
       type: string
+    edit_after_upload:
+      type: boolean
+      label: 'Edit each Media item after upload'
+    edit_finish_path:
+      type: path
+      label: 'Redirect to this path after finishing editing'

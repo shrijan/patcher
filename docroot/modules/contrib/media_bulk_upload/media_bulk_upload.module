@@ -7,7 +7,8 @@
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\media\MediaTypeInterface;
+use Drupal\media\Entity\MediaType;
+use Drupal\media_bulk_upload\Entity\MediaBulkConfig;
 
 /**
  * Implements hook_help().
@@ -35,5 +36,50 @@ function media_bulk_upload_menu_links_discovered_alter(&$links) {
      * @see \Drupal\admin_toolbar_tools\Plugin\Derivative\ExtraLinks::getDerivativeDefinitions()
      */
     $links['entity.media_bulk.collection']['parent'] = 'admin_toolbar_tools.extra_links:media_page';
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Alter Media edit forms.
+ *
+ * @TODO: save the actual vbo config in MediaBulkUploadForm,
+ * by using UploadRedirectManager and retrieve values here,
+ * instead of getting the first config.
+ */
+function media_bulk_upload_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+
+  // Check the redirect to media edit setting.
+  // For now we just check it for the first media bulk upload configuration we can find.
+  $bulk_upload_configurations = MediaBulkConfig::loadMultiple();
+  // Opt out if there are no bulk configurations yet.
+  if (empty($bulk_upload_configurations)) {
+    return;
+  }
+
+  // Get the first view bulk operation config.
+  $configuration = reset($bulk_upload_configurations);
+
+  // Opt out if the setting is not enabled.
+  if (!$configuration->edit_after_upload) {
+    return;
+  }
+
+  $edit_finish_path = $configuration->edit_finish_path ?: '';
+
+  // Now we need to load all Media types to have all media edit form ids.
+  $media_types = MediaType::loadMultiple();
+
+  // Loop all media types to see if current form needs to be altered.
+  foreach ($media_types as $media_type) {
+
+    // Get the media type / bundle.
+    $bundle = $media_type->id();
+
+    // Alter the current media Edit form.
+    if ($form_id == 'media_' . $bundle . '_edit_form') {
+      \Drupal::service('media_bulk_upload.redirect_manager')->alterMediaEditForm($form, $form_state, $edit_finish_path);
+    }
   }
 }

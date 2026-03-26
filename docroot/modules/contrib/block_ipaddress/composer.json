@@ -13,6 +13,6 @@
         "source": "http://cgit.drupalcode.org/block_ipaddress"
     },
     "require": {
-        "drupal/core": "^8 || ^9 || ^10 || ^11"
+        "drupal/core": "^8 || ^9 || ^10"
     }
 }

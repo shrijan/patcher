@@ -5,3 +5,6 @@ services:
   media_bulk_upload.media_type_manager:
     class: Drupal\media_bulk_upload\MediaTypeManager
     arguments: ['@entity_type.manager', '@entity_field.manager']
+  media_bulk_upload.redirect_manager:
+    class: Drupal\media_bulk_upload\UploadRedirectManager
+    arguments: ['@current_user', '@session']

@@ -7,7 +7,7 @@ dependencies:
   - drupal:media
 configure: entity.media_bulk_config.collection
 
-# Information added by Drupal.org packaging script on 2026-01-19
-version: '3.0.5'
+# Information added by Drupal.org packaging script on 2025-06-10
+version: '3.0.4'
 project: 'media_bulk_upload'
-datestamp: 1768830487
+datestamp: 1749524325
